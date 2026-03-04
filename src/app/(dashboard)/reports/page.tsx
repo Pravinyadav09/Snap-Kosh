@@ -22,20 +22,20 @@ const reportModules = [
 
 export default function ReportsMainPage() {
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 font-sans">
             <div className="flex items-center justify-between px-1">
-                <div>
-                    <h1 className="text-2xl font-bold tracking-tight">Business Reports & Analytics</h1>
-                    <p className="text-sm text-muted-foreground font-medium">Get a 360-degree view of your printing business performance.</p>
+                <div className="space-y-0.5 text-left">
+                    <h1 className="text-2xl font-black tracking-tight text-slate-900 uppercase font-sans">Business Reports</h1>
+                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] font-sans">360-Degree Performance Analytics • Financial Audit Logs</p>
                 </div>
-                <Button className="h-9 gap-2 bg-blue-600 font-bold">
+                <Button className="h-9 gap-2 font-bold text-white shadow-lg transition-all" style={{ background: 'var(--primary)' }}>
                     <Download className="h-4 w-4" /> Download Yearly Summary
                 </Button>
             </div>
 
             {/* Quick Stats */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <Card className="border-none shadow-sm bg-blue-600 text-white">
+                <Card className="border-none shadow-sm text-white" style={{ background: 'var(--primary)' }}>
                     <CardContent className="pt-6">
                         <div className="flex justify-between items-start">
                             <p className="text-xs font-bold uppercase tracking-wider opacity-80">Net Sales (MTD)</p>
@@ -45,7 +45,7 @@ export default function ReportsMainPage() {
                         <p className="text-[10px] mt-2 font-bold bg-white/20 inline-block px-2 py-0.5 rounded text-white">+12.5% vs Prev Month</p>
                     </CardContent>
                 </Card>
-                <Card className="border-none shadow-sm bg-slate-900 text-white">
+                <Card className="border-none shadow-sm text-white" style={{ background: 'var(--primary)', filter: 'brightness(0.8)' }}>
                     <CardContent className="pt-6">
                         <div className="flex justify-between items-start">
                             <p className="text-xs font-bold uppercase tracking-wider opacity-80">Expenses (MTD)</p>
@@ -55,7 +55,7 @@ export default function ReportsMainPage() {
                         <p className="text-[10px] mt-2 font-bold bg-white/10 inline-block px-2 py-0.5 rounded text-white">Within Budget</p>
                     </CardContent>
                 </Card>
-                <Card className="border-none shadow-sm bg-emerald-600 text-white">
+                <Card className="border-none shadow-sm text-white" style={{ background: 'var(--primary)' }}>
                     <CardContent className="pt-6">
                         <div className="flex justify-between items-start">
                             <p className="text-xs font-bold uppercase tracking-wider opacity-80">Active Jobs</p>
@@ -65,7 +65,7 @@ export default function ReportsMainPage() {
                         <p className="text-[10px] mt-2 font-bold bg-white/20 inline-block px-2 py-0.5 rounded text-white">Production Optimal</p>
                     </CardContent>
                 </Card>
-                <Card className="border-none shadow-sm bg-rose-600 text-white">
+                <Card className="border-none shadow-sm text-white" style={{ background: 'var(--primary)' }}>
                     <CardContent className="pt-6">
                         <div className="flex justify-between items-start">
                             <p className="text-xs font-bold uppercase tracking-wider opacity-80">Late Deliveries</p>

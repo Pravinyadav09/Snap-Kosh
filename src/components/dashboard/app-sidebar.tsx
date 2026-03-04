@@ -23,7 +23,6 @@ import {
     UserCircle,
     Boxes,
     Layers,
-    Droplets,
     MonitorPlay,
     ExternalLink,
     CreditCard,
@@ -36,7 +35,8 @@ import {
     Percent,
     ClipboardList,
     Users2,
-    Cog
+    Cog,
+    Maximize2
 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -64,9 +64,11 @@ const menuGroups = [
     {
         label: "CRM & Sales",
         items: [
-            { title: "Customers", url: "/users", icon: Users },
+            { title: "Customers", url: "/customers", icon: UserCircle },
+            { title: "Customer Analysis", url: "/customers/analysis", icon: BarChart3 },
             { title: "Quotations", url: "/estimator", icon: Calculator },
             { title: "Invoices", url: "/invoices", icon: FileText },
+            { title: "Client Portals", url: "/portal/login", icon: ExternalLink },
         ]
     },
     {
@@ -81,9 +83,11 @@ const menuGroups = [
     {
         label: "Inventory",
         items: [
-            { title: "Paper Stocks", url: "/paper-stocks", icon: Layers },
-            { title: "Ink Inventory", url: "/ink-inventory", icon: Droplets },
-            { title: "Wide Format Media", url: "/wide-format", icon: MonitorPlay },
+            { title: "Paper Inventory", url: "/inventory", icon: Layers },
+            { title: "Paper Stocks", url: "/inventory/paper-stocks", icon: Boxes },
+            { title: "Media Stocks", url: "/inventory/media-stocks", icon: Maximize2 },
+            { title: "Purchases", url: "/inventory/purchases", icon: ShoppingCart },
+            { title: "Process Masters", url: "/management/processes", icon: Cog },
         ]
     },
     {
@@ -97,7 +101,6 @@ const menuGroups = [
         label: "Finance",
         items: [
             { title: "Expenses", url: "/finance/expenses", icon: CreditCard },
-            { title: "Purchases", url: "/finance/purchases", icon: ShoppingCart },
             { title: "Expense Categories", url: "/finance/categories", icon: Tag },
         ]
     },
@@ -114,9 +117,7 @@ const menuGroups = [
         items: [
             { title: "Users", url: "/management/users", icon: Users },
             { title: "Roles", url: "/management/roles", icon: UserCog },
-            { title: "Process Masters", url: "/management/processes", icon: Cog },
             { title: "Settings", url: "/settings", icon: Settings },
-            { title: "Tax Slabs", url: "/management/tax", icon: Percent },
         ]
     }
 ]
@@ -134,19 +135,19 @@ export function AppSidebar() {
                                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold">
                                     D
                                 </div>
-                                <div className="grid flex-1 text-left text-sm leading-tight">
-                                    <span className="truncate font-bold text-lg tracking-tighter">DIGITAL ERP</span>
-                                    <span className="truncate text-[10px] uppercase font-bold opacity-50">Management System</span>
+                                <div className="grid flex-1 text-left text-sm leading-tight font-sans">
+                                    <span className="truncate font-black text-lg tracking-tighter text-slate-900">DIGITAL ERP</span>
+                                    <span className="truncate text-[9px] uppercase font-black opacity-40 tracking-[0.2em]">Management System</span>
                                 </div>
                             </Link>
                         </SidebarMenuButton>
                     </SidebarMenuItem>
                 </SidebarMenu>
             </SidebarHeader>
-            <SidebarContent>
+            <SidebarContent className="font-sans">
                 {menuGroups.map((group) => (
                     <SidebarGroup key={group.label}>
-                        <SidebarGroupLabel className="text-[10px] font-bold uppercase opacity-60">
+                        <SidebarGroupLabel className="text-[10px] font-black uppercase text-slate-500 opacity-70 tracking-[0.2em] font-sans h-8 items-end pb-2">
                             {group.label}
                         </SidebarGroupLabel>
                         <SidebarGroupContent>

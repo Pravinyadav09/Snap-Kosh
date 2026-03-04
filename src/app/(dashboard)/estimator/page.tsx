@@ -3,194 +3,168 @@
 import React, { useState } from "react"
 import { toast } from "sonner"
 import {
-    Calculator,
-    Search,
     Plus,
     FileText,
-    Download,
-    MoreHorizontal,
     Eye,
     Check,
     X,
     Hammer,
     Edit2,
     Trash2,
-    Filter,
-    ChevronDown,
-    FileDown
+    FileDown,
+    Calculator,
+    User,
+    Calendar,
+    BadgeIndianRupee,
+    MoreHorizontal
 } from "lucide-react"
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { CostEstimator } from "@/components/shared/cost-estimator"
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from "@/components/ui/dialog"
-
 import { useRouter } from "next/navigation"
 
-const initialQuotations = [
-    { id: "QT-00151", date: "31 Dec, 2025", customer: "Farrell, Klocko and Oberbrunner", amount: "₹6,529.23", status: "approved" },
-    { id: "QT-2026-0062", date: "11 Feb, 2026", customer: "Denesik-Keeling", amount: "₹49,948.22", status: "approved" },
-    { id: "QT-24467", date: "04 Jan, 2026", customer: "Crona Group", amount: "₹4,329.86", status: "approved" },
-    { id: "QT-36472", date: "31 Dec, 2025", customer: "Schuster Ltd", amount: "₹8,342.20", status: "approved" },
-    { id: "QT-40102", date: "02 Jan, 2026", customer: "Hegmann LLC", amount: "₹2,003.12", status: "rejected" },
-    { id: "QT-60328", date: "02 Jan, 2026", customer: "Bailey-Champlin", amount: "₹884.56", status: "draft" },
-    { id: "QT-61931", date: "03 Jan, 2026", customer: "Denesik-Keeling", amount: "₹1,277.61", status: "rejected" },
+// Generic Grid & Modal
+import { DataGrid, ColumnDef } from "@/components/shared/data-grid"
+import { FormModal, FormField } from "@/components/shared/form-modal"
+
+// ─── Types ───────────────────────────────────────────────────────────────────
+type Quotation = {
+    id: string
+    date: string
+    customer: string
+    amount: number
+    status: "approved" | "rejected" | "draft" | "sent"
+}
+
+// ─── Mock Data ────────────────────────────────────────────────────────────────
+const initialQuotations: Quotation[] = [
+    { id: "QT-00151", date: "31 Dec, 2025", customer: "Farrell, Klocko and Oberbrunner", amount: 6529.23, status: "approved" },
+    { id: "QT-2026-0062", date: "11 Feb, 2026", customer: "Denesik-Keeling", amount: 49948.22, status: "approved" },
+    { id: "QT-24467", date: "04 Jan, 2026", customer: "Crona Group", amount: 4329.86, status: "approved" },
+    { id: "QT-36472", date: "31 Dec, 2025", customer: "Schuster Ltd", amount: 8342.20, status: "approved" },
+    { id: "QT-40102", date: "02 Jan, 2026", customer: "Hegmann LLC", amount: 2003.12, status: "rejected" },
+    { id: "QT-60328", date: "02 Jan, 2026", customer: "Bailey-Champlin", amount: 884.56, status: "draft" },
+    { id: "QT-61931", date: "03 Jan, 2026", customer: "Denesik-Keeling", amount: 1277.61, status: "rejected" },
 ]
 
+const statusStyles: Record<string, string> = {
+    approved: "bg-emerald-50 text-emerald-700 border-emerald-200",
+    rejected: "bg-rose-50 text-rose-700 border-rose-200",
+    draft: "bg-slate-50 text-slate-700 border-slate-200",
+    sent: "bg-blue-50 text-blue-700 border-blue-200",
+}
+
+// ─── Main Page ────────────────────────────────────────────────────────────────
 export default function QuotationsPage() {
     const router = useRouter()
-    const [searchTerm, setSearchTerm] = useState("")
-    const [showEstimator, setShowEstimator] = useState(false)
+    const [quotations, setQuotations] = useState<Quotation[]>(initialQuotations)
+
+    const columns: ColumnDef<Quotation>[] = [
+        {
+            key: "id",
+            label: "QT Number",
+            headerClassName: "w-[120px]",
+            render: (val) => (
+                <span className="font-bold text-slate-900 font-mono text-xs hover:underline cursor-pointer uppercase tracking-tight italic">
+                    {val}
+                </span>
+            )
+        },
+        {
+            key: "date",
+            label: "Date",
+            headerClassName: "w-[140px]",
+            className: "text-slate-500 font-medium text-xs",
+        },
+        {
+            key: "customer",
+            label: "Customer",
+            className: "font-bold text-slate-800 text-sm",
+        },
+        {
+            key: "amount",
+            label: "Amount",
+            render: (val) => (
+                <span className="font-black text-slate-900 tracking-tight">
+                    ₹{Number(val).toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                </span>
+            )
+        },
+        {
+            key: "status",
+            label: "Status",
+            headerClassName: "w-[100px]",
+            render: (val) => (
+                <Badge className={`text-[10px] uppercase font-black px-2.5 h-5 border shadow-none ${statusStyles[String(val)] || statusStyles.draft}`}>
+                    {val}
+                </Badge>
+            )
+        },
+        {
+            key: "actions",
+            label: "Action",
+            filterable: false,
+            headerClassName: "text-right w-[240px]",
+            className: "text-right",
+            render: (_, qt) => (
+                <div className="flex items-center justify-end gap-1 px-1">
+                    <Button size="icon" variant="outline" className="h-7 w-7 rounded-md border-slate-300 bg-white text-slate-500 hover:text-slate-700 hover:bg-slate-50 transition-colors shadow-none" title="Download">
+                        <FileText className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button size="icon" variant="outline" className="h-7 w-7 rounded-md border-blue-300 bg-white text-blue-500 hover:text-blue-600 hover:bg-blue-50 transition-colors shadow-none" title="View">
+                        <Eye className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button size="icon" variant="outline" className="h-7 w-7 rounded-md border-emerald-300 bg-white text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors shadow-none" title="Approve">
+                        <Check className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button size="icon" variant="outline" className="h-7 w-7 rounded-md border-rose-300 bg-white text-rose-500 hover:text-rose-600 hover:bg-rose-50 transition-colors shadow-none" title="Reject">
+                        <X className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button size="icon" variant="outline" className="h-7 w-7 rounded-md border-emerald-600 bg-white text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors shadow-none" title="Convert to Job Card" onClick={() => toast.success("Quotation approved successfully.", { description: `Converted to Job Card.` })}>
+                        <Hammer className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button size="icon" variant="outline" className="h-7 w-7 rounded-md border-blue-500 bg-white text-blue-500 hover:text-blue-600 hover:bg-blue-50 transition-colors shadow-none" title="Edit">
+                        <Edit2 className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button size="icon" variant="outline" className="h-7 w-7 rounded-md border-rose-500 bg-white text-rose-500 hover:text-rose-600 hover:bg-rose-50 transition-colors shadow-none" title="Delete">
+                        <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                </div>
+            )
+        }
+    ]
 
     return (
-        <div className="space-y-6">
-            {/* Page Header */}
+        <div className="space-y-4 font-sans">
+            {/* Header */}
             <div className="flex items-center justify-between px-1">
-                <div className="flex items-center gap-2">
-                    <h1 className="text-2xl font-bold tracking-tight">Quotations</h1>
+                <div className="space-y-0.5 text-left">
+                    <h1 className="text-2xl font-black tracking-tight text-slate-900 uppercase font-sans">Estimation Ledger</h1>
+                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] font-sans">Commercial Bidding Console</p>
                 </div>
-                <Button
-                    className="gap-2 bg-primary font-bold shadow-lg"
-                    onClick={() => router.push('/estimator/new')}
-                >
-                    <Plus className="h-4 w-4" /> New Quotation
-                </Button>
+
+                <div className="flex items-center gap-2">
+                    <Button
+                        variant="outline"
+                        className="gap-2 border-slate-200 font-bold h-11 px-6 text-xs"
+                        onClick={() => router.push('/estimator/new')}
+                    >
+                        <Calculator className="h-4 w-4" /> Advanced Estimator
+                    </Button>
+
+
+                </div>
             </div>
 
-            <Card className="shadow-sm border-none bg-background">
-                <CardHeader className="pb-4 border-b">
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                        <FileText className="h-4 w-4" />
-                        <CardTitle className="text-sm font-medium">Sales Quotations</CardTitle>
-                    </div>
-                </CardHeader>
-                <CardContent className="pt-6">
-                    {/* Toolbar */}
-                    <div className="flex flex-col md:flex-row gap-4 mb-6 items-center justify-between">
-                        <div className="flex items-center gap-2 w-full md:w-auto">
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="outline" size="sm" className="gap-2 h-9">
-                                        <FileDown className="h-4 w-4" /> Export <ChevronDown className="h-3 w-3" />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent>
-                                    <DropdownMenuItem onClick={() => toast.success("Export Started", { description: "Quotation report is being generated in Excel format." })}>Export as Excel</DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => toast.success("Export Started", { description: "CSV file is ready for download." })}>Export as CSV</DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="outline" size="sm" className="gap-2 h-9">
-                                        <Filter className="h-4 w-4" /> Columns <ChevronDown className="h-3 w-3" />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent>
-                                    <DropdownMenuItem>Show/Hide Columns</DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        </div>
-
-                        <div className="relative w-full md:w-80">
-                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                            <Input
-                                placeholder="Search current page..."
-                                className="pl-8 h-9 bg-muted/20 border-none focus-visible:ring-1"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                            />
-                        </div>
-                    </div>
-
-                    {/* Table */}
-                    <div className="rounded-md border">
-                        <Table>
-                            <TableHeader>
-                                <TableRow className="bg-muted/50 hover:bg-muted/50">
-                                    <TableHead className="w-[120px] font-bold">QT Number</TableHead>
-                                    <TableHead className="font-bold">Date</TableHead>
-                                    <TableHead className="font-bold">Customer</TableHead>
-                                    <TableHead className="font-bold">Amount</TableHead>
-                                    <TableHead className="font-bold">Status</TableHead>
-                                    <TableHead className="text-right font-bold">Actions</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {initialQuotations.map((qt) => (
-                                    <TableRow key={qt.id} className="group transition-colors">
-                                        <TableCell className="font-bold text-primary cursor-pointer hover:underline">
-                                            {qt.id}
-                                        </TableCell>
-                                        <TableCell>{qt.date}</TableCell>
-                                        <TableCell className="max-w-[200px] truncate">{qt.customer}</TableCell>
-                                        <TableCell className="font-bold">{qt.amount}</TableCell>
-                                        <TableCell>
-                                            <Badge
-                                                variant="secondary"
-                                                className={`
-                                                    font-bold uppercase text-[10px] px-2 h-5
-                                                    ${qt.status === 'approved' ? 'bg-emerald-100 text-emerald-700' :
-                                                        qt.status === 'rejected' ? 'bg-rose-100 text-rose-700' :
-                                                            'bg-slate-100 text-slate-700'}
-                                                `}
-                                            >
-                                                {qt.status}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell className="text-right py-2">
-                                            <div className="flex items-center justify-end gap-1 px-1">
-                                                <Button size="icon" variant="outline" className="h-7 w-7 border-slate-200">
-                                                    <FileText className="h-3.5 w-3.5" />
-                                                </Button>
-                                                <Button size="icon" variant="outline" className="h-7 w-7 border-slate-200 text-blue-500">
-                                                    <Eye className="h-3.5 w-3.5" />
-                                                </Button>
-                                                <Button size="icon" variant="outline" className="h-7 w-7 border-slate-200 text-emerald-600">
-                                                    <Check className="h-3.5 w-3.5" />
-                                                </Button>
-                                                <Button size="icon" variant="outline" className="h-7 w-7 border-slate-200 text-rose-500">
-                                                    <X className="h-3.5 w-3.5" />
-                                                </Button>
-                                                <Button size="icon" variant="outline" className="h-7 w-7 border-slate-200 text-muted-foreground">
-                                                    <Hammer className="h-3.5 w-3.5" />
-                                                </Button>
-                                                <Button size="icon" variant="outline" className="h-7 w-7 border-slate-200 text-blue-600">
-                                                    <Edit2 className="h-3.5 w-3.5" />
-                                                </Button>
-                                                <Button size="icon" variant="outline" className="h-7 w-7 border-slate-200 text-rose-600 hover:bg-rose-50">
-                                                    <Trash2 className="h-3.5 w-3.5" />
-                                                </Button>
-                                            </div>
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </div>
+            <Card className="shadow-2xl shadow-blue-100/50 border-none bg-background rounded-3xl overflow-hidden border border-slate-100">
+                <CardContent className="p-6">
+                    <DataGrid
+                        data={quotations}
+                        columns={columns}
+                        title="Quotations"
+                        searchPlaceholder="Search QT#, Client or Amount..."
+                        enableSelection={true}
+                    />
                 </CardContent>
             </Card>
         </div>

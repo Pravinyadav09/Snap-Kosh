@@ -26,6 +26,7 @@ import {
     AlertCircle,
     Coins
 } from "lucide-react"
+import { DataGrid } from "@/components/shared/data-grid"
 import {
     Table,
     TableBody,
@@ -141,7 +142,7 @@ export default function InvoicesPage() {
                         <Card className="border-none shadow-xl shadow-slate-200/50 overflow-hidden">
                             <CardHeader className="bg-muted/30 border-b">
                                 <CardTitle className="text-sm font-black uppercase tracking-widest text-slate-800 flex items-center gap-2">
-                                    <FileText className="h-4 w-4 text-blue-600" /> Invoice Details
+                                    <FileText className="h-4 w-4" style={{ color: 'var(--primary)' }} /> Invoice Details
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="p-6">
@@ -244,11 +245,11 @@ export default function InvoicesPage() {
                                 <div className="h-[1px] bg-white/10 my-2" />
                                 <div className="flex justify-between items-end">
                                     <span className="text-xl font-black italic tracking-tighter">Grand Total</span>
-                                    <span className="text-3xl font-black tracking-tighter text-blue-400">₹49,948.22</span>
+                                    <span className="text-3xl font-black tracking-tighter" style={{ color: 'var(--primary)' }}>₹49,948.22</span>
                                 </div>
                             </CardContent>
                             <CardFooter className="flex gap-2 p-6 pt-0">
-                                <Button className="flex-1 bg-blue-600 hover:bg-blue-700 font-bold h-12 text-md shadow-lg shadow-blue-600/20" onClick={() => setViewMode('list')}>
+                                <Button className="flex-1 font-bold h-12 text-md shadow-lg text-white" style={{ background: 'var(--primary)' }} onClick={() => setViewMode('list')}>
                                     Generate Invoice
                                 </Button>
                             </CardFooter>
@@ -294,10 +295,10 @@ export default function InvoicesPage() {
                         <Button variant="outline" className="gap-2 bg-slate-900 text-white font-bold">
                             <Printer className="h-4 w-4" /> Print
                         </Button>
-                        <Button variant="outline" className="gap-2 bg-blue-600 text-white font-bold">
+                        <Button variant="outline" className="gap-2 text-white font-bold" style={{ background: 'var(--primary)' }}>
                             <Edit className="h-4 w-4" /> Edit
                         </Button>
-                        <Button className="gap-2 bg-emerald-600 hover:bg-emerald-700 font-bold shadow-lg shadow-emerald-600/20">
+                        <Button className="gap-2 font-bold shadow-lg text-white" style={{ background: 'var(--primary)' }}>
                             <DollarSign className="h-4 w-4" /> Add Payment
                         </Button>
                     </div>
@@ -309,7 +310,7 @@ export default function InvoicesPage() {
                         <div className="flex flex-row items-start justify-between">
                             <div className="space-y-4">
                                 <div className="flex items-center gap-3">
-                                    <div className="h-10 w-10 rounded-lg bg-blue-600 flex items-center justify-center font-bold text-white text-xl">D</div>
+                                    <div className="h-10 w-10 rounded-lg flex items-center justify-center font-bold text-white text-xl" style={{ background: 'var(--primary)' }}>D</div>
                                     <div className="flex flex-col">
                                         <span className="font-black text-2xl tracking-tighter">DIGITAL ERP</span>
                                         <span className="text-[10px] font-black uppercase tracking-[.4em] opacity-40">Premium Print Labs</span>
@@ -330,7 +331,7 @@ export default function InvoicesPage() {
                                     <div className="text-sm"><span className="opacity-40 font-bold">NO: </span> <span className="font-bold">{selectedInvoice.id}</span></div>
                                     <div className="text-sm"><span className="opacity-40 font-bold">DATE: </span> <span className="font-bold">{selectedInvoice.date}</span></div>
                                     <div className="text-sm"><span className="opacity-40 font-bold">DUE: </span> <span className="font-bold text-rose-500 italic">{selectedInvoice.dueDate}</span></div>
-                                    <div className="text-sm"><span className="opacity-40 font-bold">JOB REF: </span> <span className="font-bold text-blue-600 tracking-tight">{selectedInvoice.jobRef}</span></div>
+                                    <div className="text-sm"><span className="opacity-40 font-bold">JOB REF: </span> <span className="font-bold text-slate-900 tracking-tight">{selectedInvoice.jobRef}</span></div>
                                 </div>
                             </div>
                         </div>
@@ -406,7 +407,7 @@ export default function InvoicesPage() {
                                     <span className="text-xs font-bold uppercase tracking-widest opacity-40">+ GST (18%)</span>
                                     <span className="font-black text-rose-500">{selectedInvoice.tax}</span>
                                 </div>
-                                <div className="flex justify-between items-end px-4 py-4 bg-blue-600 rounded-2xl text-white shadow-xl shadow-blue-500/30">
+                                <div className="flex justify-between items-end px-4 py-4 rounded-2xl text-white shadow-xl" style={{ background: 'var(--primary)' }}>
                                     <span className="font-black italic text-xl tracking-tighter">TOTAL AMOUNT</span>
                                     <span className="text-4xl font-black tracking-tighter">{selectedInvoice.amount}</span>
                                 </div>
@@ -431,7 +432,7 @@ export default function InvoicesPage() {
                     <Button variant="outline" className="gap-2 border-slate-200 shadow-sm">
                         <Download className="h-4 w-4" /> Export GST Report
                     </Button>
-                    <Button onClick={() => setViewMode('create')} className="gap-2 bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-600/20 px-6 font-bold">
+                    <Button onClick={() => setViewMode('create')} className="gap-2 font-bold shadow-lg px-6 text-white" style={{ background: 'var(--primary)' }}>
                         <Plus className="h-4 w-4" /> New Invoice
                     </Button>
                 </div>
@@ -452,69 +453,85 @@ export default function InvoicesPage() {
                 </div>
             </div>
 
-            <div className="rounded-2xl border bg-card shadow-xl shadow-slate-200/50 overflow-hidden">
-                <Table>
-                    <TableHeader className="bg-muted/30">
-                        <TableRow>
-                            <TableHead className="font-bold text-slate-800">Invoice #</TableHead>
-                            <TableHead className="font-bold text-slate-800">Date</TableHead>
-                            <TableHead className="font-bold text-slate-800">Customer</TableHead>
-                            <TableHead className="font-bold text-slate-800">Job Ref</TableHead>
-                            <TableHead className="font-bold text-slate-800">Amount</TableHead>
-                            <TableHead className="font-bold text-slate-800">Status</TableHead>
-                            <TableHead className="text-right font-bold text-slate-800">Actions</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {invoices.map((inv) => (
-                            <TableRow key={inv.id} className="group hover:bg-slate-50/50 transition-colors">
-                                <TableCell>
-                                    <div className="flex flex-col">
-                                        <span onClick={() => { setSelectedInvoice(inv); setViewMode('view') }} className="font-mono font-bold text-blue-600 hover:underline cursor-pointer tracking-tight underline-offset-2 decoration-blue-200">
-                                            {inv.id}
-                                        </span>
-                                    </div>
-                                </TableCell>
-                                <TableCell>
-                                    <div className="space-y-0.5">
-                                        <p className="text-xs font-bold text-slate-700">{inv.date}</p>
-                                        <p className="text-[10px] uppercase font-bold text-muted-foreground opacity-60">Due: {inv.dueDate}</p>
-                                    </div>
-                                </TableCell>
-                                <TableCell className="font-black text-slate-800">{inv.customer}</TableCell>
-                                <TableCell>
-                                    <Badge variant="outline" className="font-mono text-[10px] bg-slate-50 border-slate-200 text-slate-500">{inv.jobRef}</Badge>
-                                </TableCell>
-                                <TableCell>
-                                    <div className="space-y-0.5">
-                                        <p className="font-black text-slate-800 tracking-tighter italic">{inv.amount}</p>
-                                        <p className="text-[10px] font-bold text-rose-500 opacity-80">Tax: {inv.tax}</p>
-                                    </div>
-                                </TableCell>
-                                <TableCell>
-                                    <Badge
-                                        className={`rounded-full px-3 py-1 font-black text-[10px] uppercase tracking-widest ${inv.status === 'Paid'
-                                            ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
-                                            : 'bg-rose-500/10 text-rose-600 border-rose-500/20'
-                                            }`}
-                                    >
-                                        {inv.status}
-                                    </Badge>
-                                </TableCell>
-                                <TableCell className="text-right">
-                                    <div className="flex items-center justify-end gap-2">
-                                        <Button variant="ghost" size="icon" className="h-8 w-8 bg-muted/40 hover:bg-blue-600 hover:text-white transition-all shadow-sm" onClick={() => { setSelectedInvoice(inv); setViewMode('view') }}>
-                                            <FileText className="h-4 w-4" />
-                                        </Button>
-                                        <Button variant="ghost" size="icon" className="h-8 w-8 bg-muted/40 hover:bg-rose-600 hover:text-white transition-all shadow-sm">
-                                            <FileDown className="h-4 w-4" />
-                                        </Button>
-                                    </div>
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
+            <div className="bg-white rounded-2xl border shadow-xl shadow-slate-200/50 overflow-hidden">
+                <DataGrid
+                    data={invoices}
+                    columns={[
+                        {
+                            key: "id",
+                            label: "Invoice #",
+                            render: (val: any, inv: any) => (
+                                <span onClick={() => { setSelectedInvoice(inv); setViewMode('view') }} className="font-mono font-bold text-slate-900 hover:underline cursor-pointer tracking-tight underline-offset-2 decoration-slate-200">
+                                    {val}
+                                </span>
+                            )
+                        },
+                        {
+                            key: "date",
+                            label: "Date",
+                            render: (val: any, inv: any) => (
+                                <div className="space-y-0.5">
+                                    <p className="text-xs font-bold text-slate-700">{val}</p>
+                                    <p className="text-[10px] uppercase font-bold text-muted-foreground opacity-60">Due: {inv.dueDate}</p>
+                                </div>
+                            )
+                        },
+                        {
+                            key: "customer",
+                            label: "Customer",
+                            className: "font-black text-slate-800"
+                        },
+                        {
+                            key: "jobRef",
+                            label: "Job Ref",
+                            render: (val: any) => (
+                                <Badge variant="outline" className="font-mono text-[10px] bg-slate-50 border-slate-200 text-slate-500">{val}</Badge>
+                            )
+                        },
+                        {
+                            key: "amount",
+                            label: "Amount",
+                            render: (val: any, inv: any) => (
+                                <div className="space-y-0.5">
+                                    <p className="font-black text-slate-800 tracking-tighter italic">{val}</p>
+                                    <p className="text-[10px] font-bold text-rose-500 opacity-80">Tax: {inv.tax}</p>
+                                </div>
+                            )
+                        },
+                        {
+                            key: "status",
+                            label: "Status",
+                            render: (val: any) => (
+                                <Badge
+                                    className={`rounded-full px-3 py-1 font-black text-[10px] uppercase tracking-widest ${val === 'Paid'
+                                        ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
+                                        : 'bg-rose-500/10 text-rose-600 border-rose-500/20'
+                                        }`}
+                                >
+                                    {val}
+                                </Badge>
+                            )
+                        },
+                        {
+                            key: "id",
+                            label: "Actions",
+                            headerClassName: "text-right",
+                            className: "text-right",
+                            render: (_: any, inv: any) => (
+                                <div className="flex items-center justify-end gap-1.5 px-2">
+                                    <Button size="icon" variant="outline" className="h-7 w-7 rounded-md border-indigo-200 bg-white text-indigo-500 hover:text-indigo-600 hover:bg-indigo-50 transition-colors shadow-none" title="View Full Invoice" onClick={() => { setSelectedInvoice(inv); setViewMode('view') }}>
+                                        <FileText className="h-3.5 w-3.5" />
+                                    </Button>
+                                    <Button size="icon" variant="outline" className="h-7 w-7 rounded-md border-slate-200 bg-white text-slate-500 hover:text-slate-600 hover:bg-slate-50 transition-colors shadow-none" title="Download PDF">
+                                        <FileDown className="h-3.5 w-3.5" />
+                                    </Button>
+                                </div>
+                            )
+                        }
+                    ]}
+                    searchPlaceholder="Search invoices, customers or amount..."
+                    hideTitle={true}
+                />
             </div>
         </div>
     )

@@ -16,9 +16,9 @@ export default function DashboardLayout({
         <SidebarProvider>
             <div className="flex min-h-screen w-full">
                 <AppSidebar />
-                <SidebarInset className="flex flex-col">
+                <SidebarInset className="flex flex-col font-sans min-w-0">
                     <Header />
-                    <main className="flex-1 overflow-y-auto bg-muted/20 p-4 md:p-6 lg:p-8">
+                    <main className="flex-1 overflow-y-auto bg-muted/20 p-2 md:p-4 min-w-0">
                         <Breadcrumbs />
                         {children}
                     </main>
@@ -39,3 +39,4 @@ export default function DashboardLayout({
         </SidebarProvider>
     )
 }
+

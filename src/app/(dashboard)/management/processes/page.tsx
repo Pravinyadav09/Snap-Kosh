@@ -1,20 +1,13 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useMemo } from "react"
 import {
-    Search, Plus, Settings, Trash2, Edit,
-    Download, ChevronDown, CheckCircle,
-    ArrowLeft, Save, X, Cog
+    Plus, Trash2, Edit,
+    Download, Cog, Info
 } from "lucide-react"
-import {
-    Table, TableBody, TableCell, TableHead,
-    TableHeader, TableRow,
-} from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
     Select,
     SelectContent,
@@ -23,27 +16,22 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import {
     Dialog,
     DialogContent,
     DialogDescription,
     DialogFooter,
-    DialogHeader,
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import { DataGrid, type ColumnDef } from "@/components/shared/data-grid"
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 type ProcessMaster = {
     id: string
     name: string
-    type: "Binding" | "Finishing" | "Lamination" | "Printing" | "Others"
+    type: string
     rateConfig: string
     rate: number
     setupFee: number
@@ -60,249 +48,236 @@ const initialProcesses: ProcessMaster[] = [
     { id: "P-005", name: "Perfect Binding", type: "Binding", rateConfig: "₹10.00 / Per Book", rate: 10, setupFee: 0, minPrice: 0, status: "Active" },
 ]
 
-// ─── Main Page ────────────────────────────────────────────────────────────────
-export default function ProcessMastersPage() {
-    const [isDialogOpen, setIsDialogOpen] = useState(false)
-    const [editMode, setEditMode] = useState(false)
-    const [processes, setProcesses] = useState<ProcessMaster[]>(initialProcesses)
-    const [search, setSearch] = useState("")
-
-    const handleAdd = () => {
-        setEditMode(false)
-        setIsDialogOpen(true)
-    }
-
-    const handleEdit = () => {
-        setEditMode(true)
-        setIsDialogOpen(true)
-    }
-
-
-
+// ─── Process Form Dialog ────────────────────────────────────────────────────
+function ProcessFormDialog({
+    process,
+    onClose
+}: {
+    process?: ProcessMaster,
+    onClose: () => void
+}) {
     return (
-        <div className="space-y-4">
-            <div className="flex items-center justify-between px-1">
-                <h1 className="text-2xl font-bold tracking-tight">Process Masters</h1>
+        <DialogContent className="max-w-[700px] w-[95vw] p-0 border-none shadow-xl rounded-md bg-white font-sans sm:max-w-[700px] overflow-hidden">
+            <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+                <DialogTitle className="text-lg font-medium text-slate-700">
+                    {process ? "Edit Process Definition" : "New Process Definition"}
+                </DialogTitle>
+                <DialogDescription className="sr-only">Process Configuration Form</DialogDescription>
             </div>
 
-            <Card className="shadow-sm border-none bg-background">
-                <CardHeader className="pb-4 border-b">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2 text-muted-foreground font-bold italic">
-                            <Cog className="h-4 w-4" />
-                            <CardTitle className="text-sm">Post-Press Processes</CardTitle>
-                        </div>
-                        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                            <DialogTrigger asChild>
-                                <Button className="gap-2 bg-blue-600 hover:bg-blue-700 font-bold h-9 text-xs shadow-sm" onClick={handleAdd}>
-                                    <Plus className="h-4 w-4" /> Add New Process
-                                </Button>
-                            </DialogTrigger>
-                            <DialogContent className="sm:max-w-[600px] p-0 overflow-hidden border-none shadow-2xl rounded-3xl flex flex-col max-h-[92vh]">
-                                <DialogHeader className="px-10 pt-10 pb-6 text-left border-b">
-                                    <div className="flex items-center gap-4 mb-2">
-                                        <div className="p-3 rounded-2xl bg-blue-50 text-blue-600 shadow-sm border border-blue-100/50">
-                                            <Cog className="h-5 w-5" />
-                                        </div>
-                                        <DialogTitle className="text-2xl font-black tracking-tight text-slate-800">
-                                            {editMode ? "Configure Process" : "Create New Process"}
-                                        </DialogTitle>
-                                    </div>
-                                    <DialogDescription className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 pl-1">
-                                        Set up calculations and rates for production
-                                    </DialogDescription>
-                                </DialogHeader>
-
-                                <div className="px-10 py-8 space-y-8 flex-1 overflow-y-auto custom-scrollbar">
-                                    {/* 01: Identification */}
-                                    <div className="space-y-4">
-                                        <div className="flex items-center gap-2 mb-2">
-                                            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-blue-600 text-[10px] font-black text-white">01</span>
-                                            <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-500">Identification</h3>
-                                        </div>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div className="space-y-2">
-                                                <Label className="text-[10px] font-black uppercase text-slate-500 tracking-widest pl-1">Process Name</Label>
-                                                <Input
-                                                    placeholder="e.g. Center Stitching"
-                                                    className="h-12 rounded-xl border-slate-200 bg-blue-50/30 font-bold text-slate-700 px-4 focus-visible:ring-blue-500/20"
-                                                />
-                                            </div>
-                                            <div className="space-y-2">
-                                                <Label className="text-[10px] font-black uppercase text-slate-500 tracking-widest pl-1">Process Category</Label>
-                                                <Select>
-                                                    <SelectTrigger className="h-12 rounded-xl border-slate-100 bg-white font-medium text-slate-600 px-4">
-                                                        <SelectValue placeholder="Category" />
-                                                    </SelectTrigger>
-                                                    <SelectContent className="rounded-xl">
-                                                        <SelectItem value="binding">Binding</SelectItem>
-                                                        <SelectItem value="finishing">Finishing</SelectItem>
-                                                        <SelectItem value="lamination">Lamination</SelectItem>
-                                                    </SelectContent>
-                                                </Select>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* 02: Rate Calculation */}
-                                    <div className="space-y-4">
-                                        <div className="flex items-center gap-2 mb-2">
-                                            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-blue-600 text-[10px] font-black text-white">02</span>
-                                            <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-500">Rate Calculation</h3>
-                                        </div>
-                                        <div className="grid grid-cols-3 gap-4">
-                                            <div className="space-y-2">
-                                                <Label className="text-[10px] font-black uppercase text-slate-500 tracking-widest pl-1">Rate Type</Label>
-                                                <Select defaultValue="per_sheet">
-                                                    <SelectTrigger className="h-12 rounded-xl border-slate-100 bg-white font-medium text-slate-600 px-4 text-xs">
-                                                        <SelectValue />
-                                                    </SelectTrigger>
-                                                    <SelectContent className="rounded-xl text-xs">
-                                                        <SelectItem value="per_sheet">Per Sheet</SelectItem>
-                                                        <SelectItem value="per_sqft">Per Sq Ft</SelectItem>
-                                                        <SelectItem value="per_book">Per Book</SelectItem>
-                                                    </SelectContent>
-                                                </Select>
-                                            </div>
-                                            <div className="space-y-2">
-                                                <Label className="text-[10px] font-black uppercase text-slate-500 tracking-widest pl-1">Rate (₹)</Label>
-                                                <Input
-                                                    type="number"
-                                                    placeholder="0.00"
-                                                    className="h-12 rounded-xl border-none bg-emerald-50 font-black text-emerald-700 px-4 focus-visible:ring-blue-500/20 shadow-sm"
-                                                />
-                                            </div>
-                                            <div className="space-y-2">
-                                                <Label className="text-[10px] font-black uppercase text-slate-500 tracking-widest pl-1">Min. Price (₹)</Label>
-                                                <Input
-                                                    type="number"
-                                                    placeholder="0.00"
-                                                    className="h-12 rounded-xl border-none bg-slate-100 font-black text-slate-800 px-4 focus-visible:ring-blue-500/20"
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* 03: Additional Info */}
-                                    <div className="space-y-4">
-                                        <div className="flex items-center gap-2 mb-2">
-                                            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-blue-600 text-[10px] font-black text-white">03</span>
-                                            <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-500">Additional Info</h3>
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label className="text-[10px] font-black uppercase text-slate-500 tracking-widest pl-1">Internal Notes</Label>
-                                            <Textarea
-                                                placeholder="Special instructions for this process..."
-                                                className="min-h-[100px] rounded-xl border-slate-100 bg-white text-xs font-medium text-slate-600 px-4 pt-4 resize-none focus-visible:ring-blue-500/20"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <DialogFooter className="p-8 mt-2 flex flex-row items-center justify-end gap-3 px-10 border-t bg-slate-50/50">
-                                    <Button
-                                        variant="ghost"
-                                        className="h-11 px-8 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-600 transition-colors"
-                                        onClick={() => setIsDialogOpen(false)}
-                                    >
-                                        Cancel
-                                    </Button>
-                                    <Button
-                                        className="h-11 px-8 rounded-xl bg-blue-600 hover:bg-blue-700 font-bold text-[10px] font-black uppercase tracking-widest shadow-lg shadow-blue-200 transition-all font-bold"
-                                        onClick={() => setIsDialogOpen(false)}
-                                    >
-                                        Save Configuration
-                                    </Button>
-                                </DialogFooter>
-                            </DialogContent>
-                        </Dialog>
+            <div className="p-8 space-y-6 flex-1 overflow-y-auto max-h-[75vh]">
+                <div className="space-y-4">
+                    <div className="space-y-1.5">
+                        <Label className="text-xs font-medium text-slate-600">Process Name <span className="text-rose-500">*</span></Label>
+                        <Input
+                            className="h-10 border-slate-200 bg-white font-medium text-slate-800 text-sm"
+                            defaultValue={process?.name}
+                            placeholder="e.g. Thermal Gloss Lamination"
+                        />
                     </div>
-                </CardHeader>
-                <CardContent className="pt-6">
-                    <div className="flex flex-col md:flex-row gap-4 mb-6 items-center justify-between">
-                        <div className="flex items-center gap-2">
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="outline" size="sm" className="gap-2 h-9 bg-slate-800 text-white hover:bg-slate-900 hover:text-white border-none shadow-sm">
-                                        <Download className="h-4 w-4" /> Export <ChevronDown className="h-3 w-3" />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="start">
-                                    <DropdownMenuItem>Export as CSV</DropdownMenuItem>
-                                    <DropdownMenuItem>Export as PDF</DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
 
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="outline" size="sm" className="gap-2 h-9 font-bold">
-                                        <Settings className="h-4 w-4" /> Columns <ChevronDown className="h-3 w-3" />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="start">
-                                    <DropdownMenuItem>Show Setup Fee</DropdownMenuItem>
-                                    <DropdownMenuItem>Show Min Price</DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
+                    <div className="space-y-1.5">
+                        <Label className="text-xs font-medium text-slate-600">Process Type <span className="text-rose-500">*</span></Label>
+                        <Select defaultValue={process?.type || "lamination"}>
+                            <SelectTrigger className="h-10 border-slate-200 bg-white font-medium text-slate-800 text-sm">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="binding">Binding</SelectItem>
+                                <SelectItem value="finishing">Finishing</SelectItem>
+                                <SelectItem value="lamination">Lamination</SelectItem>
+                                <SelectItem value="printing">Printing</SelectItem>
+                                <SelectItem value="others">Others</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-1.5">
+                            <Label className="text-xs font-medium text-slate-600">Calculation Type <span className="text-rose-500">*</span></Label>
+                            <Select defaultValue="per_sheet">
+                                <SelectTrigger className="h-10 border-slate-200 bg-white font-medium text-slate-800 text-sm">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="per_sheet">Per Sheet</SelectItem>
+                                    <SelectItem value="per_sqft">Per Sq Ft</SelectItem>
+                                    <SelectItem value="per_book">Per Book</SelectItem>
+                                    <SelectItem value="fixed">Fixed Price</SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
-                        <div className="relative w-full md:w-80">
-                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <div className="space-y-1.5">
+                            <Label className="text-xs font-medium text-slate-600">Setup Fee (₹)</Label>
                             <Input
-                                placeholder="Search current page..."
-                                className="pl-8 h-9 bg-muted/20 border-none italic shadow-none focus-visible:ring-0"
-                                value={search}
-                                onChange={e => setSearch(e.target.value)}
+                                type="number"
+                                className="h-10 border-slate-200 bg-white font-medium text-slate-800 text-sm"
+                                defaultValue={process?.setupFee || 0}
                             />
                         </div>
                     </div>
 
-                    <div className="rounded-md border">
-                        <Table>
-                            <TableHeader>
-                                <TableRow className="bg-muted/50">
-                                    <TableHead className="font-black uppercase text-[11px] tracking-wider text-slate-500">Process Name</TableHead>
-                                    <TableHead className="font-black uppercase text-[11px] tracking-wider text-slate-500">Type</TableHead>
-                                    <TableHead className="font-black uppercase text-[11px] tracking-wider text-slate-500">Rate Config</TableHead>
-                                    <TableHead className="font-black uppercase text-[11px] tracking-wider text-slate-500">Status</TableHead>
-                                    <TableHead className="text-right font-black uppercase text-[11px] tracking-wider text-slate-500 w-[120px]">Actions</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {processes.filter(p => p.name.toLowerCase().includes(search.toLowerCase())).map(process => (
-                                    <TableRow key={process.id} className="group hover:bg-muted/10">
-                                        <TableCell className="py-4 font-bold text-slate-800">
-                                            {process.name}
-                                        </TableCell>
-                                        <TableCell>
-                                            <Badge variant="secondary" className="bg-cyan-100 text-cyan-700 hover:bg-cyan-100 border-none text-[10px] font-bold px-2 py-0.5">
-                                                {process.type}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell className="font-black text-slate-800">
-                                            {process.rateConfig}
-                                        </TableCell>
-                                        <TableCell>
-                                            <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-none text-[10px] font-bold px-2 py-0.5">
-                                                {process.status}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell className="text-right">
-                                            <div className="flex items-center justify-end gap-1 px-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <Button size="icon" variant="outline" className="h-8 w-8 border-blue-100 text-blue-600 hover:bg-blue-50" onClick={handleEdit}>
-                                                    <Edit className="h-4 w-4" />
-                                                </Button>
-                                                <Button size="icon" variant="outline" className="h-8 w-8 border-rose-100 text-rose-600 hover:bg-rose-50">
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
-                                            </div>
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="p-5 rounded-md bg-cyan-50/50 border border-cyan-100/50 space-y-2">
+                            <div className="flex items-center justify-between">
+                                <span className="text-xs font-semibold text-teal-700 tracking-tight">Rate (₹) <span className="text-rose-500">*</span></span>
+                                <Info className="h-3 w-3 text-teal-600/30" />
+                            </div>
+                            <div className="flex items-baseline gap-1">
+                                <span className="text-sm font-bold text-teal-800">₹</span>
+                                <Input
+                                    type="number"
+                                    className="h-8 border-none bg-transparent p-0 text-xl font-bold text-teal-800 focus-visible:ring-0"
+                                    defaultValue={process?.rate || 0.00}
+                                />
+                            </div>
+                            <p className="text-[10px] text-teal-600/70 font-medium">Base rate or default rate per unit</p>
+                        </div>
+
+                        <div className="p-5 rounded-md bg-slate-50 border border-slate-100 space-y-2">
+                            <span className="text-xs font-semibold text-slate-600 tracking-tight">Min. Price (₹)</span>
+                            <div className="flex items-baseline gap-1">
+                                <span className="text-sm font-bold text-slate-700">₹</span>
+                                <Input
+                                    type="number"
+                                    className="h-8 border-none bg-transparent p-0 text-xl font-bold text-slate-700 focus-visible:ring-0"
+                                    defaultValue={process?.minPrice || 0.00}
+                                />
+                            </div>
+                            <p className="text-[10px] text-slate-400 font-medium">Minimum amount to charge for job</p>
+                        </div>
                     </div>
-                </CardContent>
-            </Card>
+
+                    <div className="space-y-1.5">
+                        <Label className="text-xs font-medium text-slate-600">Internal Notes (Optional)</Label>
+                        <Textarea
+                            className="min-h-[80px] text-sm border-slate-200 resize-none font-medium text-slate-600"
+                            placeholder="Add any specific instructions for production teams..."
+                        />
+                    </div>
+                </div>
+            </div>
+
+            <DialogFooter className="p-4 flex flex-row items-center justify-end gap-3 border-t bg-slate-50/30">
+                <Button
+                    variant="ghost"
+                    className="h-9 px-4 text-sm font-medium text-slate-600 hover:text-slate-800"
+                    onClick={onClose}
+                >
+                    Cancel
+                </Button>
+                <Button
+                    className="h-9 px-6 text-white font-medium text-sm shadow-sm transition-all"
+                    style={{ background: 'var(--primary)' }}
+                    onClick={onClose}
+                >
+                    {process ? "Update Definition" : "Save process"}
+                </Button>
+            </DialogFooter>
+        </DialogContent>
+    )
+}
+
+// ─── Main Page ────────────────────────────────────────────────────────────────
+export default function ProcessMastersPage() {
+    const [isDialogOpen, setIsDialogOpen] = useState(false)
+    const [editingProcess, setEditingProcess] = useState<ProcessMaster | undefined>(undefined)
+    const [processes] = useState<ProcessMaster[]>(initialProcesses)
+
+    const handleAdd = () => {
+        setEditingProcess(undefined)
+        setIsDialogOpen(true)
+    }
+
+    const handleEdit = (p: ProcessMaster) => {
+        setEditingProcess(p)
+        setIsDialogOpen(true)
+    }
+
+    const columns: ColumnDef<ProcessMaster>[] = useMemo(() => [
+        {
+            key: "name",
+            label: "Process Name",
+            render: (val) => (
+                <div className="flex items-center gap-2">
+                    <div className="h-8 w-8 rounded-lg flex items-center justify-center border transition-all" style={{ background: 'color-mix(in srgb, var(--primary), white 90%)', borderColor: 'color-mix(in srgb, var(--primary), white 80%)' }}>
+                        <Cog className="h-4 w-4" style={{ color: 'var(--primary)' }} />
+                    </div>
+                    <span className="font-bold text-slate-800">{val as string}</span>
+                </div>
+            )
+        },
+        {
+            key: "type",
+            label: "Category",
+            render: (val) => (
+                <Badge variant="secondary" className="bg-cyan-50 text-cyan-700 hover:bg-cyan-100 border-none text-[10px] font-black uppercase tracking-widest px-2">
+                    {val as string}
+                </Badge>
+            )
+        },
+        {
+            key: "rateConfig",
+            label: "Rate Configuration",
+            render: (val) => <span className="font-black text-sm text-slate-900 tracking-tight">{val as string}</span>
+        },
+        {
+            key: "status",
+            label: "Status",
+            render: (val) => (
+                <Badge className="bg-emerald-50 text-emerald-600 hover:bg-emerald-100 border-none text-[10px] font-black uppercase tracking-widest px-2">
+                    {val as string}
+                </Badge>
+            )
+        },
+        {
+            key: "actions",
+            label: "Actions",
+            className: "text-right",
+            filterable: false,
+            render: (_, item) => (
+                <div className="flex items-center justify-end gap-1.5 px-2">
+                    <Button size="icon" variant="outline" className="h-7 w-7 rounded-md bg-white transition-all shadow-none" style={{ color: 'var(--primary)', borderColor: 'color-mix(in srgb, var(--primary), white 70%)' }} title="Edit Process" onClick={() => handleEdit(item as ProcessMaster)}>
+                        <Edit className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button size="icon" variant="outline" className="h-7 w-7 rounded-md border-rose-200 bg-white text-rose-500 hover:text-rose-600 hover:bg-rose-50 transition-colors shadow-none" title="Delete Process">
+                        <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                </div>
+            )
+        }
+    ], [])
+
+    return (
+        <div className="space-y-6 text-left">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 px-1">
+                <div className="space-y-0.5">
+                    <h1 className="text-2xl font-black tracking-tight text-slate-900 uppercase font-sans">Process Master</h1>
+                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] font-sans">Configure production rates and post-press calculation</p>
+                </div>
+                <div className="flex items-center gap-3">
+                    <Button variant="outline" className="h-11 px-6 rounded-xl border-slate-200 font-bold gap-2 hover:bg-slate-50 text-slate-600">
+                        <Download className="h-4 w-4 text-slate-400" /> Export
+                    </Button>
+                    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                        <DialogTrigger asChild>
+                            <Button className="h-11 px-8 rounded-xl font-bold gap-2 shadow-lg transition-all text-white" style={{ background: 'var(--primary)' }} onClick={handleAdd}>
+                                <Plus className="h-4 w-4" /> Add New Process
+                            </Button>
+                        </DialogTrigger>
+                        <ProcessFormDialog
+                            process={editingProcess}
+                            onClose={() => setIsDialogOpen(false)}
+                        />
+                    </Dialog>
+                </div>
+            </div>
+
+            <DataGrid
+                data={processes}
+                columns={columns}
+                searchPlaceholder="Search processes or categories..."
+            />
         </div>
     )
 }

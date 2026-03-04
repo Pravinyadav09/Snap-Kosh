@@ -87,11 +87,21 @@ export default function GstReportsPage() {
             </div>
 
             <Tabs defaultValue="gstr1" className="bg-background rounded-xl shadow-sm border overflow-hidden">
+                <style jsx global>{`
+                    .gst-tabs-list [data-state="active"] {
+                        background-color: var(--primary) !important;
+                        color: white !important;
+                        border-bottom-color: transparent !important;
+                    }
+                    .gst-tabs-list [data-state="active"] svg {
+                        color: white !important;
+                    }
+                `}</style>
                 <div className="px-4 sm:px-6 pt-4 border-b bg-muted/20 overflow-x-auto scrollbar-hide">
-                    <TabsList className="h-10 bg-transparent gap-4 sm:gap-6 w-full justify-start sm:justify-start">
-                        <TabsTrigger value="gstr1" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:shadow-none rounded-none px-0 font-bold uppercase text-[10px] sm:text-xs tracking-widest whitespace-nowrap">GSTR-1 (Sales)</TabsTrigger>
-                        <TabsTrigger value="gstr3b" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:shadow-none rounded-none px-0 font-bold uppercase text-[10px] sm:text-xs tracking-widest whitespace-nowrap">GSTR-3B (Summary)</TabsTrigger>
-                        <TabsTrigger value="itc" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:shadow-none rounded-none px-0 font-bold uppercase text-[10px] sm:text-xs tracking-widest whitespace-nowrap">ITC Ledger</TabsTrigger>
+                    <TabsList className="gst-tabs-list h-10 bg-transparent gap-4 sm:gap-6 w-full justify-start sm:justify-start">
+                        <TabsTrigger value="gstr1" className="data-[state=active]:shadow-none rounded-t-lg px-4 font-bold uppercase text-[10px] sm:text-xs tracking-widest whitespace-nowrap transition-all">GSTR-1 (Sales)</TabsTrigger>
+                        <TabsTrigger value="gstr3b" className="data-[state=active]:shadow-none rounded-t-lg px-4 font-bold uppercase text-[10px] sm:text-xs tracking-widest whitespace-nowrap transition-all">GSTR-3B (Summary)</TabsTrigger>
+                        <TabsTrigger value="itc" className="data-[state=active]:shadow-none rounded-t-lg px-4 font-bold uppercase text-[10px] sm:text-xs tracking-widest whitespace-nowrap transition-all">ITC Ledger</TabsTrigger>
                     </TabsList>
                 </div>
 

@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react"
-import { Search, Bell } from "lucide-react"
+import { Search, Bell, Palette } from "lucide-react"
 import { ModeToggle } from "@/components/shared/mode-toggle"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
@@ -15,8 +15,11 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { useThemeCustomizer } from "@/components/shared/theme-customizer-context"
 
 export function Header() {
+    const { setOpen, state } = useThemeCustomizer()
+
     return (
         <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center gap-4 border-b bg-background/95 backdrop-blur px-6">
             <SidebarTrigger className="-ml-1" />
@@ -27,7 +30,7 @@ export function Header() {
                         <Input
                             type="search"
                             placeholder="Search..."
-                            className="pl-8 sm:w-[300px] md:w-[200px] lg:w-[300px] bg-muted/50 focus-visible:bg-background"
+                            className="pl-8 sm:w-[300px] md:w-[200px] lg:w-[300px] bg-muted/50 focus-visible:bg-background text-slate-900"
                         />
                     </div>
                 </form>
@@ -35,6 +38,20 @@ export function Header() {
                     <Button variant="ghost" size="icon" className="rounded-full relative">
                         <Bell className="h-5 w-5" />
                         <span className="absolute top-2 right-2 flex h-2 w-2 rounded-full bg-destructive" />
+                    </Button>
+                    {/* Theme Customizer Button */}
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="rounded-full relative"
+                        onClick={() => setOpen(true)}
+                        title="Customize Theme"
+                    >
+                        <Palette className="h-5 w-5" />
+                        <span
+                            className="absolute bottom-1.5 right-1.5 flex h-2 w-2 rounded-full"
+                            style={{ backgroundColor: state.colors.primary }}
+                        />
                     </Button>
                     <ModeToggle />
                     <DropdownMenu>

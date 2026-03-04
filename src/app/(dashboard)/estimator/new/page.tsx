@@ -98,7 +98,8 @@ export default function CreateQuotationPage() {
                         Cancel
                     </Button>
                     <Button
-                        className="h-10 bg-blue-600 hover:bg-blue-700 font-bold px-6 shadow-lg shadow-blue-200 gap-2"
+                        className="h-10 font-bold px-6 shadow-lg gap-2 text-white"
+                        style={{ background: 'var(--primary)' }}
                         onClick={() => {
                             toast.success("Quotation Saved", { description: "Quotation QT-2026-0063 has been saved successfully." })
                             router.push("/estimator")
@@ -187,26 +188,26 @@ export default function CreateQuotationPage() {
                                                                         <Calculator className="h-4 w-4" />
                                                                     </Button>
                                                                 </DialogTrigger>
-                                                                <DialogContent className="max-w-[calc(100%-2rem)] sm:max-w-[1200px] md:w-[1200px] p-0 overflow-hidden rounded-[2.5rem] border-none shadow-2xl">
-                                                                    <DialogHeader className="px-10 py-5 text-left border-b bg-white">
-                                                                        <div className="flex items-center gap-4">
-                                                                            <div className="p-2 rounded-xl bg-blue-50 text-blue-600 shadow-sm border border-blue-100/50">
-                                                                                <Calculator className="h-5 w-5" />
+                                                                <DialogContent className="max-w-[calc(100%-2rem)] sm:max-w-[1200px] md:w-[1200px] p-0 overflow-hidden rounded-lg border border-slate-200 shadow-2xl bg-white">
+                                                                    <DialogHeader className="px-6 py-4 text-left border-b border-slate-100 bg-white">
+                                                                        <div className="flex items-center gap-3">
+                                                                            <div className="p-1.5 rounded-md bg-[#F5F3FF] text-[#4C1F7A] border border-[#EDE9FE]">
+                                                                                <Calculator className="h-4 w-4" />
                                                                             </div>
-                                                                            <DialogTitle className="text-xl font-black tracking-tight text-slate-800">Cost Estimator & Specs Generator</DialogTitle>
+                                                                            <DialogTitle className="text-sm font-semibold tracking-tight text-slate-800">Cost Estimator & Specs Generator</DialogTitle>
                                                                         </div>
                                                                     </DialogHeader>
-                                                                    <div className="max-h-[80vh] overflow-y-auto bg-white custom-scrollbar">
+                                                                    <div className="max-h-[75vh] overflow-y-auto custom-scrollbar">
                                                                         <CostEstimator />
                                                                     </div>
-                                                                    <DialogFooter className="p-4 flex flex-row items-center justify-end gap-3 px-10 border-t bg-white">
+                                                                    <DialogFooter className="p-4 flex flex-row items-center justify-end gap-2 px-6 border-t border-slate-100 bg-slate-50/50">
                                                                         <DialogTrigger asChild>
-                                                                            <Button variant="outline" className="h-10 px-6 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-400 border-slate-200">
+                                                                            <Button variant="outline" className="h-8 px-4 rounded-md text-xs font-medium text-slate-500 border-slate-200 bg-white">
                                                                                 Close
                                                                             </Button>
                                                                         </DialogTrigger>
                                                                         <DialogTrigger asChild>
-                                                                            <Button className="h-10 px-8 rounded-xl bg-blue-600 hover:bg-blue-700 font-bold text-[10px] font-black uppercase tracking-widest shadow-lg shadow-blue-200 transition-all">
+                                                                            <Button className="h-8 px-5 rounded-md bg-[#4C1F7A] hover:bg-[#3d1862] font-semibold text-xs text-white shadow-sm transition-all">
                                                                                 Apply to Item
                                                                             </Button>
                                                                         </DialogTrigger>

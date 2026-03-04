@@ -118,20 +118,20 @@ export default function DashboardPage() {
     ]
 
     return (
-        <div className="space-y-6">
-            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between bg-card p-4 rounded-xl border-none shadow-sm">
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Control Center</h1>
-                    <p className="text-muted-foreground text-sm">
+        <div className="space-y-6 font-sans">
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between px-1">
+                <div className="space-y-0.5">
+                    <h1 className="text-2xl font-black tracking-tight text-slate-900 uppercase font-sans">Control Center</h1>
+                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] font-sans">
                         Real-time earnings and shop floor status at a glance.
                     </p>
                 </div>
-                <div className="flex items-center gap-4 bg-muted/50 p-2 rounded-lg">
-                    <span className="text-xs font-bold uppercase text-muted-foreground px-2">Simulate Role:</span>
+                <div className="flex items-center gap-3 bg-white border-2 border-slate-50 p-1.5 rounded-2xl shadow-sm">
+                    <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest px-3 border-r-2 border-slate-50">Role Simulation:</span>
                     <Tabs defaultValue={role} onValueChange={(v) => setRole(v as any)}>
-                        <TabsList className="h-8">
-                            <TabsTrigger value="Owner" className="text-[10px] px-3">Owner</TabsTrigger>
-                            <TabsTrigger value="Operator" className="text-[10px] px-3">Operator</TabsTrigger>
+                        <TabsList className="h-9 bg-transparent border-0 gap-1">
+                            <TabsTrigger value="Owner" className="text-[9px] font-black uppercase tracking-widest h-7 rounded-lg data-[state=active]:bg-[var(--primary)] data-[state=active]:text-white transition-all">Owner</TabsTrigger>
+                            <TabsTrigger value="Operator" className="text-[9px] font-black uppercase tracking-widest h-7 rounded-lg data-[state=active]:bg-[var(--primary)] data-[state=active]:text-white transition-all">Operator</TabsTrigger>
                         </TabsList>
                     </Tabs>
                 </div>

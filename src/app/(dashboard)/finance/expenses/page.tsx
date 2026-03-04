@@ -2,25 +2,20 @@
 
 import React, { useState } from "react"
 import {
-    Search, Plus, Download, ChevronDown,
-    CreditCard, Calendar, Tag, Trash2, Edit,
-    Filter, FileText, CheckCircle, Receipt,
-    RotateCcw, User, Hash, Wallet, Info,
-    Settings2
+    Plus, Search, Download, ChevronDown,
+    Calendar, Receipt, Filter, PlusCircle,
+    Printer, FileSpreadsheet, FileText, Settings2,
+    Edit, Trash2, RotateCcw, Info, Wallet, CheckCircle
 } from "lucide-react"
-import { toast } from "sonner"
-import {
-    Table, TableBody, TableCell, TableHead,
-    TableHeader, TableRow,
-} from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Label } from "@/components/ui/label"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
-    DropdownMenu, DropdownMenuContent,
-    DropdownMenuItem, DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+    Select, SelectContent, SelectItem,
+    SelectTrigger, SelectValue,
+} from "@/components/ui/select"
 import {
     Dialog,
     DialogContent,
@@ -30,13 +25,10 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog"
-import {
-    Select, SelectContent, SelectItem,
-    SelectTrigger, SelectValue,
-} from "@/components/ui/select"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
+import { DataGrid, type ColumnDef } from "@/components/shared/data-grid"
+import { toast } from "sonner"
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 type Expense = {
@@ -64,29 +56,29 @@ function AddExpenseDialog({ onClose }: { onClose: () => void }) {
 
     return (
         <DialogContent className="sm:max-w-[700px] p-0 overflow-hidden border-none shadow-2xl rounded-3xl flex flex-col max-h-[92vh]">
-            <DialogHeader className="px-10 pt-10 pb-6 text-left border-b">
+            <DialogHeader className="px-10 pt-10 pb-6 text-left border-b bg-white">
                 <div className="flex items-center gap-4 mb-2">
-                    <div className="p-3 rounded-2xl bg-blue-50 text-blue-600 shadow-sm border border-blue-100/50">
+                    <div className="p-3 rounded-2xl shadow-sm border border-slate-100 transition-all" style={{ background: 'color-mix(in srgb, var(--primary), white 95%)', color: 'var(--primary)' }}>
                         <Receipt className="h-5 w-5" />
                     </div>
-                    <DialogTitle className="text-2xl font-black tracking-tight text-slate-800">Record Expense</DialogTitle>
+                    <DialogTitle className="text-2xl font-black tracking-tight text-slate-800 font-heading">Record Expense</DialogTitle>
                 </div>
                 <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 pl-1">
                     Track new expenditure and GST bills for accounting
                 </p>
             </DialogHeader>
-            <div className="px-10 py-8 space-y-8 flex-1 overflow-y-auto custom-scrollbar">
+            <div className="px-10 py-8 space-y-8 flex-1 overflow-y-auto custom-scrollbar bg-white">
                 {/* 01: Identification */}
                 <div className="space-y-4">
                     <div className="flex items-center gap-2 mb-2">
-                        <span className="flex items-center justify-center w-5 h-5 rounded-full bg-blue-600 text-[10px] font-black text-white">01</span>
+                        <span className="flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-black text-white" style={{ background: 'var(--primary)' }}>01</span>
                         <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-500">Expense Details</h3>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <Label className="text-[10px] font-black uppercase text-slate-500 tracking-widest pl-1">Expense Title <span className="text-rose-500">*</span></Label>
                             <Input
-                                className="h-12 rounded-xl border-slate-200 bg-blue-50/30 font-bold text-slate-700 px-4 focus-visible:ring-blue-500/20"
+                                className="h-12 rounded-xl border-slate-200 bg-slate-50 font-bold text-slate-700 px-4 transition-all"
                                 placeholder="e.g. Printer Paper Bundle"
                             />
                         </div>
@@ -107,7 +99,7 @@ function AddExpenseDialog({ onClose }: { onClose: () => void }) {
                 {/* 02: Transaction Details */}
                 <div className="space-y-4">
                     <div className="flex items-center gap-2 mb-2">
-                        <span className="flex items-center justify-center w-5 h-5 rounded-full bg-blue-600 text-[10px] font-black text-white">02</span>
+                        <span className="flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-black text-white" style={{ background: 'var(--primary)' }}>02</span>
                         <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-500">Transaction Details</h3>
                     </div>
                     <div className="grid grid-cols-3 gap-4">
@@ -141,8 +133,8 @@ function AddExpenseDialog({ onClose }: { onClose: () => void }) {
                 </div>
 
                 {/* GST Checkbox */}
-                <div className="flex items-center space-x-3 p-5 bg-blue-50/50 rounded-2xl border border-blue-100/50">
-                    <Checkbox id="gst" checked={isGst} onCheckedChange={(v: boolean) => setIsGst(v)} className="h-5 w-5 rounded-md" />
+                <div className="flex items-center space-x-3 p-5 rounded-2xl border border-slate-100 transition-all" style={{ background: 'color-mix(in srgb, var(--primary), white 97%)' }}>
+                    <Checkbox id="gst" checked={isGst} onCheckedChange={(v: boolean) => setIsGst(v)} className="h-5 w-5 rounded-md transition-all" style={{ color: 'var(--primary)', borderColor: 'color-mix(in srgb, var(--primary), white 80%)' } as any} />
                     <label htmlFor="gst" className="text-xs font-black uppercase tracking-widest text-slate-600 cursor-pointer">
                         Is GST Bill? (For Input Tax Credit)
                     </label>
@@ -152,8 +144,8 @@ function AddExpenseDialog({ onClose }: { onClose: () => void }) {
                 {isGst && (
                     <div className="space-y-6 pt-4 animate-in fade-in slide-in-from-top-4 duration-300">
                         <div className="flex items-center gap-2 border-b pb-2">
-                            <Info className="h-4 w-4 text-blue-500" />
-                            <h4 className="text-[10px] font-black uppercase text-blue-600 tracking-widest">Identify Vendor</h4>
+                            <Info className="h-4 w-4" style={{ color: 'var(--primary)' }} />
+                            <h4 className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'var(--primary)' }}>Identify Vendor</h4>
                         </div>
                         <div className="grid grid-cols-2 gap-6">
                             <div className="space-y-2">
@@ -174,25 +166,26 @@ function AddExpenseDialog({ onClose }: { onClose: () => void }) {
 
                 <div className="space-y-4">
                     <div className="flex items-center gap-2 mb-2">
-                        <span className="flex items-center justify-center w-5 h-5 rounded-full bg-blue-600 text-[10px] font-black text-white">03</span>
+                        <span className="flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-black text-white" style={{ background: 'var(--primary)' }}>03</span>
                         <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-500">Additional Info</h3>
                     </div>
                     <div className="space-y-2">
                         <Label className="text-[10px] font-black uppercase text-slate-500 tracking-widest pl-1">Description / Notes</Label>
                         <Textarea
                             placeholder="Any additional notes..."
-                            className="min-h-[100px] rounded-xl border-slate-100 bg-white font-medium text-slate-600 p-4 resize-none focus-visible:ring-blue-500/20"
+                            className="min-h-[100px] rounded-xl border-slate-100 bg-white font-medium text-slate-600 p-4 resize-none focus-visible:ring-indigo-500/20"
                         />
                     </div>
                 </div>
             </div>
 
             <DialogFooter className="p-8 mt-2 flex flex-row items-center justify-end gap-3 px-10 border-t bg-slate-50/50">
-                <Button variant="ghost" className="h-11 px-8 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-600 transition-colors font-bold" onClick={onClose}>
+                <Button variant="ghost" className="h-11 px-8 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-600 transition-colors" onClick={onClose}>
                     Cancel
                 </Button>
                 <Button
-                    className="h-11 px-8 rounded-xl bg-blue-600 hover:bg-blue-700 font-bold text-[10px] font-black uppercase tracking-widest shadow-lg shadow-blue-200 transition-all font-bold"
+                    className="h-11 px-8 rounded-xl font-bold text-[10px] font-black uppercase tracking-widest shadow-lg shadow-indigo-200 transition-all text-white"
+                    style={{ background: 'var(--primary)' }}
                     onClick={() => {
                         toast.success("Expense Recorded", { description: "Expenditure has been logged successfully." })
                         onClose()
@@ -208,150 +201,118 @@ function AddExpenseDialog({ onClose }: { onClose: () => void }) {
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function ExpensesPage() {
     const [expenses] = useState<Expense[]>(initialExpenses)
-    const [search, setSearch] = useState("")
+
+    const columns: ColumnDef<Expense>[] = [
+        {
+            key: "date",
+            label: "Date",
+            render: (val) => <span className="text-xs font-bold text-slate-500">{val}</span>
+        },
+        {
+            key: "vendor",
+            label: "Vendor",
+            render: (val) => <span className="text-xs font-medium text-slate-400">{val}</span>
+        },
+        {
+            key: "title",
+            label: "Expense Description",
+            render: (val) => <span className="font-bold text-sm text-slate-800">{val}</span>
+        },
+        {
+            key: "category",
+            label: "Category",
+            render: (val) => (
+                <Badge variant="outline" className="text-[10px] font-black uppercase bg-slate-50 border-slate-200 text-slate-500 tracking-wider">
+                    {val}
+                </Badge>
+            )
+        },
+        {
+            key: "reference",
+            label: "Ref #",
+            render: (val) => <span className="text-xs font-mono text-slate-400">{val}</span>
+        },
+        {
+            key: "amount",
+            label: "Amount",
+            render: (val) => (
+                <span className="font-black text-sm text-rose-600 tracking-tight">
+                    ₹{val.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                </span>
+            )
+        },
+        {
+            key: "actions",
+            label: "Actions",
+            className: "text-right",
+            filterable: false,
+            render: () => (
+                <div className="flex items-center justify-end gap-1.5 px-2">
+                    <Button size="icon" variant="outline" className="h-7 w-7 rounded-md bg-white transition-all shadow-none" style={{ color: 'var(--primary)', borderColor: 'color-mix(in srgb, var(--primary), white 70%)' }} title="Edit Expense">
+                        <Edit className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button size="icon" variant="outline" className="h-7 w-7 rounded-md border-rose-200 bg-white text-rose-500 hover:text-rose-600 hover:bg-rose-50 transition-colors shadow-none" title="Delete Expense">
+                        <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                </div>
+            )
+        }
+    ]
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between px-1">
-                <h1 className="text-2xl font-bold tracking-tight">Expenses</h1>
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 px-1">
+                <div>
+                    <h1 className="text-4xl font-black tracking-tight text-slate-900 font-heading">Expenses</h1>
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Track and manage business expenditures</p>
+                </div>
+                <div className="flex items-center gap-3">
+                    <Button variant="outline" className="h-11 px-6 rounded-xl border-slate-200 font-bold gap-2 hover:bg-slate-50">
+                        <Download className="h-4 w-4 text-slate-400" /> Export List
+                    </Button>
+                    <Dialog>
+                        <DialogTrigger asChild>
+                            <Button className="h-11 px-8 rounded-xl font-bold gap-2 shadow-lg shadow-indigo-100 transition-all text-white" style={{ background: 'var(--primary)' }}>
+                                <Plus className="h-4 w-4" /> New Expense
+                            </Button>
+                        </DialogTrigger>
+                        <AddExpenseDialog onClose={() => { }} />
+                    </Dialog>
+                </div>
             </div>
 
-            {/* Filter Bar */}
-            <Card className="border-none shadow-sm bg-background">
-                <CardContent className="p-4">
-                    <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                        <div className="space-y-1.5">
-                            <Label className="text-[10px] font-black uppercase text-slate-400">Category</Label>
-                            <Select defaultValue="all">
-                                <SelectTrigger className="h-10">
-                                    <SelectValue placeholder="All Categories" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">All Categories</SelectItem>
-                                    {categories.map(c => <SelectItem key={c} value={c.toLowerCase()}>{c}</SelectItem>)}
-                                </SelectContent>
-                            </Select>
+            {/* Statistics Bar - Premium look */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <Card className="border-none shadow-sm rounded-2xl" style={{ background: 'color-mix(in srgb, var(--primary), white 95%)' }}>
+                    <CardContent className="p-4 flex flex-row items-center gap-4">
+                        <div className="p-3 rounded-xl bg-white shadow-sm" style={{ color: 'var(--primary)' }}>
+                            <Wallet className="h-5 w-5" />
                         </div>
-                        <div className="space-y-1.5">
-                            <Label className="text-[10px] font-black uppercase text-slate-400">Start Date</Label>
-                            <Input type="date" className="h-10" />
+                        <div>
+                            <p className="text-[10px] font-black uppercase text-slate-500 tracking-wider">Today's Spend</p>
+                            <p className="text-xl font-black text-slate-900 font-heading">₹2,450.00</p>
                         </div>
-                        <div className="space-y-1.5">
-                            <Label className="text-[10px] font-black uppercase text-slate-400">End Date</Label>
-                            <Input type="date" className="h-10" />
+                    </CardContent>
+                </Card>
+                <Card className="border-none shadow-sm bg-emerald-50/30 rounded-2xl">
+                    <CardContent className="p-4 flex flex-row items-center gap-4">
+                        <div className="p-3 rounded-xl bg-white text-emerald-600 shadow-sm">
+                            <CheckCircle className="h-5 w-5" />
                         </div>
-                        <div className="flex items-end gap-2 pb-0.5">
-                            <Button className="flex-1 bg-blue-600 hover:bg-blue-700 font-bold h-10 gap-2">
-                                <Filter className="h-4 w-4" /> Filter
-                            </Button>
-                            <Button variant="outline" className="flex-1 font-bold h-10 gap-2 text-slate-600">
-                                <RotateCcw className="h-4 w-4" /> Reset
-                            </Button>
+                        <div>
+                            <p className="text-[10px] font-black uppercase text-slate-500 tracking-wider">GST Recoverable</p>
+                            <p className="text-xl font-black text-slate-900 font-heading">₹12,840.00</p>
                         </div>
-                    </div>
-                </CardContent>
-            </Card>
+                    </CardContent>
+                </Card>
+                {/* Add more stats if needed */}
+            </div>
 
-            <Card className="shadow-sm border-none bg-background">
-                <CardHeader className="pb-4 border-b">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2 text-muted-foreground font-bold italic">
-                            <Receipt className="h-4 w-4" />
-                            <CardTitle className="text-sm">Expense Records</CardTitle>
-                        </div>
-                        <Dialog>
-                            <DialogTrigger asChild>
-                                <Button className="gap-2 bg-blue-600 hover:bg-blue-700 font-bold h-10 text-xs shadow-md">
-                                    <Plus className="h-4 w-4" /> New Expense
-                                </Button>
-                            </DialogTrigger>
-                            <AddExpenseDialog onClose={() => { }} />
-                        </Dialog>
-                    </div>
-                </CardHeader>
-                <CardContent className="pt-6">
-                    <div className="flex flex-col md:flex-row gap-4 mb-6 items-center justify-between">
-                        <div className="flex items-center gap-2">
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="outline" size="sm" className="gap-2 h-9 bg-slate-800 text-white border-none hover:bg-slate-900 hover:text-white">
-                                        <Download className="h-4 w-4" /> Export <ChevronDown className="h-3 w-3" />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="start">
-                                    <DropdownMenuItem>Export CSV</DropdownMenuItem>
-                                    <DropdownMenuItem>Export PDF</DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="outline" size="sm" className="gap-2 h-9">
-                                        <Settings2 className="h-4 w-4" /> Columns <ChevronDown className="h-3 w-3" />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="start">
-                                    <DropdownMenuItem>Toggle All</DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        </div>
-                        <div className="relative w-full md:w-80">
-                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                            <Input
-                                placeholder="Search current page..."
-                                className="pl-8 h-9 bg-muted/20 border-none italic"
-                                value={search}
-                                onChange={e => setSearch(e.target.value)}
-                            />
-                        </div>
-                    </div>
-
-                    <div className="rounded-md border">
-                        <Table>
-                            <TableHeader>
-                                <TableRow className="bg-muted/50">
-                                    <TableHead className="font-black uppercase text-[11px] tracking-wider text-slate-500">Date</TableHead>
-                                    <TableHead className="font-black uppercase text-[11px] tracking-wider text-slate-500">Vendor</TableHead>
-                                    <TableHead className="font-black uppercase text-[11px] tracking-wider text-slate-500">Title</TableHead>
-                                    <TableHead className="font-black uppercase text-[11px] tracking-wider text-slate-500">Category</TableHead>
-                                    <TableHead className="font-black uppercase text-[11px] tracking-wider text-slate-500">Reference</TableHead>
-                                    <TableHead className="font-black uppercase text-[11px] tracking-wider text-slate-500">Amount (₹)</TableHead>
-                                    <TableHead className="text-right font-black uppercase text-[11px] tracking-wider text-slate-500 w-[100px]">Actions</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {expenses.map(exp => (
-                                    <TableRow key={exp.id} className="group hover:bg-muted/5 transition-colors">
-                                        <TableCell className="text-xs font-medium text-slate-600">{exp.date}</TableCell>
-                                        <TableCell className="text-xs font-medium text-slate-500">{exp.vendor}</TableCell>
-                                        <TableCell className="py-4">
-                                            <p className="font-bold text-sm text-slate-800">{exp.title}</p>
-                                        </TableCell>
-                                        <TableCell>
-                                            <Badge variant="outline" className="text-[10px] font-bold uppercase bg-slate-50 border-slate-200 text-slate-600">
-                                                {exp.category}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell className="text-xs font-mono text-slate-500">{exp.reference}</TableCell>
-                                        <TableCell className="font-black text-sm text-rose-600 italic tracking-tight">
-                                            ₹{exp.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                                        </TableCell>
-                                        <TableCell className="text-right">
-                                            <div className="flex items-center justify-end gap-1 px-1">
-                                                <Button size="icon" variant="outline" className="h-8 w-8 border-blue-100 text-blue-600 hover:bg-blue-50">
-                                                    <Edit className="h-4 w-4" />
-                                                </Button>
-                                                <Button size="icon" variant="outline" className="h-8 w-8 border-rose-100 text-rose-600 hover:bg-rose-50">
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
-                                            </div>
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </div>
-                </CardContent>
-            </Card>
+            <DataGrid
+                data={expenses}
+                columns={columns}
+                searchPlaceholder="Search descriptions, vendors or categories..."
+            />
         </div>
     )
 }

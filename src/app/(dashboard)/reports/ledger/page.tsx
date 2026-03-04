@@ -56,7 +56,7 @@ export default function PaperUsageLedgerPage() {
 
             {/* Metrics */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Card className="bg-blue-600 text-white border-none shadow-md">
+                <Card className="text-white border-none shadow-md" style={{ background: 'var(--primary)' }}>
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between">
                             <p className="text-xs font-bold uppercase tracking-widest opacity-80">Total Usage (Monthly)</p>
@@ -96,7 +96,7 @@ export default function PaperUsageLedgerPage() {
                             <Button variant="outline" size="sm" className="h-9 gap-2 font-bold">
                                 <Calendar className="h-4 w-4" /> This Month
                             </Button>
-                            <Button className="h-9 bg-blue-600 hover:bg-blue-700 font-bold px-5">
+                            <Button className="h-9 font-bold px-5 text-white shadow-lg transition-all" style={{ background: 'var(--primary)' }}>
                                 Print Ledger
                             </Button>
                         </div>

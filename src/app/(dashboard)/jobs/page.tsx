@@ -1,41 +1,34 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { toast } from "sonner"
 import {
-    Search,
     Plus,
     Edit,
     Eye,
-    Printer,
     ImageIcon,
-    Download,
-    ChevronDown,
-    Filter,
     AlertCircle,
-    CheckCircle,
-    X,
-    Calculator,
+    Settings2,
+    Calendar,
+    User,
+    FileText,
+    ExternalLink,
+    UserPlus,
+    History,
+    ShieldCheck,
+    ArrowRight,
+    Trash,
+    List,
+    File,
+    Image as DownloadImage,
+    Edit3,
+    Calculator
 } from "lucide-react"
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import {
     Dialog,
     DialogContent,
@@ -52,9 +45,16 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Settings2 } from "lucide-react"
+import { CheckCircle } from "lucide-react"
 
+// Generic Grid & Modal
+import { DataGrid, ColumnDef } from "@/components/shared/data-grid"
+import { FormModal, FormField } from "@/components/shared/form-modal"
+import { CustomerAddModal } from "@/components/shared/customer-add-modal"
+import { CustomerHistoryModal } from "@/components/shared/customer-history-modal"
+import { CostEstimator } from "@/components/shared/cost-estimator"
+
+// ─── Types & Config ──────────────────────────────────────────────────────────
 type Job = {
     id: string
     date: string
@@ -64,105 +64,8 @@ type Job = {
     status: string
     deadline: string
     priority: string
-    items: { id: number; desc: string; specs: string; qty: number }[]
-    stages: { name: string; status: string }[]
+    amount: number
 }
-
-const initialJobs: Job[] = [
-    {
-        id: "JB-2026-0034", date: "11 Feb",
-        customer: "Denesik-Keeling",
-        description: "Print Job • Stock: Chromo Paper (170GSM)...",
-        hasDesign: true, status: "Pending", deadline: "14 Feb", priority: "High",
-        items: [
-            { id: 1, desc: "Print Job", specs: "Stock: Chromo Paper (170GSM) • Process: Gloss Lamination • Process: Creasing", qty: 1000 },
-            { id: 2, desc: "Book Printing", specs: "Specs: 8.27*11.69 Size | 100 Pages • Cover: Chromo Paper", qty: 100 },
-        ],
-        stages: [
-            { name: "Paper Cutting", status: "Pending" },
-            { name: "Printing", status: "Pending" },
-            { name: "Lamination", status: "Pending" },
-            { name: "Creasing", status: "Pending" },
-            { name: "Binding", status: "Pending" },
-            { name: "Final QA", status: "Pending" },
-        ]
-    },
-    {
-        id: "JB-2026-0033", date: "06 Feb",
-        customer: "Denesik-Keeling",
-        description: "Wide Format Print:...",
-        hasDesign: false, status: "Printing", deadline: "09 Feb", priority: "Medium",
-        items: [{ id: 1, desc: "Wide Format Print", specs: "Vinyl Matte • Size: 10ft x 8ft", qty: 5 }],
-        stages: [
-            { name: "Paper Cutting", status: "Done" },
-            { name: "Printing", status: "Active" },
-            { name: "Finishing", status: "Pending" },
-        ]
-    },
-    {
-        id: "JOB-60956", date: "30 Jan",
-        customer: "Harris, Hodkiewicz and Morissette",
-        description: "Consequat est aut voluptatem.",
-        hasDesign: false, status: "Post-Press", deadline: "03 Feb", priority: "High",
-        items: [{ id: 1, desc: "Post Press Job", specs: "Lamination + Binding", qty: 500 }],
-        stages: [
-            { name: "Paper Cutting", status: "Done" },
-            { name: "Printing", status: "Done" },
-            { name: "Lamination", status: "Active" },
-            { name: "Binding", status: "Pending" },
-        ]
-    },
-    {
-        id: "JOB-56871", date: "30 Jan",
-        customer: "Harris, Hodkiewicz and Morissette",
-        description: "Quis rerum praesentium.",
-        hasDesign: false, status: "Printing", deadline: "02 Feb", priority: "Medium",
-        items: [{ id: 1, desc: "Offset Print", specs: "170GSM Art Paper • 4 Color", qty: 2000 }],
-        stages: [
-            { name: "Paper Cutting", status: "Done" },
-            { name: "Printing", status: "Active" },
-            { name: "Finishing", status: "Pending" },
-        ]
-    },
-    {
-        id: "JOB-27009", date: "26 Jan",
-        customer: "Kuhlman, Jakubowski and Hegmann",
-        description: "Distinctio rerum aut ipsam hic.",
-        hasDesign: false, status: "Completed", deadline: "02 Feb", priority: "Low",
-        items: [{ id: 1, desc: "Brochure Print", specs: "Art Card 300GSM • Matt Lam", qty: 1000 }],
-        stages: [
-            { name: "Paper Cutting", status: "Done" },
-            { name: "Printing", status: "Done" },
-            { name: "Lamination", status: "Done" },
-            { name: "Final QA", status: "Done" },
-        ]
-    },
-    {
-        id: "JOB-13664", date: "23 Jan",
-        customer: "Powlowski, Bernier and Koelpin",
-        description: "Ipsam est quia.",
-        hasDesign: false, status: "Completed", deadline: "02 Feb", priority: "Low",
-        items: [{ id: 1, desc: "Business Cards", specs: "300GSM Art Card • Gloss Lam", qty: 500 }],
-        stages: [
-            { name: "Paper Cutting", status: "Done" },
-            { name: "Printing", status: "Done" },
-            { name: "Lamination", status: "Done" },
-            { name: "Final QA", status: "Done" },
-        ]
-    },
-    {
-        id: "JOB-46608", date: "29 Jan",
-        customer: "Crona Group",
-        description: "Id in.",
-        hasDesign: false, status: "Pre-Press", deadline: "02 Feb", priority: "Medium",
-        items: [{ id: 1, desc: "Pre-Press Setup", specs: "Plate Making • Color Profile", qty: 1 }],
-        stages: [
-            { name: "Pre-Press", status: "Active" },
-            { name: "Printing", status: "Pending" },
-            { name: "Finishing", status: "Pending" },
-        ]
-    },
-]
 
 const statusConfig: Record<string, { label: string; className: string }> = {
     "Pending": { label: "Pending", className: "bg-slate-500 hover:bg-slate-600 text-white" },
@@ -172,482 +75,508 @@ const statusConfig: Record<string, { label: string; className: string }> = {
     "Completed": { label: "Completed", className: "bg-emerald-600 hover:bg-emerald-700 text-white" },
 }
 
-// ─── New Job Card Form ────────────────────────────────────────────────────────
-function NewJobCardDialog({ onClose }: { onClose: () => void }) {
-    const [items, setItems] = useState([
-        { id: 1, desc: "Sequi quisquam omnis qui.", qty: "395" },
-        { id: 2, desc: "Est dolorem aliquid.", qty: "755" },
-    ])
-
-    const addItem = () => setItems(prev => [...prev, { id: Date.now(), desc: "", qty: "" }])
-    const removeItem = (id: number) => setItems(prev => prev.filter(i => i.id !== id))
-
-    return (
-        <DialogContent className="max-w-6xl p-0 overflow-hidden border-none shadow-2xl rounded-3xl flex flex-col max-h-[92vh]">
-            <DialogHeader className="px-10 pt-10 pb-6 text-left border-b">
-                <div className="flex items-center gap-4 mb-2">
-                    <div className="p-3 rounded-2xl bg-blue-50 text-blue-600 shadow-sm border border-blue-100/50">
-                        <Plus className="h-5 w-5" />
-                    </div>
-                    <DialogTitle className="text-2xl font-black tracking-tight text-slate-800">Create Job Ticket</DialogTitle>
-                </div>
-                <DialogDescription className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 pl-1">
-                    Initialize a new production workflow and specs
-                </DialogDescription>
-            </DialogHeader>
-
-            <div className="px-10 py-8 space-y-8 flex-1 overflow-y-auto custom-scrollbar">
-                {/* Items Table Section */}
-                <div className="space-y-4">
-                    <div className="flex items-center justify-between px-1">
-                        <Label className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Description & Quantities</Label>
-                        <Button size="sm" variant="outline" className="h-8 gap-2 bg-white text-blue-600 font-bold border-2 border-slate-100" onClick={addItem}>
-                            <Plus className="h-3 w-3" /> Add Item
-                        </Button>
-                    </div>
-
-                    <div className="rounded-2xl border bg-white overflow-hidden shadow-sm">
-                        <Table>
-                            <TableHeader>
-                                <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 border-b">
-                                    <TableHead className="text-[10px] font-black uppercase text-slate-500 py-3 px-6">Description / Specs</TableHead>
-                                    <TableHead className="text-[10px] font-black uppercase text-slate-500 text-center w-[150px]">Quantity</TableHead>
-                                    <TableHead className="text-[10px] font-black uppercase text-slate-500 text-right px-6 w-[80px]">Action</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {items.map((item) => (
-                                    <TableRow key={item.id} className="border-b last:border-0 group">
-                                        <TableCell className="p-4 px-6">
-                                            <div className="relative">
-                                                <Textarea
-                                                    placeholder="Enter job details, specs..."
-                                                    className="min-h-[60px] resize-none border-none shadow-none focus-visible:ring-0 p-0 text-sm font-medium"
-                                                    value={item.desc}
-                                                    onChange={e => setItems(prev => prev.map(i => i.id === item.id ? { ...i, desc: e.target.value } : i))}
-                                                />
-                                                <div className="absolute right-0 bottom-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <Calculator className="h-4 w-4 text-slate-300" />
-                                                </div>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell className="text-center bg-slate-50/30">
-                                            <Input
-                                                type="number"
-                                                className="h-10 text-center font-bold border-none shadow-none focus-visible:ring-1"
-                                                value={item.qty}
-                                                onChange={e => setItems(prev => prev.map(i => i.id === item.id ? { ...i, qty: e.target.value } : i))}
-                                            />
-                                        </TableCell>
-                                        <TableCell className="text-right px-6">
-                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-300 hover:text-rose-600 hover:bg-rose-50" onClick={() => removeItem(item.id)}>
-                                                <X className="h-4 w-4" />
-                                            </Button>
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </div>
-                </div>
-
-                {/* Footer Inputs Section */}
-                <div className="grid grid-cols-1 gap-6">
-                    <div className="space-y-6 bg-white p-6 rounded-2xl border shadow-sm">
-                        <div className="space-y-3">
-                            <Label className="text-[10px] font-black uppercase text-slate-500 tracking-widest pl-1">Design Image</Label>
-                            <div className="flex items-center gap-4">
-                                <label className="flex flex-col items-center justify-center h-10 px-6 border-2 border-slate-100 rounded-xl bg-slate-50 hover:bg-slate-100 cursor-pointer transition-colors">
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-xs font-bold text-slate-600">Choose File</span>
-                                    </div>
-                                    <input type="file" className="hidden" />
-                                </label>
-                                <span className="text-xs text-slate-400 font-medium">No file chosen</span>
-                            </div>
-                            <p className="text-[10px] text-slate-400 font-bold italic">Optional. Upload a design image for reference. Max 5MB.</p>
-                        </div>
-
-                        <div className="space-y-3">
-                            <Label className="text-[10px] font-black uppercase text-slate-500 tracking-widest pl-1">Notes / Special Instructions</Label>
-                            <Textarea
-                                placeholder="e.g. Urgent Delivery, Use specific courier..."
-                                className="resize-none min-h-[100px] border-2 border-slate-100 rounded-xl bg-slate-50/30 focus:bg-white transition-all text-sm"
-                            />
-                        </div>
-                    </div>
-                </div>
-
-                <DialogFooter className="p-8 mt-2 flex flex-row items-center justify-end gap-3 px-10 border-t bg-slate-50/50">
-                    <Button
-                        variant="ghost"
-                        className="h-11 px-8 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-600 transition-colors"
-                        onClick={onClose}
-                    >
-                        Cancel
-                    </Button>
-                    <Button
-                        className="h-11 px-10 bg-emerald-600 hover:bg-emerald-700 font-bold text-[10px] font-black uppercase tracking-widest shadow-lg shadow-emerald-200 transition-all font-bold"
-                        onClick={() => {
-                            toast.success("Job Ticket Created", { description: "Job JB-2026-0045 has been generated successfully." })
-                            onClose()
-                        }}
-                    >
-                        Create Job Ticket
-                    </Button>
-                </DialogFooter>
-            </div>
-        </DialogContent>
-    )
-}
-
-// ─── Job Card (Ticket) View ───────────────────────────────────────────────────
-function JobCardView({ job, onBack }: { job: Job; onBack: () => void }) {
-    return (
-        <div className="space-y-4">
-            <div className="flex items-center justify-between px-1">
-                <h1 className="text-2xl font-bold">Job Card</h1>
-                <div className="flex gap-2">
-                    <Button variant="outline" className="gap-2 font-bold border-slate-800 bg-slate-900 text-white hover:bg-slate-800 h-9 text-xs">
-                        <Printer className="h-4 w-4" /> Print Job Card
-                    </Button>
-                    <Button variant="outline" className="h-9 text-xs font-bold" onClick={onBack}>
-                        Back to List
-                    </Button>
-                </div>
-            </div>
-
-            <div className="border rounded-xl shadow-sm overflow-hidden bg-white">
-                {/* Header */}
-                <div className="p-6 border-b flex items-start justify-between">
-                    <div>
-                        <h2 className="text-3xl font-black tracking-tighter uppercase">JOB TICKET</h2>
-                        <p className="text-sm text-muted-foreground font-medium mt-0.5">Digital ERP</p>
-                    </div>
-                    <div className="text-right space-y-1">
-                        <p className="text-2xl font-black tracking-tight">{job.id}</p>
-                        <Badge className={`${statusConfig[job.status]?.className || "bg-slate-500 text-white"} text-[10px] font-bold uppercase px-3 h-5`}>
-                            {job.status}
-                        </Badge>
-                    </div>
-                </div>
-
-                {/* Info row */}
-                <div className="grid grid-cols-2 md:grid-cols-4 border-b">
-                    {[
-                        { label: "CUSTOMER", value: job.customer, sub: "Cristina Hermiston | 1-585-837-5878" },
-                        { label: "START DATE", value: `${job.date}, 2026`, sub: "" },
-                        { label: "DEADLINE", value: `${job.deadline}, 2026`, sub: "", red: true },
-                        { label: "DESIGN REFERENCE", value: job.hasDesign ? "View Design →" : "No Design", sub: "", link: job.hasDesign },
-                    ].map((col, i) => (
-                        <div key={i} className={`p-4 ${i < 3 ? "border-r" : ""}`}>
-                            <p className="text-[10px] font-bold uppercase text-muted-foreground mb-1">{col.label}</p>
-                            <p className={`font-bold text-base leading-tight ${col.red ? "text-rose-600" : col.link ? "text-blue-600 underline cursor-pointer" : ""}`}>
-                                {col.value}
-                            </p>
-                            {col.sub && <p className="text-[10px] text-muted-foreground mt-0.5">{col.sub}</p>}
-                        </div>
-                    ))}
-                </div>
-
-                {/* Production Details */}
-                <div className="p-6 border-b">
-                    <h3 className="text-sm font-bold mb-4">Production Details</h3>
-                    <table className="w-full text-sm border rounded overflow-hidden">
-                        <thead className="bg-muted/40">
-                            <tr>
-                                <th className="text-left px-3 py-2 font-bold text-[11px] uppercase border-b w-8">#</th>
-                                <th className="text-left px-3 py-2 font-bold text-[11px] uppercase border-b">Description</th>
-                                <th className="text-right px-3 py-2 font-bold text-[11px] uppercase border-b w-28">Quantity</th>
-                                <th className="text-left px-3 py-2 font-bold text-[11px] uppercase border-b">Specifications / Machine</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {job.items.map((item, idx) => (
-                                <tr key={item.id} className="border-b last:border-0">
-                                    <td className="px-3 py-3 font-bold text-muted-foreground">{idx + 1}</td>
-                                    <td className="px-3 py-3">
-                                        <p className="font-bold text-slate-800 leading-snug">{item.desc} • {item.specs}</p>
-                                    </td>
-                                    <td className="px-3 py-3 text-right text-2xl font-black">{item.qty}</td>
-                                    <td className="px-3 py-3 text-[11px] text-muted-foreground space-y-0.5 leading-relaxed">
-                                        <div><span className="font-bold">Paper:</span> Chromo Paper (170GSM)</div>
-                                        <div><span className="font-bold">Machine:</span> Konica Minolta C6085</div>
-                                        <div><span className="font-bold">Processes:</span> Gloss Lamination, Creasing</div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-
-                {/* Digital Progress Tracking */}
-                <div className="p-6 border-t">
-                    <h3 className="text-sm font-bold mb-4">Digital Progress Tracking</h3>
-                    <table className="w-full text-sm border rounded overflow-hidden">
-                        <thead className="bg-muted/40">
-                            <tr>
-                                <th className="text-left px-4 py-2.5 font-bold text-[11px] uppercase border-b">Stage</th>
-                                <th className="text-left px-4 py-2.5 font-bold text-[11px] uppercase border-b w-36">Status</th>
-                                <th className="text-left px-4 py-2.5 font-bold text-[11px] uppercase border-b w-44">Action / Approver</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {job.stages.map((stage, idx) => (
-                                <tr key={idx} className="border-b last:border-0 hover:bg-muted/20 transition-colors">
-                                    <td className="px-4 py-3 font-bold text-slate-800 text-sm">{stage.name}</td>
-                                    <td className="px-4 py-3">
-                                        <Badge
-                                            className={`text-[10px] font-bold uppercase px-3 h-5 ${stage.status === 'Done' ? 'bg-emerald-600 text-white hover:bg-emerald-700'
-                                                : stage.status === 'Active' ? 'bg-blue-600 text-white hover:bg-blue-700'
-                                                    : 'bg-slate-500 text-white hover:bg-slate-600'
-                                                }`}
-                                        >
-                                            {stage.status}
-                                        </Badge>
-                                    </td>
-                                    <td className="px-4 py-3">
-                                        {stage.status !== 'Done' && (
-                                            <Button
-                                                size="sm"
-                                                variant="outline"
-                                                className="h-7 text-[11px] font-bold gap-1.5 text-emerald-600 border-emerald-300 bg-emerald-50 hover:bg-emerald-100"
-                                            >
-                                                <CheckCircle className="h-3.5 w-3.5" /> Mark Done
-                                            </Button>
-                                        )}
-                                        {stage.status === 'Done' && (
-                                            <span className="text-[11px] font-bold text-emerald-600 flex items-center gap-1">
-                                                <CheckCircle className="h-3.5 w-3.5" /> Completed
-                                            </span>
-                                        )}
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-
-                {/* Signatures */}
-                <div className="p-6 border-t flex flex-col md:flex-row justify-between items-center gap-6 bg-muted/10">
-                    <div className="flex gap-16">
-                        {["Operator Signature", "Supervisor Signature"].map(label => (
-                            <div key={label} className="space-y-2 text-center">
-                                <div className="h-px w-36 bg-muted-foreground/30" />
-                                <p className="text-[10px] font-bold uppercase text-muted-foreground">{label}</p>
-                            </div>
-                        ))}
-                    </div>
-                    <Button variant="outline" className="gap-2 font-bold text-xs">
-                        <Download className="h-4 w-4" /> Download PDF
-                    </Button>
-                </div>
-            </div>
-        </div>
-    )
-}
-
-// ─── Status Update Dialog ─────────────────────────────────────────────────────
-function StatusUpdateDialog({ job, onUpdate }: { job: Job; onUpdate: (id: string, status: string) => void }) {
-    const [selected, setSelected] = useState(job.status)
-    const [open, setOpen] = useState(false)
-
-    return (
-        <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-                <Button
-                    size="sm"
-                    className={`h-7 px-2.5 gap-1.5 text-[10px] font-bold uppercase rounded ${statusConfig[job.status]?.className || "bg-slate-500 text-white"}`}
-                >
-                    {job.status} <Edit className="h-3 w-3" />
-                </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-sm">
-                <DialogHeader>
-                    <DialogTitle className="text-base font-bold">Update Status: {job.id}</DialogTitle>
-                </DialogHeader>
-                <div className="py-4 space-y-4">
-                    <div className="space-y-1.5">
-                        <Label className="text-xs font-bold text-muted-foreground uppercase">Select New Status</Label>
-                        <Select value={selected} onValueChange={setSelected}>
-                            <SelectTrigger className="h-10">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {Object.keys(statusConfig).map(s => (
-                                    <SelectItem key={s} value={s}>{s}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                </div>
-                <div className="flex gap-2 justify-end">
-                    <Button variant="outline" className="font-bold h-9" onClick={() => setOpen(false)}>Close</Button>
-                    <Button className="font-bold h-9 bg-blue-600 hover:bg-blue-700" onClick={() => { onUpdate(job.id, selected); setOpen(false) }}>
-                        Update Status
-                    </Button>
-                </div>
-            </DialogContent>
-        </Dialog>
-    )
-}
+const initialJobs: Job[] = [
+    { id: "JB-0034", date: "11 Feb", customer: "Denesik-Keeling", description: "Print Job • Chromo Paper", hasDesign: true, status: "Pending", deadline: "14 Feb", priority: "High", amount: 1450 },
+    { id: "JB-0033", date: "06 Feb", customer: "Harris Group", description: "Wide Format Print", hasDesign: false, status: "Printing", deadline: "09 Feb", priority: "Medium", amount: 25000 },
+    { id: "JB-0032", date: "01 Feb", customer: "Kuhlman & Co", description: "Business Cards", hasDesign: true, status: "Completed", deadline: "04 Feb", priority: "Low", amount: 650 },
+]
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function ProductionJobsPage() {
     const [jobs, setJobs] = useState<Job[]>(initialJobs)
     const [selectedJob, setSelectedJob] = useState<Job | null>(null)
-    const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
-    const [search, setSearch] = useState("")
 
-    const updateStatus = (id: string, status: string) => {
-        setJobs(prev => prev.map(j => j.id === id ? { ...j, status } : j))
+
+    // ─── Modals ──────────────────────────────────────────────────────────────
+    function CreateJobCardModal() {
+        const [open, setOpen] = useState(false)
+        const [items, setItems] = useState([
+            { id: 1, desc: "Sequi quisquam omnis qui.", qty: "395" },
+            { id: 2, desc: "Est dolorem aliquid.", qty: "755" },
+        ])
+
+        return (
+            <Dialog open={open} onOpenChange={setOpen}>
+                <DialogTrigger asChild>
+                    <Button className="h-9 px-6 text-white font-medium text-sm rounded-md shadow-sm gap-2"
+                        style={{ background: 'var(--primary)' }}>
+                        <Plus className="h-4 w-4" /> New Job Card
+                    </Button>
+                </DialogTrigger>
+                <DialogContent className="w-[94vw] max-w-[1400px] h-[90vh] sm:max-w-none p-0 overflow-hidden border border-slate-200 shadow-xl rounded-md bg-white font-sans flex flex-col">
+                    <DialogHeader className="px-6 py-4 text-left border-b border-slate-100 bg-white">
+                        <div className="flex items-center gap-3">
+                            <div className="p-1.5 rounded-md bg-slate-50 text-slate-500 border border-slate-100">
+                                <List className="h-4 w-4" />
+                            </div>
+                            <div>
+                                <DialogTitle className="text-sm font-semibold tracking-tight text-slate-800">Create Job Card</DialogTitle>
+                                <DialogDescription className="text-[10px] text-slate-400">Initialize a new production ticket for the workshop</DialogDescription>
+                            </div>
+                        </div>
+                    </DialogHeader>
+
+                    <div className="p-6 space-y-6 flex-1 overflow-y-auto custom-scrollbar bg-slate-50/30">
+                        {/* Job Details Section */}
+                        <div className="bg-white p-5 rounded-md border border-slate-200 shadow-sm space-y-4">
+                            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 border-l-2 border-[#4C1F7A] pl-3">Job Details</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                <div className="space-y-1.5">
+                                    <Label className="text-xs font-medium text-slate-600">Job No.</Label>
+                                    <Input defaultValue="JB-2026-0037" readOnly className="h-9 bg-slate-50 text-slate-500 border-slate-200 text-sm font-medium" />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <Label className="text-xs font-medium text-slate-600">Customer <span className="text-rose-500">*</span></Label>
+                                    <Select defaultValue="crona">
+                                        <SelectTrigger className="h-9 border-slate-200 text-sm font-medium">
+                                            <SelectValue placeholder="Select Customer" />
+                                        </SelectTrigger>
+                                        <SelectContent className="rounded-md">
+                                            <SelectItem value="crona" className="text-sm">Crona Group</SelectItem>
+                                            <SelectItem value="harris" className="text-sm">Harris Group</SelectItem>
+                                            <SelectItem value="denesik" className="text-sm">Denesik-Keeling</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="space-y-1.5">
+                                    <Label className="text-xs font-medium text-slate-600">Start Date</Label>
+                                    <Input type="date" defaultValue="2026-02-26" className="h-9 border-slate-200 text-sm font-medium" />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <Label className="text-xs font-medium text-rose-600">Delivery Deadline</Label>
+                                    <Input type="date" defaultValue="2026-03-01" className="h-9 border-slate-200 text-sm font-bold text-rose-600" />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Production Items Section */}
+                        <div className="bg-white rounded-md border border-slate-200 shadow-sm overflow-hidden">
+                            <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between bg-white">
+                                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">Production Items</h3>
+                                <Button variant="outline" size="sm" className="h-8 text-[#4C1F7A] border-[#EDE9FE] hover:bg-[#F5F3FF] text-[11px] font-bold px-3 transition-all" onClick={() => setItems([...items, { id: Date.now(), desc: "", qty: "1" }])}>
+                                    <Plus className="h-3 w-3 mr-1" /> Add New Row
+                                </Button>
+                            </div>
+                            <div className="p-0 overflow-x-auto">
+                                <table className="w-full text-sm text-left border-collapse">
+                                    <thead>
+                                        <tr className="bg-slate-50/50 border-b border-slate-100">
+                                            <th className="px-4 py-2.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 w-[65%]">Description & Specifications</th>
+                                            <th className="px-4 py-2.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 w-[20%]">Qty</th>
+                                            <th className="px-4 py-2.5 text-center text-[10px] font-bold uppercase tracking-wider text-slate-400 w-[15%]">Remove</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-50">
+                                        {items.map((item, idx) => (
+                                            <tr key={item.id} className="hover:bg-slate-50/30 transition-colors">
+                                                <td className="px-4 py-3">
+                                                    <div className="relative group">
+                                                        <textarea
+                                                            className="w-full min-h-[50px] text-sm p-3 border border-slate-200 rounded-md focus:border-[#4C1F7A] focus:ring-1 focus:ring-[#EDE9FE] outline-none transition-all resize-none pr-10 font-medium"
+                                                            defaultValue={item.desc}
+                                                            placeholder="Enter job details, paper type, size, etc."
+                                                        />
+                                                        <Dialog>
+                                                            <DialogTrigger asChild>
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="icon"
+                                                                    className="absolute right-1.5 bottom-1.5 h-7 w-7 text-[#4C1F7A] hover:bg-[#F5F3FF] bg-white border border-[#EDE9FE] shadow-sm opacity-0 group-hover:opacity-100 transition-all scale-90"
+                                                                >
+                                                                    <Calculator className="h-3.5 w-3.5" />
+                                                                </Button>
+                                                            </DialogTrigger>
+                                                            <DialogContent className="max-w-[calc(100%-2rem)] sm:max-w-[1200px] md:w-[1200px] p-0 overflow-hidden border border-slate-200 shadow-2xl rounded-md bg-white">
+                                                                <DialogHeader className="px-6 py-4 text-left border-b border-slate-100 bg-white">
+                                                                    <div className="flex items-center gap-3">
+                                                                        <div className="p-1.5 rounded-md bg-[#F5F3FF] text-[#4C1F7A] border border-[#EDE9FE]">
+                                                                            <Calculator className="h-4 w-4" />
+                                                                        </div>
+                                                                        <DialogTitle className="text-sm font-semibold tracking-tight text-slate-800">Cost Estimator & Specs Generator</DialogTitle>
+                                                                    </div>
+                                                                </DialogHeader>
+                                                                <div className="max-h-[75vh] overflow-y-auto custom-scrollbar">
+                                                                    <CostEstimator />
+                                                                </div>
+                                                                <DialogFooter className="p-4 flex flex-row items-center justify-end gap-2 px-6 border-t border-slate-100 bg-slate-50/50">
+                                                                    <DialogTrigger asChild>
+                                                                        <Button variant="outline" className="h-8 px-4 rounded-md text-xs font-medium text-slate-500 border-slate-200 bg-white">
+                                                                            Close
+                                                                        </Button>
+                                                                    </DialogTrigger>
+                                                                    <DialogTrigger asChild>
+                                                                        <Button className="h-8 px-5 rounded-md bg-[#4C1F7A] hover:bg-[#3d1862] font-semibold text-xs text-white shadow-sm transition-all">
+                                                                            Apply to Item
+                                                                        </Button>
+                                                                    </DialogTrigger>
+                                                                </DialogFooter>
+                                                            </DialogContent>
+                                                        </Dialog>
+                                                    </div>
+                                                </td>
+                                                <td className="px-4 py-3">
+                                                    <Input type="number" defaultValue={item.qty} className="h-9 border-slate-200 text-sm font-bold w-full max-w-[100px]" />
+                                                </td>
+                                                <td className="px-4 py-3 text-center">
+                                                    <Button size="icon" variant="ghost" className="h-8 w-8 text-slate-400 hover:text-rose-500 transition-colors" onClick={() => setItems(items.filter(i => i.id !== item.id))}>
+                                                        <Trash className="h-4 w-4" />
+                                                    </Button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        {/* Additional Info Section */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="bg-white p-5 rounded-md border border-slate-200 shadow-sm space-y-4">
+                                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">Design Reference</h3>
+                                <div className="space-y-3">
+                                    <div className="flex items-center gap-3 p-3 border border-dashed border-slate-200 rounded-md bg-slate-50/50 hover:bg-white transition-all group cursor-pointer">
+                                        <div className="p-2 rounded-md bg-white border border-slate-100 text-slate-400 group-hover:text-[#4C1F7A] group-hover:border-[#EDE9FE] transition-all">
+                                            <ImageIcon className="h-5 w-5" />
+                                        </div>
+                                        <div>
+                                            <p className="text-xs font-bold">In-house Design Asset</p>
+                                            <p className="text-[10px] text-slate-400">Click to upload or drag & drop (JPG, PNG)</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="bg-white p-5 rounded-md border border-slate-200 shadow-sm space-y-4">
+                                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">Production Notes</h3>
+                                <textarea
+                                    className="w-full min-h-[78px] text-sm p-3 border border-slate-200 rounded-md focus:border-[#4C1F7A] outline-none transition-all resize-none font-medium text-slate-600 placeholder:text-slate-300"
+                                    placeholder="Enter additional instructions for operators..."
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="bg-white border-t border-slate-100 p-4 flex justify-end gap-2 px-6 shrink-0">
+                        <Button variant="ghost" className="h-9 px-5 text-xs font-medium text-slate-500" onClick={() => setOpen(false)}>
+                            Discard
+                        </Button>
+                        <Button className="h-9 px-6 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-md shadow-sm transition-all" onClick={() => {
+                            toast.success("Job Ticket Created")
+                            setOpen(false)
+                        }}>
+                            Save & Generate Ticket
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
+        )
     }
 
-    const filtered = jobs.filter(j =>
-        j.id.toLowerCase().includes(search.toLowerCase()) ||
-        j.customer.toLowerCase().includes(search.toLowerCase()) ||
-        j.description.toLowerCase().includes(search.toLowerCase())
-    )
+    function UpdateStatusModal({ job }: { job: Job }) {
+        const [open, setOpen] = useState(false)
+        const [status, setStatus] = useState(job.status)
 
+        return (
+            <Dialog open={open} onOpenChange={setOpen}>
+                <DialogTrigger asChild>
+                    <button className="ml-1.5 p-0.5 rounded-sm hover:bg-slate-100 text-slate-400 inline-flex align-middle">
+                        <Edit3 className="h-2.5 w-2.5" />
+                    </button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[360px] p-0 overflow-hidden rounded-md border border-slate-200 shadow-xl font-sans">
+                    <DialogHeader className="px-5 py-4 border-b border-slate-100 bg-white">
+                        <DialogTitle className="text-xs font-bold uppercase tracking-wider text-slate-500">Update Status: {job.id}</DialogTitle>
+                        <DialogDescription className="sr-only">Change the current status of the job order</DialogDescription>
+                    </DialogHeader>
+                    <div className="p-5 space-y-4 bg-white">
+                        <div className="space-y-1.5">
+                            <Label className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Select New Status</Label>
+                            <Select defaultValue={status} onValueChange={setStatus}>
+                                <SelectTrigger className="h-9 border-slate-200 text-xs font-medium">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent className="rounded-md">
+                                    <SelectItem value="Pending" className="text-xs">Pending</SelectItem>
+                                    <SelectItem value="Pre-Press" className="text-xs">Pre-Press</SelectItem>
+                                    <SelectItem value="Printing" className="text-xs">Printing</SelectItem>
+                                    <SelectItem value="Post-Press" className="text-xs">Post-Press</SelectItem>
+                                    <SelectItem value="Completed" className="text-xs">Completed</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
+                    <DialogFooter className="px-5 py-3 bg-slate-50 border-t border-slate-100 flex justify-end gap-2">
+                        <Button variant="ghost" size="sm" className="h-8 text-[11px] font-medium text-slate-500" onClick={() => setOpen(false)}>
+                            Cancel
+                        </Button>
+                        <Button size="sm" className="h-8 bg-[#4C1F7A] hover:bg-[#3d1862] text-white text-[11px] font-bold px-4" onClick={() => {
+                            toast.success(`Status updated to ${status}`)
+                            setOpen(false)
+                        }}>
+                            Update Status
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        )
+    }
+
+
+
+
+    const columns: ColumnDef<Job>[] = [
+        {
+            key: "id",
+            label: "Job No.",
+            headerClassName: "w-[120px] text-[10px] font-bold uppercase tracking-wider text-slate-400",
+            render: (val, job) => (
+                <div className="flex flex-col gap-0.5">
+                    <span className="text-[#4C1F7A] font-bold text-xs tracking-tight">{val}</span>
+                    <span className="text-[10px] text-slate-400 font-medium">{job.date}</span>
+                </div>
+            )
+        },
+        {
+            key: "hasDesign",
+            label: "Design",
+            headerClassName: "w-[70px] text-[10px] font-bold uppercase tracking-wider text-slate-400",
+            render: (val) => (
+                val ? <div className="p-1 rounded-md bg-blue-50 w-fit border border-blue-100"><DownloadImage className="h-3.5 w-3.5 text-blue-500" /></div> : <span className="text-slate-200">-</span>
+            )
+        },
+        { key: "customer", label: "Customer", className: "text-xs font-semibold text-slate-700", headerClassName: "text-[10px] font-bold uppercase tracking-wider text-slate-400" },
+        { key: "description", label: "Description", className: "text-xs text-slate-500 max-w-[250px] truncate font-medium", headerClassName: "text-[10px] font-bold uppercase tracking-wider text-slate-400" },
+        {
+            key: "status",
+            label: "Status",
+            headerClassName: "w-[130px] text-[10px] font-bold uppercase tracking-wider text-slate-400",
+            render: (val, job) => {
+                let statusClass = "bg-slate-500 text-white"
+                if (val === "Completed") statusClass = "bg-emerald-600 text-white"
+                const style = val === "Printing" ? { background: 'var(--primary)' } : undefined
+
+                return (
+                    <div className="flex items-center gap-1">
+                        <Badge className={`${statusClass} text-[10px] font-bold px-2 py-0.5 rounded-sm border-none shadow-sm flex items-center gap-1`} style={style}>
+                            {val === "Completed" && <CheckCircle className="h-2.5 w-2.5" />}
+                            {val}
+                            <UpdateStatusModal job={job} />
+                        </Badge>
+                    </div>
+                )
+            }
+        },
+        {
+            key: "deadline",
+            label: "Deadline",
+            headerClassName: "w-[120px] text-[10px] font-bold uppercase tracking-wider text-slate-400",
+            render: (val) => (
+                <span className="text-rose-600 font-bold text-xs flex items-center gap-1.5 whitespace-nowrap">
+                    <Calendar className="h-3 w-3" /> {val}
+                </span>
+            )
+        },
+        {
+            key: "actions",
+            label: "Actions",
+            filterable: false,
+            headerClassName: "text-right w-[140px] text-[10px] font-bold uppercase tracking-wider text-slate-400",
+            className: "text-right px-4",
+            render: (_, item) => (
+                <div className="flex items-center justify-end gap-1.5">
+                    <Button variant="outline" size="sm" className="h-7 border-slate-200 text-slate-600 bg-white hover:bg-slate-50 font-bold text-[10px] uppercase tracking-tight rounded-md px-2.5 transition-all" onClick={() => setSelectedJob(item)}>
+                        <Eye className="h-3.5 w-3.5 mr-1.5 text-slate-400" /> View
+                    </Button>
+                    <Button size="icon" variant="ghost" className="h-7 w-7 text-slate-400 hover:text-[#4C1F7A] hover:bg-[#F5F3FF] rounded-md transition-all" title="Print Job Card">
+                        <FileText className="h-3.5 w-3.5" />
+                    </Button>
+                </div>
+            )
+        }
+    ]
+
+    // ─── INLINE JOB CARD VIEW ─────────────────────────────────────────────────
     if (selectedJob) {
-        return <JobCardView job={selectedJob} onBack={() => setSelectedJob(null)} />
+        const job = selectedJob
+        return (
+            <div className="space-y-0 font-sans">
+                {/* Top Action Bar */}
+                <div className="bg-white border-b px-8 py-4 flex items-center justify-between sticky top-0 z-10 shadow-sm">
+                    <div className="flex items-center gap-2 text-slate-600">
+                        <FileText className="h-4 w-4" />
+                        <span className="text-sm font-semibold">Job Card</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <Button className="gap-2 font-bold h-9 px-4 rounded-md shadow-sm text-xs text-white" style={{ background: 'var(--primary)' }}>
+                            <FileText className="h-4 w-4" /> Print Job Card
+                        </Button>
+                        <Button size="sm" className="text-white h-9 px-4 gap-2 rounded-md shadow-sm" style={{ background: 'var(--primary)' }}>
+                            <Edit className="h-4 w-4" /> Edit Job Ticket
+                        </Button>
+                        <Button variant="outline" size="sm" className="h-9 px-4 rounded-md border-slate-200" onClick={() => setSelectedJob(null)}>
+                            Back to List
+                        </Button>
+                    </div>
+                </div>
+
+                <div className="p-10 bg-white min-h-screen">
+                    <div className="max-w-[1100px] mx-auto border border-slate-300 p-8 rounded-sm space-y-8">
+                        {/* Ticket Header */}
+                        <div className="flex justify-between items-start border-b border-slate-900 pb-4">
+                            <div>
+                                <h1 className="text-4xl font-black text-slate-900 tracking-tight">JOB TICKET</h1>
+                                <p className="text-lg font-medium text-slate-600 mt-1 uppercase tracking-wider">Ganesha Prints</p>
+                            </div>
+                            <div className="text-right">
+                                <h2 className="text-3xl font-bold text-slate-900 tracking-tight">{job.id}-2026-0037</h2>
+                                <Badge className="mt-2 bg-slate-500 text-white font-bold px-4 py-1.5 rounded-md border-none">{job.status}</Badge>
+                            </div>
+                        </div>
+
+                        {/* Summary Boxes */}
+                        <div className="grid grid-cols-1 md:grid-cols-4 border border-slate-200 divide-x divide-slate-200 rounded-sm">
+                            <div className="p-5 bg-white space-y-2">
+                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">Customer</span>
+                                <div className="pl-1">
+                                    <p className="text-base font-black text-slate-800 leading-tight">{job.customer}</p>
+                                    <p className="text-[10px] text-slate-500 mt-1">Cristina Hermiston | 1-585-837-5878</p>
+                                </div>
+                            </div>
+                            <div className="p-5 bg-white space-y-2">
+                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">Start Date</span>
+                                <p className="text-base font-black text-slate-800 pl-1">{job.date}, 2026</p>
+                            </div>
+                            <div className="p-5 bg-white space-y-2">
+                                <span className="text-[10px] font-bold text-rose-400 uppercase tracking-widest pl-1">Deadline</span>
+                                <p className="text-base font-black text-rose-600 pl-1">{job.deadline}, 2026</p>
+                            </div>
+                            <div className="p-5 bg-white space-y-2 text-center">
+                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Design Reference</span>
+                                <div className="flex justify-center mt-2">
+                                    {job.hasDesign ? (
+                                        <div className="p-2 bg-blue-50 text-blue-600 rounded-md border border-blue-100 italic font-medium cursor-pointer flex items-center gap-2">
+                                            <ImageIcon className="h-4 w-4" /> Design
+                                        </div>
+                                    ) : (
+                                        <span className="text-slate-300 italic text-xs">No Design Attached</span>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Production Details */}
+                        <div className="space-y-4">
+                            <h3 className="text-lg font-black text-slate-800 tracking-tight">Production Details</h3>
+                            <table className="w-full border-collapse border border-slate-300">
+                                <thead className="bg-slate-50 border-b border-slate-300">
+                                    <tr>
+                                        <th className="border border-slate-300 p-3 text-left w-[50px] text-[11px] font-bold uppercase text-slate-500">#</th>
+                                        <th className="border border-slate-300 p-3 text-left text-[11px] font-bold uppercase text-slate-500">Description</th>
+                                        <th className="border border-slate-300 p-3 text-center w-[120px] text-[11px] font-bold uppercase text-slate-500">Quantity</th>
+                                        <th className="border border-slate-300 p-3 text-left w-[300px] text-[11px] font-bold uppercase text-slate-500">Specifications / Machine</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td className="border border-slate-300 p-4 text-center font-bold text-slate-800">1</td>
+                                        <td className="border border-slate-300 p-4">
+                                            <p className="font-bold text-base text-slate-900 leading-snug">
+                                                Book Printing • Specs: 8.27*11.69 Size | 50 Pages • Cover: Chromo Paper (170GSM) - ₹7.0400 + Gloss Lamination • Inner: Newsprint (170GSM) - ₹13.3600 (B/W) • Binding: Perfect Binding
+                                            </p>
+                                        </td>
+                                        <td className="border border-slate-300 p-4 text-center">
+                                            <span className="text-3xl font-black text-slate-800 tracking-tighter tabular-nums">1000</span>
+                                        </td>
+                                        <td className="border border-slate-300 p-4 bg-slate-50/30">
+                                            <div className="space-y-1.5 text-[11px] text-slate-500 font-medium">
+                                                <p><span className="font-bold text-slate-400">Size:</span> 8.27*11.69</p>
+                                                <p><span className="font-bold text-slate-400">Cover:</span> Chromo Paper | Machine: Konica Minolta C6085 | Mode: Color</p>
+                                                <p><span className="font-bold text-slate-400">Inner:</span> Newsprint | Machine: Konica Minolta C6085 | Mode: Bw</p>
+                                                <p><span className="font-bold text-slate-400">Unit_price:</span> 273.44</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {/* Digital Progress Tracking */}
+                        <div className="space-y-4 pt-4">
+                            <h3 className="text-lg font-black text-slate-800 tracking-tight">Digital Progress Tracking</h3>
+                            <div className="border border-slate-300 rounded-sm">
+                                <table className="w-full text-sm">
+                                    <thead className="bg-slate-50 border-b border-slate-300">
+                                        <tr>
+                                            <th className="px-6 py-4 text-left font-black uppercase text-[10px] tracking-widest text-slate-400">Stage</th>
+                                            <th className="px-6 py-4 text-left font-black uppercase text-[10px] tracking-widest text-slate-400">Status</th>
+                                            <th className="px-6 py-4 text-left font-black uppercase text-[10px] tracking-widest text-slate-400">Action / Approver</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-200">
+                                        {[
+                                            { stage: "Paper Cutting", status: "Pending" },
+                                            { stage: "Printing", status: "Pending" },
+                                            { stage: "Lamination", status: "Pending" },
+                                            { stage: "Creasing", status: "Pending" },
+                                            { stage: "Binding", status: "Pending" },
+                                            { stage: "Final QA", status: "Pending" },
+                                        ].map((item, idx) => (
+                                            <tr key={idx} className="hover:bg-slate-50/50 transition-colors">
+                                                <td className="px-6 py-4 font-bold text-slate-700">{item.stage}</td>
+                                                <td className="px-6 py-4">
+                                                    <Badge variant="outline" className="text-[10px] font-black uppercase tracking-widest border-slate-300 text-slate-400 bg-slate-50 shadow-none px-3 py-1">{item.status}</Badge>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <Button size="sm" variant="outline" className="h-8 gap-2 text-[10px] font-black uppercase tracking-widest text-teal-600 border-teal-200 hover:bg-teal-50 px-4 rounded-md">
+                                                        <CheckCircle className="h-3 w-3" /> Mark Done
+                                                    </Button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        {/* Signature Section */}
+                        <div className="flex justify-between pt-16 pb-12 px-12">
+                            <div className="text-center w-[250px] space-y-3">
+                                <div className="border-b-2 border-slate-900 h-8" />
+                                <p className="text-xs font-black uppercase tracking-widest text-slate-600">Operator Signature</p>
+                            </div>
+                            <div className="text-center w-[250px] space-y-3">
+                                <div className="border-b-2 border-slate-900 h-8" />
+                                <p className="text-xs font-black uppercase tracking-widest text-slate-600">Supervisor Signature</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        )
     }
 
     return (
-        <div className="space-y-4">
-            {/* Header */}
-            <div className="flex items-center justify-between px-1">
-                <h1 className="text-2xl font-bold tracking-tight">Production Jobs</h1>
-                <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-                    <DialogTrigger asChild>
-                        <Button className="gap-2 bg-blue-600 hover:bg-blue-700 font-bold h-10 shadow-sm">
-                            <Plus className="h-4 w-4" /> New Job Card
-                        </Button>
-                    </DialogTrigger>
-                    <NewJobCardDialog onClose={() => setIsAddDialogOpen(false)} />
-                </Dialog>
+        <div className="space-y-4 font-sans bg-slate-50/10 p-4 rounded-lg">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-4 mb-2 px-1">
+                <div>
+                    <h1 className="text-xl font-bold tracking-tight text-slate-800">Production Workflow</h1>
+                    <p className="text-xs text-slate-500 font-medium">Manage and monitor live print jobs and production stages</p>
+                </div>
+
+                <div className="flex items-center gap-3">
+                    <CreateJobCardModal />
+                </div>
             </div>
 
-            <Card className="shadow-sm border-none bg-background">
-                <CardHeader className="pb-4 border-b">
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                        <Settings2 className="h-4 w-4" />
-                        <CardTitle className="text-sm font-medium">Production Workflow</CardTitle>
-                    </div>
-                </CardHeader>
-                <CardContent className="pt-6">
-                    {/* Toolbar */}
-                    <div className="flex flex-col md:flex-row gap-4 mb-6 items-center justify-between">
-                        <div className="flex items-center gap-2 w-full md:w-auto">
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="outline" size="sm" className="gap-2 h-9">
-                                        <Download className="h-4 w-4" /> Export <ChevronDown className="h-3 w-3" />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent>
-                                    <DropdownMenuItem onClick={() => toast.success("Exporting CSV")}>Export CSV</DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => toast.success("Exporting PDF")}>Export PDF</DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="outline" size="sm" className="gap-2 h-9">
-                                        <Filter className="h-4 w-4" /> Columns <ChevronDown className="h-3 w-3" />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent>
-                                    <DropdownMenuItem>Reset Columns</DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        </div>
-                        <div className="relative w-full md:w-80">
-                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                            <Input
-                                placeholder="Search current page..."
-                                className="pl-8 h-9 bg-muted/20 border-none focus-visible:ring-1"
-                                value={search}
-                                onChange={e => setSearch(e.target.value)}
-                            />
-                        </div>
-                    </div>
-
-                    {/* Table */}
-                    <div className="rounded-md border">
-                        <Table>
-                            <TableHeader>
-                                <TableRow className="bg-muted/50 hover:bg-muted/50">
-                                    <TableHead className="font-bold w-[140px]">Status</TableHead>
-                                    <TableHead className="font-bold w-[70px]">Design</TableHead>
-                                    <TableHead className="font-bold">Customer</TableHead>
-                                    <TableHead className="font-bold">Description (Main)</TableHead>
-                                    <TableHead className="font-bold w-[130px]">Status</TableHead>
-                                    <TableHead className="font-bold w-[100px]">Deadline</TableHead>
-                                    <TableHead className="text-right font-bold w-[120px]">Actions</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {filtered.map((job) => (
-                                    <TableRow key={job.id} className="group">
-                                        {/* Job ID + Date */}
-                                        <TableCell className="py-3">
-                                            <div className="flex flex-col gap-0.5">
-                                                <span
-                                                    className="text-blue-600 font-bold text-sm hover:underline cursor-pointer leading-tight"
-                                                    onClick={() => setSelectedJob(job)}
-                                                >
-                                                    {job.id}
-                                                </span>
-                                                <span className="text-[11px] text-muted-foreground">{job.date}</span>
-                                            </div>
-                                        </TableCell>
-
-                                        {/* Design */}
-                                        <TableCell>
-                                            {job.hasDesign
-                                                ? <ImageIcon className="h-5 w-5 text-blue-500" />
-                                                : <span className="text-muted-foreground text-sm">-</span>
-                                            }
-                                        </TableCell>
-
-                                        {/* Customer */}
-                                        <TableCell className="font-medium text-sm">{job.customer}</TableCell>
-
-                                        {/* Description */}
-                                        <TableCell className="text-sm text-muted-foreground max-w-[200px] truncate">
-                                            {job.description}
-                                        </TableCell>
-
-                                        {/* Status badge + edit */}
-                                        <TableCell>
-                                            <StatusUpdateDialog job={job} onUpdate={updateStatus} />
-                                        </TableCell>
-
-                                        {/* Deadline */}
-                                        <TableCell>
-                                            <span className="text-rose-600 font-bold text-xs flex items-center gap-1">
-                                                <AlertCircle className="h-3 w-3" /> {job.deadline}
-                                            </span>
-                                        </TableCell>
-
-                                        {/* Actions */}
-                                        <TableCell className="text-right">
-                                            <Button
-                                                size="sm"
-                                                variant="outline"
-                                                className="h-8 gap-1.5 text-[11px] font-bold border-cyan-400 text-cyan-600 bg-cyan-50 hover:bg-cyan-100"
-                                                onClick={() => setSelectedJob(job)}
-                                            >
-                                                <Eye className="h-3.5 w-3.5" /> View Card
-                                            </Button>
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </div>
-                </CardContent>
-            </Card>
+            <div className="bg-transparent rounded-md border-none px-0 w-full max-w-full">
+                <DataGrid
+                    data={jobs}
+                    columns={columns}
+                    title="None"
+                    hideTitle={true}
+                    searchPlaceholder="Filter jobs by ID, customer or status..."
+                    toolbarClassName="border-b px-4 py-3 bg-white"
+                />
+            </div>
         </div>
     )
 }

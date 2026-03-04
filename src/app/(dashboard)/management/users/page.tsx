@@ -2,23 +2,11 @@
 
 import React, { useState } from "react"
 import {
-    MoreHorizontal,
-    Plus,
-    Search,
-    Filter,
-    Download,
-    Trash2,
-    Edit2,
-    ShieldCheck,
-    Lock,
-    UserPlus,
-    Mail,
-    Phone,
-    Shield,
-    ChevronDown,
-    UserCircle,
-    Key
+    UserPlus, Trash2, Edit2,
+    Mail, Key
 } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import {
     Dialog,
     DialogContent,
@@ -28,6 +16,7 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
     Select,
@@ -36,229 +25,220 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table"
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { DataGrid, type ColumnDef } from "@/components/shared/data-grid"
 
-const staffMembers = [
-    { id: "U-001", name: "Rajesh Kumar", email: "rajesh@digitalerp.com", role: "Administrator", status: "Active", lastActive: "Now", avatar: "" },
-    { id: "U-002", name: "Sunil Verma", email: "sunil@digitalerp.com", role: "Operator", status: "Active", lastActive: "15m ago", avatar: "" },
-    { id: "U-003", name: "Anjali Singh", email: "anjali@digitalerp.com", role: "Designer", status: "Active", lastActive: "2h ago", avatar: "" },
-    { id: "U-004", name: "Vikas Shah", email: "vikas@digitalerp.com", role: "Operator", status: "Inactive", lastActive: "4d ago", avatar: "" },
-    { id: "U-005", name: "Meera Iyer", email: "meera@digitalerp.com", role: "Accountant", status: "Active", lastActive: "1h ago", avatar: "" },
+// ─── Types ──────────────────────────────────────────────────────────────────
+type UserType = {
+    id: string
+    name: string
+    email: string
+    role: string
+    lastActive: string
+    status: "Active" | "Inactive" | "Suspended"
+}
+
+// ─── Mock Data ───────────────────────────────────────────────────────────────
+const staffMembers: UserType[] = [
+    { id: "U-001", name: "Rajesh Kumar", email: "rajesh@digitalerp.com", role: "Administrator", status: "Active", lastActive: "Now" },
+    { id: "U-002", name: "Sunil Verma", email: "sunil@digitalerp.com", role: "Operator", status: "Active", lastActive: "15m ago" },
+    { id: "U-003", name: "Anjali Singh", email: "anjali@digitalerp.com", role: "Designer", status: "Active", lastActive: "2h ago" },
+    { id: "U-004", name: "Vikas Shah", email: "vikas@digitalerp.com", role: "Operator", status: "Inactive", lastActive: "4d ago" },
+    { id: "U-005", name: "Meera Iyer", email: "meera@digitalerp.com", role: "Accountant", status: "Active", lastActive: "1h ago" },
 ]
 
+// ─── Main Page ────────────────────────────────────────────────────────────────
 export default function ManagementUsersPage() {
-    const [search, setSearch] = useState("")
     const [isAddUserOpen, setIsAddUserOpen] = useState(false)
 
+    const columns: ColumnDef<UserType>[] = [
+        {
+            key: "name",
+            label: "Member Identity",
+            render: (val, row) => (
+                <div className="flex items-center gap-3 py-1">
+                    <Avatar className="h-10 w-10 rounded-2xl border-2 border-white shadow-sm ring-1 ring-slate-100">
+                        <AvatarFallback className="font-black text-xs" style={{ background: 'color-mix(in srgb, var(--primary), white 90%)', color: 'var(--primary)' }}>
+                            {val.split(' ').map((n: string) => n[0]).join('')}
+                        </AvatarFallback>
+                    </Avatar>
+                    <div className="flex flex-col">
+                        <span className="font-bold text-slate-800 leading-none mb-1">{val}</span>
+                        <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest">{row.id}</span>
+                    </div>
+                </div>
+            )
+        },
+        {
+            key: "email",
+            label: "Communication",
+            render: (val) => (
+                <div className="flex items-center gap-1.5 text-xs text-slate-600 font-medium italic">
+                    <Mail className="h-3 w-3 text-slate-400" /> {val}
+                </div>
+            )
+        },
+        {
+            key: "role",
+            label: "Privileges",
+            render: (val) => (
+                <Badge variant="outline" className="font-black uppercase text-[10px] tracking-widest px-3 transition-all" style={{ background: 'color-mix(in srgb, var(--primary), white 95%)', borderColor: 'color-mix(in srgb, var(--primary), white 80%)', color: 'var(--primary)' }}>
+                    {val}
+                </Badge>
+            )
+        },
+
+        {
+            key: "status",
+            label: "Status",
+            render: (val) => {
+                const colors = {
+                    Active: "bg-emerald-50 text-emerald-600",
+                    Inactive: "bg-slate-50 text-slate-500",
+                    Suspended: "bg-rose-50 text-rose-600"
+                }
+                return (
+                    <Badge className={`${colors[val as keyof typeof colors]} border-none text-[10px] font-black uppercase tracking-widest px-2`}>
+                        {val}
+                    </Badge>
+                )
+            }
+        },
+        {
+            key: "actions",
+            label: "Actions",
+            className: "text-right",
+            filterable: false,
+            render: () => (
+                <div className="flex items-center justify-end gap-1.5 px-2">
+                    <Button size="icon" variant="outline" className="h-7 w-7 rounded-md bg-white transition-all shadow-none" style={{ color: 'var(--primary)', borderColor: 'color-mix(in srgb, var(--primary), white 70%)' }} title="Edit Primary Profile">
+                        <Edit2 className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button size="icon" variant="outline" className="h-7 w-7 rounded-md border-amber-200 bg-white text-amber-500 hover:text-amber-600 hover:bg-amber-50 transition-colors shadow-none" title="Reset Security Credentials">
+                        <Key className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button size="icon" variant="outline" className="h-7 w-7 rounded-md border-rose-200 bg-white text-rose-500 hover:text-rose-600 hover:bg-rose-50 transition-colors shadow-none" title="Remove Access Rights">
+                        <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                </div>
+            )
+        }
+    ]
+
     return (
-        <div className="space-y-4">
-            <div className="flex items-center justify-between px-1">
-                <h1 className="text-2xl font-bold tracking-tight">User Management</h1>
-            </div>
-
-            <Card className="shadow-sm border-none bg-background">
-                <CardHeader className="pb-4 border-b">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2 text-muted-foreground">
-                            <Shield className="h-4 w-4" />
-                            <CardTitle className="text-sm font-medium">Platform Access Control</CardTitle>
-                        </div>
-                        <Dialog open={isAddUserOpen} onOpenChange={setIsAddUserOpen}>
-                            <DialogTrigger asChild>
-                                <Button className="gap-2 bg-blue-600 hover:bg-blue-700 font-bold h-9 text-xs shadow-sm">
-                                    <UserPlus className="h-4 w-4" /> Add New User
-                                </Button>
-                            </DialogTrigger>
-                            <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden border-none shadow-2xl rounded-3xl flex flex-col max-h-[92vh]">
-                                <DialogHeader className="px-10 pt-10 pb-6 text-left border-b">
-                                    <div className="flex items-center gap-4 mb-2">
-                                        <div className="p-3 rounded-2xl bg-blue-50 text-blue-600 shadow-sm border border-blue-100/50">
-                                            <UserPlus className="h-5 w-5" />
-                                        </div>
-                                        <DialogTitle className="text-2xl font-black tracking-tight text-slate-800">Create New User</DialogTitle>
+        <div className="space-y-6">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 px-1">
+                <div>
+                    <h1 className="text-4xl font-black tracking-tight text-slate-900 font-heading">Team Access</h1>
+                </div>
+                <div className="flex items-center gap-3">
+                    <Dialog open={isAddUserOpen} onOpenChange={setIsAddUserOpen}>
+                        <DialogTrigger asChild>
+                            <Button className="h-11 px-8 rounded-xl font-bold gap-2 shadow-lg transition-all text-white" style={{ background: 'var(--primary)' }}>
+                                <UserPlus className="h-4 w-4" /> Create Member
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden border-none shadow-2xl rounded-3xl flex flex-col max-h-[92vh]">
+                            <DialogHeader className="px-10 pt-10 pb-6 text-left border-b">
+                                <div className="flex items-center gap-4 mb-2">
+                                    <div className="p-3 rounded-2xl shadow-sm border border-slate-100 transition-all" style={{ background: 'color-mix(in srgb, var(--primary), white 95%)', color: 'var(--primary)' }}>
+                                        <UserPlus className="h-5 w-5" />
                                     </div>
-                                    <DialogDescription className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 pl-1">
-                                        Set up platform access for staff
-                                    </DialogDescription>
-                                </DialogHeader>
+                                    <DialogTitle className="text-2xl font-black tracking-tight text-slate-800">Account Provisioning</DialogTitle>
+                                </div>
+                                <DialogDescription className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 pl-1">
+                                    Set up identity and access credentials
+                                </DialogDescription>
+                            </DialogHeader>
 
-                                <div className="px-10 py-8 space-y-8 flex-1 overflow-y-auto custom-scrollbar">
-                                    {/* 01: Identification */}
-                                    <div className="space-y-4">
-                                        <div className="flex items-center gap-2 mb-2">
-                                            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-blue-600 text-[10px] font-black text-white">01</span>
-                                            <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-500">Staff Identity</h3>
-                                        </div>
+                            <div className="px-10 py-8 space-y-8 flex-1 overflow-y-auto custom-scrollbar">
+                                {/* 01: Profile Information */}
+                                <div className="space-y-4">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <span className="flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-black text-white" style={{ background: 'var(--primary)' }}>01</span>
+                                        <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-500">Identity Details</h3>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-2">
                                             <Label className="text-[10px] font-black uppercase text-slate-500 tracking-widest pl-1">Full Name</Label>
                                             <Input
-                                                placeholder="e.g. Priyanshu"
-                                                className="h-12 rounded-xl border-slate-200 bg-blue-50/30 font-bold text-slate-700 px-4 focus-visible:ring-blue-500/20"
+                                                placeholder="e.g. John Doe"
+                                                className="h-12 rounded-xl border-slate-200 bg-slate-50 transition-all font-bold text-slate-700 px-4 focus-visible:ring-indigo-500/20"
                                             />
                                         </div>
-
                                         <div className="space-y-2">
-                                            <Label className="text-[10px] font-black uppercase text-slate-500 tracking-widest pl-1">Email Address</Label>
+                                            <Label className="text-[10px] font-black uppercase text-slate-500 tracking-widest pl-1">Primary Email</Label>
                                             <Input
-                                                placeholder="aman@digitalerp.com"
-                                                className="h-12 rounded-xl border-slate-100 bg-white font-medium text-slate-600 px-4 focus-visible:ring-blue-500/20"
-                                                type="email"
+                                                placeholder="user@erp.com"
+                                                className="h-12 rounded-xl border-slate-200 bg-slate-50 transition-all font-bold text-slate-700 px-4 focus-visible:ring-indigo-500/20"
                                             />
-                                        </div>
-                                    </div>
-
-                                    {/* 02: Access Control */}
-                                    <div className="space-y-4">
-                                        <div className="flex items-center gap-2 mb-2">
-                                            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-blue-600 text-[10px] font-black text-white">02</span>
-                                            <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-500">Access Control</h3>
-                                        </div>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div className="space-y-2">
-                                                <Label className="text-[10px] font-black uppercase text-slate-500 tracking-widest pl-1">Select Role</Label>
-                                                <Select>
-                                                    <SelectTrigger className="h-12 rounded-xl border-slate-100 bg-white font-medium text-slate-600 px-4">
-                                                        <SelectValue placeholder="Role" />
-                                                    </SelectTrigger>
-                                                    <SelectContent className="rounded-xl">
-                                                        <SelectItem value="admin">Administrator</SelectItem>
-                                                        <SelectItem value="operator">Operator</SelectItem>
-                                                        <SelectItem value="accountant">Accountant</SelectItem>
-                                                    </SelectContent>
-                                                </Select>
-                                            </div>
-                                            <div className="space-y-2">
-                                                <Label className="text-[10px] font-black uppercase text-slate-500 tracking-widest pl-1">Password</Label>
-                                                <Input
-                                                    value="••••••••"
-                                                    readOnly
-                                                    className="h-12 rounded-xl border-none bg-blue-50 font-bold text-slate-800 px-4 focus-visible:ring-blue-500/20"
-                                                    type="password"
-                                                />
-                                            </div>
                                         </div>
                                     </div>
                                 </div>
 
-                                <DialogFooter className="p-8 mt-2 flex flex-row items-center justify-end gap-3 px-10 border-t bg-slate-50/50">
-                                    <Button
-                                        variant="ghost"
-                                        className="h-11 px-8 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-600 transition-colors"
-                                        onClick={() => setIsAddUserOpen(false)}
-                                    >
-                                        Cancel
-                                    </Button>
-                                    <Button
-                                        className="h-11 px-8 rounded-xl bg-blue-600 hover:bg-blue-700 font-bold text-[10px] font-black uppercase tracking-widest shadow-lg shadow-blue-200 transition-all"
-                                        onClick={() => setIsAddUserOpen(false)}
-                                    >
-                                        Create User
-                                    </Button>
-                                </DialogFooter>
-                            </DialogContent>
-                        </Dialog>
-                    </div>
-                </CardHeader>
-                <CardContent className="pt-6">
-                    <div className="flex flex-col md:flex-row gap-4 mb-6 items-center justify-between">
-                        <div className="flex items-center gap-2">
-                            <Button variant="outline" size="sm" className="gap-2 h-9">
-                                <Download className="h-4 w-4" /> Export <ChevronDown className="h-3 w-3" />
-                            </Button>
-                        </div>
-                        <div className="relative w-full md:w-80">
-                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                            <Input
-                                placeholder="Search by name, email or role..."
-                                className="pl-8 h-9 bg-muted/20 border-none"
-                                value={search}
-                                onChange={e => setSearch(e.target.value)}
-                            />
-                        </div>
-                    </div>
+                                {/* 02: Access Configuration */}
+                                <div className="space-y-4">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <span className="flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-black text-white" style={{ background: 'var(--primary)' }}>02</span>
+                                        <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-500">Access Control</h3>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <Label className="text-[10px] font-black uppercase text-slate-500 tracking-widest pl-1">Assign Role</Label>
+                                            <Select>
+                                                <SelectTrigger className="h-12 rounded-xl border-slate-100 bg-white font-medium text-slate-600 px-4">
+                                                    <SelectValue placeholder="Select Privilege" />
+                                                </SelectTrigger>
+                                                <SelectContent className="rounded-xl">
+                                                    <SelectItem value="admin">Administrator</SelectItem>
+                                                    <SelectItem value="sales">Sales Head</SelectItem>
+                                                    <SelectItem value="accounts">Accountant</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label className="text-[10px] font-black uppercase text-slate-500 tracking-widest pl-1">Department</Label>
+                                            <Select>
+                                                <SelectTrigger className="h-12 rounded-xl border-slate-100 bg-white font-medium text-slate-600 px-4">
+                                                    <SelectValue placeholder="Work Unit" />
+                                                </SelectTrigger>
+                                                <SelectContent className="rounded-xl">
+                                                    <SelectItem value="management">Management</SelectItem>
+                                                    <SelectItem value="operations">Operations</SelectItem>
+                                                    <SelectItem value="finance">Finance</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
-                    <div className="rounded-md border">
-                        <Table>
-                            <TableHeader>
-                                <TableRow className="bg-muted/50">
-                                    <TableHead className="font-bold">Member</TableHead>
-                                    <TableHead className="font-bold">Role</TableHead>
-                                    <TableHead className="font-bold">Contact</TableHead>
-                                    <TableHead className="font-bold">Status</TableHead>
-                                    <TableHead className="font-bold text-center">Last Active</TableHead>
-                                    <TableHead className="text-right font-bold w-[100px]">Actions</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {staffMembers.map(user => (
-                                    <TableRow key={user.id} className="group">
-                                        <TableCell>
-                                            <div className="flex items-center gap-3">
-                                                <Avatar className="h-9 w-9 border-2 border-white shadow-sm">
-                                                    <AvatarFallback className="bg-slate-100 text-slate-600 font-bold text-xs">{user.name.charAt(0)}</AvatarFallback>
-                                                </Avatar>
-                                                <div className="py-2">
-                                                    <p className="font-bold text-sm text-slate-800 line-clamp-1">{user.name}</p>
-                                                    <p className="text-[10px] text-muted-foreground font-mono">{user.id}</p>
-                                                </div>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>
-                                            <Badge variant="secondary" className="font-bold text-[10px] uppercase h-5">
-                                                {user.role}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell>
-                                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                                                <Mail className="h-3 w-3" /> {user.email}
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>
-                                            <div className="flex items-center gap-2">
-                                                <div className={`h-2 w-2 rounded-full ${user.status === 'Active' ? 'bg-emerald-500' : 'bg-slate-300'}`} />
-                                                <span className="text-xs font-semibold">{user.status}</span>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell className="text-center text-[10px] font-bold text-muted-foreground">
-                                            {user.lastActive}
-                                        </TableCell>
-                                        <TableCell className="text-right py-2">
-                                            <div className="flex items-center justify-end gap-1 px-1">
-                                                <Button size="icon" variant="outline" className="h-7 w-7 border-slate-200">
-                                                    <Edit2 className="h-3.5 w-3.5" />
-                                                </Button>
-                                                <Button size="icon" variant="outline" className="h-7 w-7 border-slate-200 text-rose-500">
-                                                    <Trash2 className="h-3.5 w-3.5" />
-                                                </Button>
-                                            </div>
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </div>
-                </CardContent>
-            </Card>
+                            <DialogFooter className="p-8 mt-2 flex flex-row items-center justify-end gap-3 px-10 border-t bg-slate-50/50">
+                                <Button
+                                    variant="ghost"
+                                    className="h-11 px-8 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-600 transition-colors"
+                                    onClick={() => setIsAddUserOpen(false)}
+                                >
+                                    Cancel
+                                </Button>
+                                <Button
+                                    className="h-11 px-8 rounded-xl font-bold text-[10px] font-black uppercase tracking-widest shadow-lg transition-all text-white"
+                                    style={{ background: 'var(--primary)' }}
+                                    onClick={() => setIsAddUserOpen(false)}
+                                >
+                                    Provision Account
+                                </Button>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
+                </div>
+            </div>
+
+            <DataGrid
+                data={staffMembers}
+                columns={columns}
+                searchPlaceholder="Search members, roles or emails..."
+            />
         </div>
     )
 }
