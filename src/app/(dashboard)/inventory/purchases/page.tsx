@@ -14,18 +14,13 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select"
+import { SearchableSelect } from "@/components/shared/searchable-select"
 import {
     Dialog,
     DialogContent,
     DialogDescription,
     DialogFooter,
+    DialogHeader,
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog"
@@ -85,141 +80,157 @@ function PurchaseFormDialog({ onClose }: { onClose: () => void }) {
     }, [items, isGst])
 
     return (
-        <DialogContent className="max-w-[1000px] w-[95vw] p-0 border-none shadow-xl rounded-xl bg-white font-sans overflow-hidden flex flex-col max-h-[92vh]">
-            <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-white shrink-0">
-                <DialogTitle className="text-xl font-semibold text-slate-800 font-sans">New Purchase Order</DialogTitle>
-                <DialogDescription className="sr-only">Form to create a new material purchase order</DialogDescription>
-            </div>
-
-            <div className="p-8 space-y-8 flex-1 overflow-y-auto">
-                {/* Identification & Vendor */}
-                <div className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div className="space-y-1.5">
-                            <Label className="text-sm font-medium text-slate-600 font-sans">Vendor <span className="text-rose-500">*</span></Label>
-                            <Select>
-                                <SelectTrigger className="h-10 border-slate-200 bg-white font-medium text-slate-800 font-sans rounded-lg">
-                                    <SelectValue placeholder="Select Vendor" />
-                                </SelectTrigger>
-                                <SelectContent className="font-sans">
-                                    {vendors.map(v => <SelectItem key={v} value={v}>{v}</SelectItem>)}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="space-y-1.5">
-                            <Label className="text-sm font-medium text-slate-600 font-sans">Invoice Number</Label>
-                            <Input placeholder="INV-0000" className="h-10 border-slate-200 bg-white font-medium text-slate-800 font-sans rounded-lg" />
-                        </div>
-                        <div className="space-y-1.5">
-                            <Label className="text-sm font-medium text-slate-600 font-sans">Purchase Date <span className="text-rose-500">*</span></Label>
-                            <Input type="date" className="h-10 border-slate-200 bg-white font-medium text-slate-800 font-sans rounded-lg" defaultValue={new Date().toISOString().split('T')[0]} />
-                        </div>
+        <DialogContent className="max-w-[calc(100%-1rem)] sm:max-w-[800px] p-0 overflow-hidden border border-slate-200 shadow-xl rounded-md bg-white max-h-[90vh] flex flex-col font-sans uppercase">
+            <DialogHeader className="px-4 sm:px-6 py-4 text-left border-b border-slate-100 bg-white italic">
+                <div className="flex items-center gap-3">
+                    <div className="p-1.5 rounded-md border" style={{ background: 'var(--sidebar-accent)', color: 'var(--primary)', borderColor: 'var(--border)' }}>
+                        <ShoppingCart className="h-4 w-4" />
+                    </div>
+                    <div>
+                        <DialogTitle className="text-sm font-black tracking-tight text-slate-800 leading-none">New Purchase Ledger</DialogTitle>
+                        <DialogDescription className="text-[10px] text-slate-400 font-medium mt-1">Record new material purchases and vendor billing details.</DialogDescription>
                     </div>
                 </div>
+            </DialogHeader>
 
-                {/* Taxation Configuration */}
-                <div className="space-y-4">
-                    <div className="flex items-center gap-8 p-4 rounded-lg bg-slate-50 border border-slate-100 font-sans">
-                        <div className="flex items-center space-x-3">
-                            <Checkbox id="isGst" checked={isGst} onCheckedChange={(v: boolean) => setIsGst(v)} className="h-5 w-5 rounded border-slate-300 transition-all" style={{ '--tw-text-opacity': '1', color: 'var(--primary)' } as React.CSSProperties} />
-                            <Label htmlFor="isGst" className="text-sm font-medium text-slate-600 cursor-pointer font-sans">Enable GST Billing</Label>
+            <div className="flex-1 overflow-y-auto custom-scrollbar">
+                <div className="px-4 sm:px-6 py-6 space-y-6">
+                    {/* Identification & Vendor */}
+                    <div className="space-y-4">
+                        <div className="flex items-center gap-2">
+                            <Info className="h-3 w-3 text-slate-400" />
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Order Details</span>
                         </div>
-                        {isGst && (
-                            <div className="flex items-center gap-4 animate-in fade-in slide-in-from-left-2 transition-all font-sans">
-                                <span className="text-xs text-slate-400 font-medium font-sans">Tax Rate</span>
-                                <Select defaultValue="18">
-                                    <SelectTrigger className="h-9 w-32 rounded-lg bg-white border-slate-200 font-medium text-slate-700 font-sans">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent className="rounded-lg font-sans">
-                                        <SelectItem value="5">5% GST</SelectItem>
-                                        <SelectItem value="12">12% GST</SelectItem>
-                                        <SelectItem value="18">18% GST</SelectItem>
-                                        <SelectItem value="28">28% GST</SelectItem>
-                                    </SelectContent>
-                                </Select>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="space-y-1.5">
+                                <Label className="text-xs font-medium text-slate-600">Vendor <span className="text-rose-500">*</span></Label>
+                                <SearchableSelect
+                                    options={vendors.map(v => ({ value: v, label: v }))}
+                                    placeholder="Select Vendor"
+                                    onValueChange={(val) => console.log(val)}
+                                    className="h-9 rounded-md border-slate-200 bg-white font-medium text-xs shadow-none"
+                                />
                             </div>
-                        )}
-                    </div>
-                </div>
-
-                {/* Purchase Items */}
-                <div className="space-y-4">
-                    <div className="flex items-center justify-between px-1">
-                        <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 font-sans">Material Items</span>
-                        <Button size="sm" variant="outline" className="h-8 gap-1.5 font-medium border-slate-200 rounded-lg px-3 transition-all font-sans" style={{ color: 'var(--primary)', background: 'color-mix(in srgb, var(--primary), white 95%)' }} onClick={addItem}>
-                            <PlusCircle className="h-3.5 w-3.5" /> Add Row
-                        </Button>
+                            <div className="space-y-1.5">
+                                <Label className="text-xs font-medium text-slate-600">Invoice Number</Label>
+                                <Input placeholder="INV-0000" className="h-9 border-slate-200 bg-white font-medium text-sm rounded-md" />
+                            </div>
+                            <div className="space-y-1.5">
+                                <Label className="text-xs font-medium text-slate-600">Purchase Date <span className="text-rose-500">*</span></Label>
+                                <Input type="date" className="h-9 border-slate-200 bg-white font-medium text-sm rounded-md" defaultValue={new Date().toISOString().split('T')[0]} />
+                            </div>
+                        </div>
                     </div>
 
-                    <div className="border border-slate-200 rounded-lg overflow-hidden font-sans">
-                        <Table>
-                            <TableHeader className="bg-slate-50/50">
-                                <TableRow className="border-b">
-                                    <TableHead className="font-semibold text-xs text-slate-500 px-4 h-10 font-sans">Category</TableHead>
-                                    <TableHead className="font-semibold text-xs text-slate-500 h-10 font-sans">Description</TableHead>
-                                    <TableHead className="font-semibold text-xs text-slate-500 text-center w-[120px] h-10 font-sans">Qty</TableHead>
-                                    <TableHead className="font-semibold text-xs text-slate-500 text-center w-[140px] h-10 font-sans">Unit Price (₹)</TableHead>
-                                    <TableHead className="font-semibold text-xs text-slate-500 text-right w-[140px] h-10 font-sans">Subtotal</TableHead>
-                                    <TableHead className="w-[50px] font-sans h-10"></TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {items.map((item, idx) => (
-                                    <TableRow key={item.id} className="hover:bg-slate-50/30 transition-colors">
-                                        <TableCell className="px-4 py-3 font-sans">
-                                            <Select defaultValue={item.type}>
-                                                <SelectTrigger className="h-9 border-none shadow-none focus:ring-0 font-medium text-slate-700 bg-transparent p-0 font-sans">
-                                                    <SelectValue />
-                                                </SelectTrigger>
-                                                <SelectContent className="font-sans">
-                                                    {itemTypes.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
-                                                </SelectContent>
-                                            </Select>
-                                        </TableCell>
-                                        <TableCell className="font-sans">
-                                            <Input placeholder="Item Description" className="h-9 border-none bg-transparent shadow-none font-medium text-slate-800 focus-visible:ring-0 p-0 font-sans" />
-                                        </TableCell>
-                                        <TableCell className="font-sans">
-                                            <Input type="number" className="h-9 text-center border-slate-200 rounded-lg font-medium font-sans" defaultValue={item.quantity} />
-                                        </TableCell>
-                                        <TableCell className="font-sans">
-                                            <Input type="number" className="h-9 text-center border-slate-200 rounded-lg font-bold text-teal-700 bg-cyan-50/30 font-sans" defaultValue={item.unitPrice} />
-                                        </TableCell>
-                                        <TableCell className="text-right font-semibold text-sm text-slate-700 tracking-tight font-sans">
-                                            ₹{item.subtotal.toFixed(2)}
-                                        </TableCell>
-                                        <TableCell className="text-right font-sans">
-                                            <Button size="icon" variant="ghost" className="h-8 w-8 text-rose-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg font-sans">
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
+                    {/* Taxation Configuration */}
+                    <div className="space-y-4">
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-8 p-3 rounded-md bg-slate-50 border border-slate-100">
+                            <div className="flex items-center space-x-3">
+                                <Checkbox id="isGst" checked={isGst} onCheckedChange={(v: boolean) => setIsGst(v)} className="h-4 w-4 rounded border-slate-300 transition-all data-[state=checked]:bg-primary data-[state=checked]:border-primary" />
+                                <Label htmlFor="isGst" className="text-xs font-bold text-slate-600 cursor-pointer uppercase tracking-wider">Enable GST Billing</Label>
+                            </div>
+                            {isGst && (
+                                <div className="flex items-center gap-4 animate-in fade-in slide-in-from-left-2 transition-all">
+                                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Tax Rate</span>
+                                    <SearchableSelect
+                                        options={[
+                                            { value: '5', label: '5% GST' },
+                                            { value: '12', label: '12% GST' },
+                                            { value: '18', label: '18% GST' },
+                                            { value: '28', label: '28% GST' }
+                                        ]}
+                                        value="18"
+                                        onValueChange={(val) => console.log(val)}
+                                        placeholder="Tax Rate"
+                                        className="h-8 w-28 rounded-md bg-white border-slate-200 font-medium text-xs shadow-sm"
+                                    />
+                                </div>
+                            )}
+                        </div>
                     </div>
 
-                    {/* Summary box like Daily Reading Log impressions */}
-                    <div className="flex items-center justify-between p-4 rounded-lg bg-cyan-50/50 border border-cyan-100/50 font-sans">
-                        <span className="text-sm font-medium text-teal-700">Total Purchase Amount:</span>
-                        <span className="text-lg font-bold text-teal-800">
-                            ₹{totals.total.toLocaleString()}
-                        </span>
+                    {/* Purchase Items */}
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <Package className="h-3 w-3 text-slate-400" />
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Material Items</span>
+                            </div>
+                            <Button size="sm" variant="outline" className="h-7 gap-1.5 font-bold text-[10px] border-slate-200 rounded-md px-3 transition-all uppercase tracking-wider" style={{ color: 'var(--primary)', background: 'color-mix(in srgb, var(--primary), white 95%)' }} onClick={addItem}>
+                                <PlusCircle className="h-3 w-3" /> Add Row
+                            </Button>
+                        </div>
+
+                        <div className="border border-slate-200 rounded-md overflow-x-auto scrollbar-thin shadow-sm">
+                            <div className="min-w-[700px]">
+                                <Table>
+                                    <TableHeader className="bg-slate-50/50">
+                                        <TableRow className="border-b border-slate-100 hover:bg-transparent">
+                                            <TableHead className="font-bold text-[10px] uppercase tracking-wider text-slate-500 px-3 h-8">Category</TableHead>
+                                            <TableHead className="font-bold text-[10px] uppercase tracking-wider text-slate-500 h-8">Description</TableHead>
+                                            <TableHead className="font-bold text-[10px] uppercase tracking-wider text-slate-500 text-center w-[100px] h-8">Qty</TableHead>
+                                            <TableHead className="font-bold text-[10px] uppercase tracking-wider text-slate-500 text-center w-[120px] h-8">Unit Price (₹)</TableHead>
+                                            <TableHead className="font-bold text-[10px] uppercase tracking-wider text-slate-500 text-right w-[120px] h-8 px-3">Subtotal</TableHead>
+                                            <TableHead className="w-[40px] h-8"></TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {items.map((item, idx) => (
+                                            <TableRow key={item.id} className="hover:bg-slate-50/30 transition-colors border-b border-slate-100 last:border-0">
+                                                <TableCell className="p-2">
+                                                    <SearchableSelect
+                                                        options={itemTypes.map(t => ({ value: t, label: t }))}
+                                                        value={item.type}
+                                                        onValueChange={(val) => console.log(val)}
+                                                        placeholder="Category"
+                                                        className="h-8 border-slate-200 shadow-none font-medium text-xs rounded-md bg-white"
+                                                    />
+                                                </TableCell>
+                                                <TableCell className="p-2">
+                                                    <Input placeholder="Item Description" className="h-8 border-slate-200 shadow-none font-medium text-xs focus-visible:ring-1 focus-visible:ring-slate-300 px-2 rounded-md bg-white" />
+                                                </TableCell>
+                                                <TableCell className="p-2">
+                                                    <Input type="number" className="h-8 text-center border-slate-200 rounded-md font-medium text-xs focus-visible:ring-1 focus-visible:ring-slate-300 shadow-none bg-white" defaultValue={item.quantity} />
+                                                </TableCell>
+                                                <TableCell className="p-2">
+                                                    <Input type="number" className="h-8 text-center border-slate-200 rounded-md font-bold text-teal-700 bg-emerald-50/50 text-xs focus-visible:ring-1 focus-visible:ring-slate-300 shadow-none" defaultValue={item.unitPrice} />
+                                                </TableCell>
+                                                <TableCell className="p-2 text-right font-bold text-xs text-slate-800 tracking-tight pr-3">
+                                                    ₹{item.subtotal.toFixed(2)}
+                                                </TableCell>
+                                                <TableCell className="p-2 text-right">
+                                                    <Button size="icon" variant="ghost" className="h-7 w-7 text-rose-400 hover:text-rose-600 hover:bg-rose-50 rounded-md">
+                                                        <Trash2 className="h-3.5 w-3.5" />
+                                                    </Button>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </div>
+                        </div>
+
+                        {/* Summary box */}
+                        <div className="flex items-center justify-between p-3 rounded-md bg-emerald-50/50 border border-emerald-100/50">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700">Total Purchase Amount:</span>
+                            <span className="text-base font-bold text-emerald-800 tracking-tight">
+                                ₹{totals.total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </span>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <DialogFooter className="p-4 flex flex-row items-center justify-end gap-3 border-t bg-slate-50/30 font-sans">
+            <DialogFooter className="px-6 py-4 border-t border-slate-100 bg-slate-50/50 flex flex-row items-center justify-between">
                 <Button
                     variant="ghost"
-                    className="h-9 px-4 text-sm font-medium text-slate-600 hover:text-slate-800 font-sans"
+                    className="h-9 px-4 rounded-md text-xs font-medium text-slate-500 hover:text-slate-800"
                     onClick={onClose}
                 >
-                    Cancel
+                    Discard Entry
                 </Button>
                 <Button
-                    className="h-9 px-8 text-white font-medium text-sm shadow-sm transition-all font-sans"
+                    className="h-9 px-8 text-white font-bold text-xs shadow-sm rounded-md transition-all active:scale-95"
                     style={{ background: 'var(--primary)' }}
                     onClick={onClose}
                 >
@@ -256,6 +267,8 @@ export default function PurchaseInventoryPage() {
         {
             key: "invoiceNo",
             label: "Invoice #",
+            className: "hidden md:table-cell",
+            headerClassName: "hidden md:table-cell",
             render: (val) => <span className="text-xs font-black text-slate-500 font-mono tracking-tight font-sans">{val as string}</span>
         },
         {
@@ -282,6 +295,8 @@ export default function PurchaseInventoryPage() {
         {
             key: "createdBy",
             label: "Audit",
+            className: "hidden lg:table-cell",
+            headerClassName: "hidden lg:table-cell",
             render: (val) => (
                 <div className="flex items-center gap-2 font-sans">
                     <div className="h-6 w-6 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center">
@@ -310,20 +325,17 @@ export default function PurchaseInventoryPage() {
     ], [])
 
     return (
-        <div className="space-y-6 text-left font-sans">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 px-1 text-left">
-                <div className="space-y-0.5 text-left">
-                    <h1 className="text-2xl font-black tracking-tight text-slate-900 uppercase font-sans">Purchase History</h1>
-                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] font-sans">Procurement Management • Vendor Invoices</p>
+        <div className="space-y-6 text-left font-sans bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-slate-100">
+            {/* Header Area */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 px-1 pb-2 font-sans italic uppercase">
+                <div>
+                    <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 text-balance">Purchase Ledger</h1>
                 </div>
-                <div className="flex items-center gap-3">
-                    <Button variant="outline" className="h-11 px-6 rounded-xl border-slate-200 font-bold gap-2 hover:bg-slate-50 text-slate-600 font-sans">
-                        <Download className="h-4 w-4 text-slate-400" /> Export List
-                    </Button>
+                <div className="flex items-center justify-end gap-3 w-full sm:w-auto">
                     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                         <DialogTrigger asChild>
-                            <Button className="h-11 px-8 rounded-xl font-bold gap-2 shadow-lg transition-all font-sans text-white" style={{ background: 'var(--primary)' }} onClick={() => setIsDialogOpen(true)}>
-                                <Plus className="h-4 w-4" /> New Purchase
+                            <Button className="h-11 px-6 text-white font-black text-[10px] uppercase tracking-widest shadow-xl rounded-xl gap-2 transition-all active:scale-95 w-full sm:w-auto" style={{ background: 'var(--primary)' }} onClick={() => setIsDialogOpen(true)}>
+                                <Plus className="h-4 w-4" /> <span className="sm:inline">New Purchase</span>
                             </Button>
                         </DialogTrigger>
                         <PurchaseFormDialog onClose={() => setIsDialogOpen(false)} />
@@ -334,6 +346,8 @@ export default function PurchaseInventoryPage() {
             <DataGrid
                 data={purchases}
                 columns={columns}
+                enableDateRange={true}
+                dateFilterKey="date"
                 searchPlaceholder="Search vendors, invoices or items..."
             />
         </div>

@@ -35,9 +35,9 @@ interface HistoryItemProps {
 }
 
 const HistoryItem = ({ date, title, amount, status, type }: HistoryItemProps) => (
-    <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 border border-slate-100 hover:border-indigo-100 transition-all group">
+    <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 border border-slate-100 hover:border-primary/20 transition-all group">
         <div className="flex items-center gap-4">
-            <div className={`p-2.5 rounded-xl ${type === 'job' ? 'bg-blue-100 text-blue-600' : 'bg-emerald-100 text-emerald-600'}`}>
+            <div className={`p-2.5 rounded-xl ${type === 'job' ? 'bg-primary/10 text-primary' : 'bg-emerald-100 text-emerald-600'}`}>
                 {type === 'job' ? <FileText className="h-4 w-4" /> : <CircleDollarSign className="h-4 w-4" />}
             </div>
             <div>

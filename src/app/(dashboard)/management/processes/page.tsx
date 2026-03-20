@@ -8,13 +8,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Label } from "@/components/ui/label"
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select"
+import { SearchableSelect } from "@/components/shared/searchable-select"
 import {
     Dialog,
     DialogContent,
@@ -57,10 +51,10 @@ function ProcessFormDialog({
     onClose: () => void
 }) {
     return (
-        <DialogContent className="max-w-[700px] w-[95vw] p-0 border-none shadow-xl rounded-md bg-white font-sans sm:max-w-[700px] overflow-hidden">
-            <div className="p-6 border-b border-slate-100 flex items-center justify-between">
-                <DialogTitle className="text-lg font-medium text-slate-700">
-                    {process ? "Edit Process Definition" : "New Process Definition"}
+        <DialogContent className="max-w-[calc(100%-1rem)] sm:max-w-[700px] p-0 border-none shadow-xl rounded-md bg-white font-sans overflow-hidden uppercase">
+            <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-white italic font-sans uppercase">
+                <DialogTitle className="text-lg font-black text-slate-800 tracking-tight leading-none italic">
+                    {process ? "Revise Process" : "Register Process"}
                 </DialogTitle>
                 <DialogDescription className="sr-only">Process Configuration Form</DialogDescription>
             </div>
@@ -78,34 +72,36 @@ function ProcessFormDialog({
 
                     <div className="space-y-1.5">
                         <Label className="text-xs font-medium text-slate-600">Process Type <span className="text-rose-500">*</span></Label>
-                        <Select defaultValue={process?.type || "lamination"}>
-                            <SelectTrigger className="h-10 border-slate-200 bg-white font-medium text-slate-800 text-sm">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="binding">Binding</SelectItem>
-                                <SelectItem value="finishing">Finishing</SelectItem>
-                                <SelectItem value="lamination">Lamination</SelectItem>
-                                <SelectItem value="printing">Printing</SelectItem>
-                                <SelectItem value="others">Others</SelectItem>
-                            </SelectContent>
-                        </Select>
+                        <SearchableSelect
+                            options={[
+                                { value: 'binding', label: 'Binding' },
+                                { value: 'finishing', label: 'Finishing' },
+                                { value: 'lamination', label: 'Lamination' },
+                                { value: 'printing', label: 'Printing' },
+                                { value: 'others', label: 'Others' }
+                            ]}
+                            value={process?.type || "lamination"}
+                            onValueChange={(val) => console.log(val)}
+                            placeholder="Select Type"
+                            className="h-10 border-slate-200 bg-white font-medium text-slate-800 text-sm"
+                        />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-1.5">
                             <Label className="text-xs font-medium text-slate-600">Calculation Type <span className="text-rose-500">*</span></Label>
-                            <Select defaultValue="per_sheet">
-                                <SelectTrigger className="h-10 border-slate-200 bg-white font-medium text-slate-800 text-sm">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="per_sheet">Per Sheet</SelectItem>
-                                    <SelectItem value="per_sqft">Per Sq Ft</SelectItem>
-                                    <SelectItem value="per_book">Per Book</SelectItem>
-                                    <SelectItem value="fixed">Fixed Price</SelectItem>
-                                </SelectContent>
-                            </Select>
+                            <SearchableSelect
+                                options={[
+                                    { value: 'per_sheet', label: 'Per Sheet' },
+                                    { value: 'per_sqft', label: 'Per Sq Ft' },
+                                    { value: 'per_book', label: 'Per Book' },
+                                    { value: 'fixed', label: 'Fixed Price' }
+                                ]}
+                                value="per_sheet"
+                                onValueChange={(val) => console.log(val)}
+                                placeholder="Select Logic"
+                                className="h-10 border-slate-200 bg-white font-medium text-slate-800 text-sm"
+                            />
                         </div>
                         <div className="space-y-1.5">
                             <Label className="text-xs font-medium text-slate-600">Setup Fee (₹)</Label>
@@ -117,7 +113,7 @@ function ProcessFormDialog({
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="p-5 rounded-md bg-cyan-50/50 border border-cyan-100/50 space-y-2">
                             <div className="flex items-center justify-between">
                                 <span className="text-xs font-semibold text-teal-700 tracking-tight">Rate (₹) <span className="text-rose-500">*</span></span>
@@ -167,7 +163,7 @@ function ProcessFormDialog({
                     Cancel
                 </Button>
                 <Button
-                    className="h-9 px-6 text-white font-medium text-sm shadow-sm transition-all"
+                    className="h-9 px-6 text-white font-bold text-xs shadow-sm rounded-md transition-all active:scale-95"
                     style={{ background: 'var(--primary)' }}
                     onClick={onClose}
                 >
@@ -210,6 +206,8 @@ export default function ProcessMastersPage() {
         {
             key: "type",
             label: "Category",
+            className: "hidden md:table-cell",
+            headerClassName: "hidden md:table-cell",
             render: (val) => (
                 <Badge variant="secondary" className="bg-cyan-50 text-cyan-700 hover:bg-cyan-100 border-none text-[10px] font-black uppercase tracking-widest px-2">
                     {val as string}
@@ -219,11 +217,15 @@ export default function ProcessMastersPage() {
         {
             key: "rateConfig",
             label: "Rate Configuration",
+            className: "hidden md:table-cell",
+            headerClassName: "hidden md:table-cell",
             render: (val) => <span className="font-black text-sm text-slate-900 tracking-tight">{val as string}</span>
         },
         {
             key: "status",
             label: "Status",
+            className: "hidden sm:table-cell",
+            headerClassName: "hidden sm:table-cell",
             render: (val) => (
                 <Badge className="bg-emerald-50 text-emerald-600 hover:bg-emerald-100 border-none text-[10px] font-black uppercase tracking-widest px-2">
                     {val as string}
@@ -249,20 +251,16 @@ export default function ProcessMastersPage() {
     ], [])
 
     return (
-        <div className="space-y-6 text-left">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 px-1">
+        <div className="space-y-6 text-left bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-slate-100 italic uppercase">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 px-1 font-sans italic uppercase">
                 <div className="space-y-0.5">
-                    <h1 className="text-2xl font-black tracking-tight text-slate-900 uppercase font-sans">Process Master</h1>
-                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] font-sans">Configure production rates and post-press calculation</p>
+                    <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900">Process Library</h1>
                 </div>
-                <div className="flex items-center gap-3">
-                    <Button variant="outline" className="h-11 px-6 rounded-xl border-slate-200 font-bold gap-2 hover:bg-slate-50 text-slate-600">
-                        <Download className="h-4 w-4 text-slate-400" /> Export
-                    </Button>
+                <div className="flex items-center gap-3 w-full sm:w-auto">
                     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                         <DialogTrigger asChild>
-                            <Button className="h-11 px-8 rounded-xl font-bold gap-2 shadow-lg transition-all text-white" style={{ background: 'var(--primary)' }} onClick={handleAdd}>
-                                <Plus className="h-4 w-4" /> Add New Process
+                            <Button className="h-11 px-6 text-white font-black text-[10px] uppercase tracking-widest shadow-xl rounded-xl gap-2 transition-all active:scale-95 w-full sm:w-auto" style={{ background: 'var(--primary)' }} onClick={handleAdd}>
+                                <Plus className="h-4 w-4" /> <span className="sm:inline">New Process</span>
                             </Button>
                         </DialogTrigger>
                         <ProcessFormDialog

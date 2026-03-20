@@ -36,10 +36,20 @@ import {
     ClipboardList,
     Users2,
     Cog,
-    Maximize2
+    Maximize2,
+    Wrench,
+    Clock,
+    ClipboardCheck,
+    AlertTriangle,
+    Search,
+    ChevronDown,
+    User,
+    Banknote
 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { cn } from "@/lib/utils"
+import { Can } from "@/components/shared/permission-context"
 
 import {
     Sidebar,
@@ -52,6 +62,8 @@ import {
     SidebarGroup,
     SidebarGroupLabel,
     SidebarGroupContent,
+    useSidebar,
+    SidebarSeparator,
 } from "@/components/ui/sidebar"
 
 const menuGroups = [
@@ -78,6 +90,13 @@ const menuGroups = [
             { title: "Scheduler", url: "/scheduler", icon: CalendarIcon },
             { title: "Daily Readings", url: "/daily-readings", icon: BookOpen },
             { title: "Machines", url: "/machines", icon: Gauge },
+            { title: "Dispatch Board", url: "/dispatch", icon: Truck },
+        ]
+    },
+    {
+        label: "Maintenance",
+        items: [
+            { title: "Maintenance Center", url: "/maintenance", icon: Wrench },
         ]
     },
     {
@@ -93,8 +112,8 @@ const menuGroups = [
     {
         label: "Outsource",
         items: [
-            { title: "Vendors", url: "/outsource", icon: Users2 },
-            { title: "Outsource Jobs", url: "/outsource", icon: ExternalLink },
+            { title: "Vendors", url: "/outsource/vendors", icon: Users2 },
+            { title: "Outsource Jobs", url: "/outsource/jobs", icon: ExternalLink },
         ]
     },
     {
@@ -124,60 +143,148 @@ const menuGroups = [
 
 export function AppSidebar() {
     const pathname = usePathname()
+    const { setOpenMobile, setOpen, isMobile, state } = useSidebar()
+
+    const handleLinkClick = () => {
+        if (isMobile) {
+            setOpenMobile(false)
+        }
+    }
+
+    const isCollapsed = state === "collapsed"
 
     return (
-        <Sidebar variant="inset" collapsible="icon">
-            <SidebarHeader>
-                <SidebarMenu>
+        <Sidebar collapsible="icon" className="border-r border-slate-200/80 bg-white">
+            <SidebarHeader className="py-2.5 px-4 group-data-[collapsible=icon]:px-0 gap-2">
+                <SidebarMenu className="group-data-[collapsible=icon]:items-center">
                     <SidebarMenuItem>
-                        <SidebarMenuButton size="lg" asChild>
-                            <Link href="/dashboard">
-                                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold">
-                                    D
+                        <SidebarMenuButton size="lg" asChild className="hover:bg-transparent px-0 transition-all duration-300 group-data-[collapsible=icon]:justify-center">
+                            <Link href="/dashboard" className={cn("flex items-center gap-3", isCollapsed && "justify-center")}>
+                                <div className="flex aspect-square size-10 items-center justify-center rounded-xl bg-white text-primary shadow-sm ring-1 ring-slate-200 transition-transform duration-300 group-hover:scale-105 border border-slate-100">
+                                    <Command className="size-6 text-primary" />
                                 </div>
-                                <div className="grid flex-1 text-left text-sm leading-tight font-sans">
-                                    <span className="truncate font-black text-lg tracking-tighter text-slate-900">DIGITAL ERP</span>
-                                    <span className="truncate text-[9px] uppercase font-black opacity-40 tracking-[0.2em]">Management System</span>
-                                </div>
+                                {!isCollapsed && (
+                                    <div className="flex flex-col gap-0.5 leading-none transition-all duration-300">
+                                        <span className="text-sm font-black tracking-tight text-slate-800 uppercase">Digital ERP</span>
+                                        <span className="text-[10px] font-bold text-slate-400 tracking-wider uppercase">Enterprise Suite</span>
+                                    </div>
+                                )}
                             </Link>
                         </SidebarMenuButton>
                     </SidebarMenuItem>
                 </SidebarMenu>
+
+                {!isCollapsed && (
+                    <div className="relative group/search mt-1 px-3">
+                        <Search className="absolute left-6 top-1/2 -translate-y-1/2 size-3.5 text-slate-400 transition-colors group-focus-within/search:text-primary" />
+                        <input 
+                            placeholder="Quick find... (⌘K)"
+                            className="w-full bg-slate-50 border border-slate-200/60 rounded-lg py-1.5 pl-9 pr-3 text-[11px] font-medium text-slate-700 placeholder:text-slate-400 focus:ring-1 focus:ring-primary/20 transition-all outline-none focus:bg-white focus:border-primary/30"
+                        />
+                    </div>
+                )}
             </SidebarHeader>
-            <SidebarContent className="font-sans">
-                {menuGroups.map((group) => (
-                    <SidebarGroup key={group.label}>
-                        <SidebarGroupLabel className="text-[10px] font-black uppercase text-slate-500 opacity-70 tracking-[0.2em] font-sans h-8 items-end pb-2">
-                            {group.label}
-                        </SidebarGroupLabel>
+
+            <SidebarContent className="px-3 pb-4 group-data-[collapsible=icon]:px-0">
+                {menuGroups.map((group) => {
+                    const permMap: Record<string, string> = {
+                        "Core": "dashboard",
+                        "CRM & Sales": "sales",
+                        "Production": "production",
+                        "Maintenance": "maintenance",
+                        "Inventory": "inventory",
+                        "Human Resources": "hr",
+                        "Outsource": "outsource",
+                        "Finance": "finance",
+                        "Reports": "reports",
+                        "Management": "users"
+                    }
+                    const permissionId = permMap[group.label] || group.label.toLowerCase()
+
+                    return (
+                        <Can key={group.label} I="view" a={permissionId}>
+                            <SidebarGroup className="mb-0 group-data-[collapsible=icon]:px-0 p-1">
+                                {!isCollapsed && (
+                                    <SidebarGroupLabel className="mb-0.5 px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-sidebar-foreground/40 font-sans h-auto pt-2">
+                                        {group.label}
+                                    </SidebarGroupLabel>
+                                )}
                         <SidebarGroupContent>
-                            <SidebarMenu>
-                                {group.items.map((item) => (
-                                    <SidebarMenuItem key={item.title}>
-                                        <SidebarMenuButton
-                                            asChild
-                                            isActive={pathname === item.url}
-                                            tooltip={item.title}
-                                        >
-                                            <Link href={item.url}>
-                                                <item.icon className="h-4 w-4" />
-                                                <span className="font-medium">{item.title}</span>
-                                            </Link>
-                                        </SidebarMenuButton>
-                                    </SidebarMenuItem>
-                                ))}
+                            <SidebarMenu className="gap-0.5 group-data-[collapsible=icon]:items-center">
+                                {group.items.map((item) => {
+                                    const isActive = pathname === item.url
+                                    return (
+                                        <SidebarMenuItem key={item.title}>
+                                            <SidebarMenuButton
+                                                asChild
+                                                size="default"
+                                                isActive={isActive}
+                                                tooltip={item.title}
+                                                onClick={handleLinkClick}
+                                                className={cn(
+                                                    "relative flex items-center gap-3 rounded-lg transition-all duration-200 group/item",
+                                                    isActive 
+                                                        ? "bg-primary/10 text-primary shadow-sm" 
+                                                        : "text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                                                    isCollapsed && "justify-center px-0 w-full"
+                                                )}
+                                            >
+                                                <Link href={item.url} className={cn("flex items-center", isCollapsed ? "justify-center w-full" : "gap-3 px-3 w-full")}>
+                                                    <item.icon className={cn(
+                                                        "size-5 shrink-0 transition-all duration-200 group-hover/item:scale-115",
+                                                        isActive ? "text-primary opacity-100" : "opacity-80"
+                                                    )} />
+                                                    {!isCollapsed && (
+                                                        <span className="text-[13px] font-semibold transition-all duration-200 truncate">{item.title}</span>
+                                                    )}
+                                                    {isActive && (
+                                                        <div className={cn(
+                                                            "absolute bg-primary rounded-full transition-all duration-300",
+                                                            isCollapsed 
+                                                                ? "right-0 w-1 h-6 translate-x-1" 
+                                                                : "left-0 w-1 h-5 rounded-r-full"
+                                                        )} />
+                                                    )}
+                                                </Link>
+                                            </SidebarMenuButton>
+                                        </SidebarMenuItem>
+                                    )
+                                })}
                             </SidebarMenu>
                         </SidebarGroupContent>
-                    </SidebarGroup>
-                ))}
+                            </SidebarGroup>
+                        </Can>
+                    )
+                })}
             </SidebarContent>
-            <SidebarFooter>
-                <SidebarMenu>
+
+            <SidebarSeparator />
+
+            <SidebarFooter className="p-2 group-data-[collapsible=icon]:px-0">
+                <SidebarMenu className="group-data-[collapsible=icon]:items-center">
+                    {!isCollapsed && (
+                        <SidebarMenuItem className="mb-1 px-1">
+                             <div className="flex items-center gap-3 rounded-xl bg-slate-50 p-2 ring-1 ring-slate-200/60 shadow-sm">
+                                <div className="flex size-8 items-center justify-center rounded-lg bg-primary text-white shadow-sm">
+                                    <User className="size-4" />
+                                </div>
+                                <div className="flex flex-col leading-none">
+                                    <span className="text-[11px] font-bold text-slate-800">Admin User</span>
+                                    <span className="text-[10px] font-medium text-slate-400 tracking-tight">admin@digitalerp.com</span>
+                                </div>
+                             </div>
+                        </SidebarMenuItem>
+                    )}
                     <SidebarMenuItem>
-                        <SidebarMenuButton asChild className="hover:bg-destructive/10 hover:text-destructive group">
-                            <Link href="/login">
-                                <LogOut className="h-4 w-4" />
-                                <span className="font-medium">Logout Session</span>
+                        <SidebarMenuButton 
+                            asChild 
+                            size="default" 
+                            className="w-full justify-start rounded-lg hover:bg-destructive/10 hover:text-destructive group transition-colors px-3 h-10 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0" 
+                            onClick={handleLinkClick}
+                        >
+                            <Link href="/login" className="flex items-center gap-3">
+                                <LogOut className="size-4.5 opacity-70 group-hover:opacity-100" />
+                                {!isCollapsed && <span className="text-[13px] font-semibold">Sign Out</span>}
                             </Link>
                         </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -186,3 +293,4 @@ export function AppSidebar() {
         </Sidebar>
     )
 }
+

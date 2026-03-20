@@ -58,31 +58,31 @@ export function CostEstimator() {
         <div className="bg-white flex flex-col h-full max-h-[85vh]">
             <div className="p-6 flex-1 overflow-y-auto custom-scrollbar">
                 <Tabs defaultValue="standard" className="w-full">
-                    <TabsList className="bg-white border border-slate-200 p-1 h-9 rounded-md shadow-sm mb-6">
+                    <TabsList className="w-full flex items-center justify-start bg-white border border-slate-200 p-1 h-11 rounded-xl shadow-sm mb-8 overflow-x-auto overflow-y-hidden no-scrollbar flex-nowrap shrink-0">
                         <TabsTrigger
                             value="standard"
-                            className="rounded px-4 text-xs font-bold data-[state=active]:text-white data-[state=active]:shadow-sm text-slate-500 transition-all h-7 gap-2"
+                            className="rounded-lg px-6 text-[11px] font-black uppercase tracking-wider data-[state=active]:text-white data-[state=active]:shadow-md text-slate-400 transition-all h-9 gap-2 whitespace-nowrap"
                             style={{ ['--active-bg' as any]: 'var(--primary)' }}
                         >
                             <style jsx>{`
                                 [data-state=active] { background-color: var(--active-bg) !important; color: white !important; }
                                 [data-state=active] :global(svg) { color: white !important; }
                             `}</style>
-                            <Printer className="h-3.5 w-3.5" /> Standard Print
+                            <Printer className="h-4 w-4" /> <span className="hidden xs:inline">Standard Print</span><span className="xs:hidden">Standard</span>
                         </TabsTrigger>
                         <TabsTrigger
                             value="book"
-                            className="rounded px-4 text-xs font-bold data-[state=active]:text-white data-[state=active]:shadow-sm text-slate-500 transition-all h-7 gap-2"
+                            className="rounded-lg px-6 text-[11px] font-black uppercase tracking-wider data-[state=active]:text-white data-[state=active]:shadow-md text-slate-400 transition-all h-9 gap-2 whitespace-nowrap"
                             style={{ ['--active-bg' as any]: 'var(--primary)' }}
                         >
-                            <BookOpen className="h-3.5 w-3.5" /> Book Estimation
+                            <BookOpen className="h-4 w-4" /> <span className="hidden xs:inline">Book Estimation</span><span className="xs:hidden">Book</span>
                         </TabsTrigger>
                         <TabsTrigger
                             value="wide"
-                            className="rounded px-4 text-xs font-bold data-[state=active]:text-white data-[state=active]:shadow-sm text-slate-500 transition-all h-7 gap-2"
+                            className="rounded-lg px-6 text-[11px] font-black uppercase tracking-wider data-[state=active]:text-white data-[state=active]:shadow-md text-slate-400 transition-all h-9 gap-2 whitespace-nowrap"
                             style={{ ['--active-bg' as any]: 'var(--primary)' }}
                         >
-                            <Maximize className="h-3.5 w-3.5" /> Wide Format
+                            <Maximize className="h-4 w-4" /> <span className="hidden xs:inline">Wide Format</span><span className="xs:hidden">Wide</span>
                         </TabsTrigger>
                     </TabsList>
 
@@ -117,11 +117,11 @@ export function CostEstimator() {
                                             </Select>
                                             <RadioGroup defaultValue="bw" className="flex items-center gap-3">
                                                 <div className="flex items-center space-x-1.5">
-                                                    <RadioGroupItem value="color" id="color" className="h-3.5 w-3.5 text-[#4C1F7A] border-slate-300" />
+                                                    <RadioGroupItem value="color" id="color" className="h-3.5 w-3.5 text-primary border-slate-300" />
                                                     <Label htmlFor="color" className="text-xs font-medium text-slate-600 cursor-pointer">Col</Label>
                                                 </div>
                                                 <div className="flex items-center space-x-1.5">
-                                                    <RadioGroupItem value="bw" id="bw" className="h-3.5 w-3.5 text-[#4C1F7A] border-slate-300" />
+                                                    <RadioGroupItem value="bw" id="bw" className="h-3.5 w-3.5 text-primary border-slate-300" />
                                                     <Label htmlFor="bw" className="text-xs font-medium text-slate-600 cursor-pointer">B/W</Label>
                                                 </div>
                                             </RadioGroup>
@@ -144,7 +144,7 @@ export function CostEstimator() {
                                     </div>
                                     <div className="space-y-1.5">
                                         <Label className="text-[10px] font-bold uppercase text-slate-500 tracking-wider">Total Sheets</Label>
-                                        <div className="h-9 flex items-center px-3 font-bold text-[#4C1F7A] bg-white rounded-md border border-slate-200">
+                                        <div className="h-9 flex items-center px-3 font-bold text-primary bg-white rounded-md border border-slate-200">
                                             {calculatedSheets}
                                         </div>
                                     </div>
@@ -153,7 +153,7 @@ export function CostEstimator() {
                                 <div className="space-y-3">
                                     <div className="flex items-center justify-between">
                                         <Label className="text-[10px] font-bold uppercase text-slate-500 tracking-wider">Post-Press & Finishing</Label>
-                                        <Button size="sm" variant="outline" className="h-7 text-[10px] font-bold text-[#4C1F7A] uppercase tracking-wider hover:bg-slate-50 border-slate-200">
+                                        <Button size="sm" variant="outline" className="h-7 text-[10px] font-bold text-primary uppercase tracking-wider hover:bg-slate-50 border-slate-200">
                                             <Plus className="h-3 w-3 mr-1" /> Add Process
                                         </Button>
                                     </div>
@@ -181,7 +181,7 @@ export function CostEstimator() {
                                         <p className="text-[10px] font-bold text-slate-400 uppercase">Paper Cost</p>
                                         <div className="flex items-end justify-between">
                                             <p className="text-[10px] font-medium text-slate-300">@ ₹3.66</p>
-                                            <p className="text-base font-bold text-[#4C1F7A]">₹{paperCost.toLocaleString()}</p>
+                                            <p className="text-base font-bold text-primary">₹{paperCost.toLocaleString()}</p>
                                         </div>
                                     </div>
                                     <div className="p-3 rounded-md border border-slate-200 bg-white shadow-sm flex flex-col justify-between h-16">
@@ -222,7 +222,7 @@ export function CostEstimator() {
                                             />
                                         </div>
                                         <Separator className="opacity-50" />
-                                        <div className="bg-[#4C1F7A] p-3 rounded-md text-white shadow-md shadow-[#4C1F7A]/10 text-center">
+                                        <div className="bg-primary p-3 rounded-md text-white shadow-md shadow-primary/10 text-center">
                                             <p className="text-[10px] font-bold uppercase tracking-widest opacity-70 mb-1">Final Rate/Unit</p>
                                             <div className="text-2xl font-bold tracking-tight">₹{ratePerUnit.toFixed(2)}</div>
                                         </div>
@@ -254,7 +254,7 @@ export function CostEstimator() {
 
                                 {/* Cover Section */}
                                 <div className="space-y-4">
-                                    <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800 border-l-2 border-[#4C1F7A] pl-3">1. Cover Configuration</h3>
+                                    <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800 border-l-2 border-primary pl-3">1. Cover Configuration</h3>
                                     <div className="grid grid-cols-1 gap-4 p-5 rounded-md border border-slate-200 bg-white shadow-sm">
                                         <div className="space-y-1.5">
                                             <Label className="text-xs font-medium text-slate-600">Cover Paper</Label>
@@ -324,7 +324,7 @@ export function CostEstimator() {
 
                                 {/* Inner Pages Section */}
                                 <div className="space-y-4">
-                                    <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800 border-l-2 border-[#4C1F7A] pl-3">2. Inner Pages</h3>
+                                    <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800 border-l-2 border-primary pl-3">2. Inner Pages</h3>
                                     <div className="grid grid-cols-1 gap-4 p-5 rounded-md border border-slate-200 bg-white shadow-sm">
                                         <div className="space-y-1.5">
                                             <Label className="text-xs font-medium text-slate-600">Inner Paper Type</Label>
@@ -413,10 +413,10 @@ export function CostEstimator() {
                                     </CardHeader>
                                     <CardContent className="p-6 text-center">
                                         <div className="space-y-1 mb-6">
-                                            <p className="text-[10px] font-bold uppercase tracking-wider text-[#4C1F7A]">Total Book Cost</p>
+                                            <p className="text-[10px] font-bold uppercase tracking-wider text-primary">Total Book Cost</p>
                                             <p className="text-4xl font-bold tracking-tight text-slate-900 leading-none">₹25,650</p>
                                         </div>
-                                        <Button className="w-full h-10 bg-[#4C1F7A] hover:bg-[#3d1862] text-white font-semibold text-xs rounded-md shadow-sm">
+                                        <Button className="w-full h-10 bg-primary hover:opacity-90 text-white font-semibold text-xs rounded-md shadow-sm">
                                             Generate Proposal
                                         </Button>
                                     </CardContent>
@@ -429,7 +429,7 @@ export function CostEstimator() {
                     <TabsContent value="wide" className="mt-0 outline-none animate-in fade-in slide-in-from-bottom-10 duration-600">
                         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
                             <div className="md:col-span-8 space-y-6">
-                                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800 border-l-2 border-[#4C1F7A] pl-3">Job Details (Wide Format)</h3>
+                                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800 border-l-2 border-primary pl-3">Job Details (Wide Format)</h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white p-5 rounded-md border border-slate-200 shadow-sm">
                                     <div className="space-y-4">
                                         <div className="grid grid-cols-2 gap-3">
@@ -492,7 +492,7 @@ export function CostEstimator() {
                                             </div>
                                             <Separator className="bg-slate-200" />
                                             <div className="flex justify-between items-center pt-2">
-                                                <span className="text-xs font-bold uppercase text-[#4C1F7A]">Subtotal:</span>
+                                                <span className="text-xs font-bold uppercase text-primary">Subtotal:</span>
                                                 <span className="text-lg font-bold text-slate-900">₹420.00</span>
                                             </div>
                                         </div>
@@ -500,9 +500,9 @@ export function CostEstimator() {
                                             <div className="space-y-1.5">
                                                 <div className="flex justify-between items-center mb-1">
                                                     <Label className="text-[10px] font-bold uppercase text-slate-400">Margin %</Label>
-                                                    <span className="text-[10px] font-bold text-[#4C1F7A]">30%</span>
+                                                    <span className="text-[10px] font-bold text-primary">30%</span>
                                                 </div>
-                                                <Input type="range" defaultValue="30" className="h-1.5 accent-[#4C1F7A]" />
+                                                <Input type="range" defaultValue="30" className="h-1.5 accent-primary" />
                                             </div>
                                             <Button className="w-full h-8 bg-slate-900 hover:bg-black font-bold uppercase tracking-widest text-[10px] rounded-md shadow-sm">
                                                 Calculate Final Price
@@ -519,7 +519,7 @@ export function CostEstimator() {
                                         <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Wide Format Rate</p>
                                         <p className="text-5xl font-bold tracking-tight text-slate-900">₹546</p>
                                     </div>
-                                    <Button className="bg-[#4C1F7A] text-white hover:bg-[#3d1862] font-semibold h-10 w-full rounded-md shadow-sm text-xs">
+                                    <Button className="bg-primary text-white hover:opacity-90 font-semibold h-10 w-full rounded-md shadow-sm text-xs">
                                         Add to Quote
                                     </Button>
                                 </div>

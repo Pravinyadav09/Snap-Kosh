@@ -84,29 +84,32 @@ export default function CustomersPage() {
         {
             key: "id",
             label: "Cust ID",
-            className: "font-bold text-xs font-mono",
-            headerClassName: "w-[120px]",
+            className: "font-bold text-[10px] font-mono whitespace-nowrap hidden md:table-cell",
+            headerClassName: "w-[120px] hidden md:table-cell",
         },
         {
             key: "name",
-            label: "Customer Name",
+            label: "Name / Client",
             render: (val, cust) => (
                 <div className="flex items-center gap-2">
-                    <div className="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-500 text-xs shrink-0 capitalize">
+                    <div className="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-500 text-[10px] shrink-0 capitalize">
                         {String(val).substring(0, 2)}
                     </div>
-                    <p className="font-bold text-sm text-slate-800 leading-tight">{val}</p>
+                    <p className="font-bold text-sm text-slate-800 leading-tight uppercase italic">{val}</p>
                 </div>
             )
         },
         {
             key: "contactPerson",
-            label: "Contact Person",
-            className: "text-sm font-medium",
+            label: "Key Contact",
+            className: "text-[11px] font-bold text-slate-500 uppercase italic hidden sm:table-cell",
+            headerClassName: "hidden sm:table-cell",
         },
         {
             key: "email",
             label: "Contact Info",
+            className: "hidden md:table-cell",
+            headerClassName: "hidden md:table-cell",
             render: (_, cust) => (
                 <div className="flex flex-col gap-0.5 text-[11px] text-muted-foreground whitespace-nowrap">
                     <span className="flex items-center gap-1"><Mail className="h-3 w-3" /> {cust.email}</span>
@@ -117,7 +120,8 @@ export default function CustomersPage() {
         {
             key: "gstin",
             label: "GSTIN",
-            className: "font-mono text-xs text-muted-foreground uppercase",
+            className: "font-mono text-xs text-muted-foreground uppercase hidden lg:table-cell",
+            headerClassName: "hidden lg:table-cell",
         },
         {
             key: "balance",
@@ -131,13 +135,14 @@ export default function CustomersPage() {
         {
             key: "status",
             label: "Status",
-            headerClassName: "w-[100px]",
+            className: "hidden sm:table-cell",
+            headerClassName: "w-[100px] hidden sm:table-cell",
             render: (val) => (
                 <Badge
                     variant="outline"
                     className={`text-[10px] uppercase font-bold px-2.5 h-5 ${val === "Active" ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-slate-50 text-slate-700 border-slate-200"}`}
                 >
-                    {val}
+                    {val as string}
                 </Badge>
             )
         },
@@ -149,13 +154,13 @@ export default function CustomersPage() {
             className: "text-right",
             render: (_, cust) => (
                 <div className="flex items-center justify-end gap-1.5 px-2">
-                    <Button size="icon" variant="outline" className="h-7 w-7 rounded-md border-blue-200 bg-white text-blue-500 hover:text-blue-600 hover:bg-blue-50 transition-colors shadow-none" title="View History">
+                    <Button size="icon" variant="outline" className="h-7 w-7 rounded-sm border-slate-200 bg-white text-slate-400 hover:text-blue-600 transition-all shadow-none" title="View History">
                         <Eye className="h-3.5 w-3.5" />
                     </Button>
-                    <Button size="icon" variant="outline" className="h-7 w-7 rounded-md border-emerald-200 bg-white text-emerald-500 hover:text-emerald-600 hover:bg-emerald-50 transition-colors shadow-none" title="Edit Details">
+                    <Button size="icon" variant="outline" className="h-7 w-7 rounded-sm border-slate-200 bg-white text-slate-400 hover:text-emerald-600 transition-all shadow-none" title="Edit Details">
                         <Edit2 className="h-3.5 w-3.5" />
                     </Button>
-                    <Button size="icon" variant="outline" className="h-7 w-7 rounded-md border-rose-200 bg-white text-rose-500 hover:text-rose-600 hover:bg-rose-50 transition-colors shadow-none" title="Archive Profile">
+                    <Button size="icon" variant="outline" className="h-7 w-7 rounded-sm border-slate-200 bg-white text-slate-400 hover:text-rose-600 transition-all shadow-none" title="Archive Profile">
                         <Trash2 className="h-3.5 w-3.5" />
                     </Button>
                 </div>
@@ -164,12 +169,11 @@ export default function CustomersPage() {
     ]
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-4 bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-slate-100">
             {/* Header */}
-            <div className="flex items-center justify-between px-1">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between px-1 gap-4 font-sans italic uppercase">
                 <div className="space-y-0.5 text-left">
-                    <h1 className="text-3xl font-bold tracking-tight text-slate-900">Customer Database</h1>
-                    <p className="text-sm text-slate-400 font-medium tracking-normal">Manage your client registry and billing profiles</p>
+                    <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900">Client Directory</h1>
                 </div>
 
                 <FormModal
@@ -181,15 +185,15 @@ export default function CustomersPage() {
                     submitLabel="Register Customer"
                     variant="primary"
                     trigger={
-                        <Button className="gap-2 font-bold h-10 shadow-lg px-6 transition-all active:scale-95 text-white" style={{ background: 'var(--primary)' }}>
-                            <Plus className="h-4 w-4" /> New Customer
+                        <Button className="gap-2 font-black h-11 shadow-xl px-6 transition-all active:scale-95 text-white w-full sm:w-auto text-[10px] uppercase tracking-widest rounded-xl" style={{ background: 'var(--primary)' }}>
+                            <Plus className="h-4 w-4" /> <span className="sm:inline">Register Client</span>
                         </Button>
                     }
                 />
             </div>
 
             <Card className="shadow-2xl shadow-slate-200/50 border-none bg-background rounded-2xl overflow-hidden border border-slate-100">
-                <CardContent className="p-6">
+                <CardContent className="p-4 sm:p-6">
                     <DataGrid
                         data={customers}
                         columns={columns}

@@ -10,13 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select"
+import { SearchableSelect } from "@/components/shared/searchable-select"
 import {
     Dialog,
     DialogContent,
@@ -39,15 +33,16 @@ type MediaStock = {
     quantitySqFt: number
     lowStockAlert: number
     status: "In Stock" | "Low Stock" | "Out of Stock"
+    date: string
 }
 
 // ─── Mock Data ───────────────────────────────────────────────────────────────
 const initialMedia: MediaStock[] = [
-    { id: "M-001", name: "labore Vinyl", type: "Flex", rollWidth: 60, rollLength: 50, costPerRoll: 5000, costPerSqFt: 9.58, quantitySqFt: 2095, lowStockAlert: 500, status: "In Stock" },
-    { id: "M-002", name: "minima Vinyl", type: "Canvas", rollWidth: 24, rollLength: 50, costPerRoll: 4000, costPerSqFt: 12.64, quantitySqFt: 4190, lowStockAlert: 500, status: "In Stock" },
-    { id: "M-003", name: "non Vinyl", type: "Flex", rollWidth: 48, rollLength: 50, costPerRoll: 10000, costPerSqFt: 14.92, quantitySqFt: 1816, lowStockAlert: 500, status: "In Stock" },
-    { id: "M-004", name: "sint Vinyl", type: "Canvas", rollWidth: 24, rollLength: 50, costPerRoll: 8000, costPerSqFt: 12.81, quantitySqFt: 4075, lowStockAlert: 500, status: "In Stock" },
-    { id: "M-005", name: "velit Vinyl", type: "Flex", rollWidth: 24, rollLength: 50, costPerRoll: 6000, costPerSqFt: 11.25, quantitySqFt: 4281, lowStockAlert: 500, status: "In Stock" },
+    { id: "M-001", name: "labore Vinyl", type: "Flex", rollWidth: 60, rollLength: 50, costPerRoll: 5000, costPerSqFt: 9.58, quantitySqFt: 2095, lowStockAlert: 500, status: "In Stock", date: "24 Feb, 2026" },
+    { id: "M-002", name: "minima Vinyl", type: "Canvas", rollWidth: 24, rollLength: 50, costPerRoll: 4000, costPerSqFt: 12.64, quantitySqFt: 4190, lowStockAlert: 500, status: "In Stock", date: "25 Feb, 2026" },
+    { id: "M-003", name: "non Vinyl", type: "Flex", rollWidth: 48, rollLength: 50, costPerRoll: 10000, costPerSqFt: 14.92, quantitySqFt: 1816, lowStockAlert: 500, status: "In Stock", date: "26 Feb, 2026" },
+    { id: "M-004", name: "sint Vinyl", type: "Canvas", rollWidth: 24, rollLength: 50, costPerRoll: 8000, costPerSqFt: 12.81, quantitySqFt: 4075, lowStockAlert: 500, status: "In Stock", date: "27 Feb, 2026" },
+    { id: "M-005", name: "velit Vinyl", type: "Flex", rollWidth: 24, rollLength: 50, costPerRoll: 6000, costPerSqFt: 11.25, quantitySqFt: 4281, lowStockAlert: 500, status: "In Stock", date: "28 Feb, 2026" },
 ]
 
 const typeColors: Record<string, string> = {
@@ -84,15 +79,15 @@ function MediaFormDialog({
     }, [width, length, costPerRoll])
 
     return (
-        <DialogContent className="max-w-[700px] w-[95vw] p-0 border-none shadow-xl rounded-md bg-white font-sans sm:max-w-[700px] overflow-hidden">
-            <div className="p-6 border-b border-slate-100 flex items-center justify-between">
-                <DialogTitle className="text-lg font-medium text-slate-700">
-                    {media ? "Edit Media Roll" : "New Media Roll"}
+        <DialogContent className="max-w-[calc(100%-1rem)] sm:max-w-[700px] p-0 border-none shadow-xl rounded-md bg-white font-sans overflow-hidden uppercase">
+            <div className="p-4 sm:p-6 border-b border-slate-100 flex items-center justify-between bg-white italic font-sans uppercase">
+                <DialogTitle className="text-lg font-black text-slate-800 tracking-tight leading-none">
+                    {media ? "Revise Media Roll" : "Register Media Roll"}
                 </DialogTitle>
-                <DialogDescription className="sr-only">Media Configuration Form</DialogDescription>
+                <DialogDescription className="sr-only font-sans">Media Configuration Form</DialogDescription>
             </div>
 
-            <div className="p-8 space-y-6 flex-1 overflow-y-auto max-h-[75vh]">
+            <div className="p-4 sm:p-8 space-y-6 flex-1 overflow-y-auto max-h-[75vh]">
                 <div className="space-y-4">
                     <div className="space-y-1.5">
                         <Label className="text-xs font-medium text-slate-600">Media Name <span className="text-rose-500">*</span></Label>
@@ -106,20 +101,21 @@ function MediaFormDialog({
 
                     <div className="space-y-1.5">
                         <Label className="text-xs font-medium text-slate-600">Type <span className="text-rose-500">*</span></Label>
-                        <Select value={type} onValueChange={setType}>
-                            <SelectTrigger className="h-10 border-slate-200 bg-white font-medium text-slate-800 text-sm">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="Flex">Flex</SelectItem>
-                                <SelectItem value="Vinyl">Vinyl</SelectItem>
-                                <SelectItem value="Canvas">Canvas</SelectItem>
-                                <SelectItem value="Other">Other</SelectItem>
-                            </SelectContent>
-                        </Select>
+                        <SearchableSelect
+                            options={[
+                                { value: 'Flex', label: 'Flex' },
+                                { value: 'Vinyl', label: 'Vinyl' },
+                                { value: 'Canvas', label: 'Canvas' },
+                                { value: 'Other', label: 'Other' }
+                            ]}
+                            value={type}
+                            onValueChange={setType}
+                            placeholder="Select Type"
+                            className="h-10 border-slate-200 bg-white font-medium text-slate-800 text-sm"
+                        />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-1.5">
                             <Label className="text-xs font-medium text-slate-600">Roll Width (Inches) <span className="text-rose-500">*</span></Label>
                             <Input
@@ -143,7 +139,7 @@ function MediaFormDialog({
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-1.5">
                             <Label className="text-xs font-medium text-slate-600">Cost Per Roll (₹) <span className="text-rose-500">*</span></Label>
                             <Input
@@ -153,7 +149,7 @@ function MediaFormDialog({
                                 onChange={e => setCostPerRoll(+e.target.value)}
                             />
                         </div>
-                        <div className="p-5 rounded-md bg-cyan-50/50 border border-cyan-100/50 space-y-1.5">
+                        <div className="p-4 sm:p-5 rounded-md bg-cyan-50/50 border border-cyan-100/50 space-y-1.5">
                             <span className="text-xs font-semibold text-teal-700 tracking-tight">Cost Per Sq. Ft</span>
                             <div className="flex items-baseline gap-1">
                                 <span className="text-sm font-bold text-teal-800">₹</span>
@@ -167,7 +163,7 @@ function MediaFormDialog({
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-1.5">
                             <Label className="text-xs font-medium text-slate-600">Initial Stock (Total Sq. Ft) <span className="text-rose-500">*</span></Label>
                             <Input
@@ -201,7 +197,7 @@ function MediaFormDialog({
                     Cancel
                 </Button>
                 <Button
-                    className="h-9 px-6 text-white font-medium text-sm shadow-sm transition-all"
+                    className="h-9 px-6 text-white font-bold text-xs shadow-sm rounded-md transition-all active:scale-95"
                     style={{ background: 'var(--primary)' }}
                     onClick={onClose}
                 >
@@ -243,7 +239,9 @@ export default function WideFormatMediaStocksPage() {
         },
         {
             key: "type",
-            label: "Type",
+            label: "Category",
+            className: "hidden md:table-cell",
+            headerClassName: "hidden md:table-cell",
             render: (val) => (
                 <Badge variant="outline" className={`${typeColors[val as string] || "bg-slate-50 text-slate-400"} border-none text-[10px] font-black uppercase tracking-widest px-2.5 h-6`}>
                     {val as string}
@@ -253,6 +251,8 @@ export default function WideFormatMediaStocksPage() {
         {
             key: "rollDims",
             label: "Roll Dims (WxL)",
+            className: "hidden md:table-cell",
+            headerClassName: "hidden md:table-cell",
             render: (_, item) => (
                 <span className="text-xs font-medium text-slate-500">
                     {item.rollWidth}.00&quot; x {item.rollLength}.00m
@@ -284,6 +284,8 @@ export default function WideFormatMediaStocksPage() {
         {
             key: "status",
             label: "Status",
+            className: "hidden lg:table-cell",
+            headerClassName: "hidden lg:table-cell",
             render: (val) => (
                 <Badge className={`bg-emerald-50 text-emerald-600 border-none text-[10px] font-black uppercase tracking-widest px-2 h-6`}>
                     {val as string}
@@ -309,20 +311,17 @@ export default function WideFormatMediaStocksPage() {
     ], [])
 
     return (
-        <div className="space-y-6 text-left font-sans">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 px-1 text-left">
-                <div className="space-y-0.5 text-left">
-                    <h1 className="text-2xl font-black tracking-tight text-slate-900 uppercase font-sans">Wide Format Media Inventory</h1>
-                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] font-sans">Roll Stock Management • Media Audit</p>
+        <div className="space-y-6 text-left font-sans bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-slate-100">
+            {/* Header Area */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 px-1 pb-2 font-sans italic uppercase">
+                <div>
+                    <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 text-balance">Media Stocks</h1>
                 </div>
-                <div className="flex items-center gap-3">
-                    <Button variant="outline" className="h-11 px-6 rounded-xl border-slate-200 font-bold gap-2 hover:bg-slate-50 text-slate-600">
-                        <Download className="h-4 w-4 text-slate-400" /> Export
-                    </Button>
+                <div className="flex items-center justify-end gap-3 w-full sm:w-auto uppercase italic">
                     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                         <DialogTrigger asChild>
-                            <Button className="h-11 px-8 rounded-xl font-bold gap-2 shadow-lg transition-all text-white" style={{ background: 'var(--primary)' }} onClick={handleAdd}>
-                                <Plus className="h-4 w-4" /> Add New Media
+                            <Button className="h-11 px-6 text-white font-black text-[10px] uppercase tracking-widest shadow-xl rounded-xl gap-2 transition-all active:scale-95 w-full sm:w-auto" style={{ background: 'var(--primary)' }} onClick={handleAdd}>
+                                <Plus className="h-4 w-4" /> <span className="sm:inline">Add New Media</span>
                             </Button>
                         </DialogTrigger>
                         <MediaFormDialog
@@ -336,6 +335,8 @@ export default function WideFormatMediaStocksPage() {
             <DataGrid
                 data={mediaList}
                 columns={columns}
+                enableDateRange={true}
+                dateFilterKey="date"
                 searchPlaceholder="Search media current page..."
             />
         </div>

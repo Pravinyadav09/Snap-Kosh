@@ -38,13 +38,7 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog"
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select"
+import { SearchableSelect } from "@/components/shared/searchable-select"
 import { CheckCircle } from "lucide-react"
 
 // Generic Grid & Modal
@@ -103,40 +97,41 @@ export default function ProductionJobsPage() {
                         <Plus className="h-4 w-4" /> New Job Card
                     </Button>
                 </DialogTrigger>
-                <DialogContent className="w-[94vw] max-w-[1400px] h-[90vh] sm:max-w-none p-0 overflow-hidden border border-slate-200 shadow-xl rounded-md bg-white font-sans flex flex-col">
-                    <DialogHeader className="px-6 py-4 text-left border-b border-slate-100 bg-white">
+                <DialogContent className="max-w-[calc(100%-1rem)] sm:max-w-[1200px] md:w-[1200px] max-h-[90vh] p-0 overflow-hidden border border-slate-200 shadow-xl rounded-md bg-white font-sans flex flex-col uppercase font-sans">
+                    <DialogHeader className="px-4 sm:px-6 py-4 text-left border-b border-slate-100 bg-white italic font-sans uppercase">
                         <div className="flex items-center gap-3">
                             <div className="p-1.5 rounded-md bg-slate-50 text-slate-500 border border-slate-100">
                                 <List className="h-4 w-4" />
                             </div>
                             <div>
-                                <DialogTitle className="text-sm font-semibold tracking-tight text-slate-800">Create Job Card</DialogTitle>
-                                <DialogDescription className="text-[10px] text-slate-400">Initialize a new production ticket for the workshop</DialogDescription>
+                                <DialogTitle className="text-sm font-black tracking-tight text-slate-800 leading-none">Create Production Ticket</DialogTitle>
+                                <DialogDescription className="text-[10px] text-slate-400 font-medium mt-1">Initialize a new production ticket for the workshop</DialogDescription>
                             </div>
                         </div>
                     </DialogHeader>
 
                     <div className="p-6 space-y-6 flex-1 overflow-y-auto custom-scrollbar bg-slate-50/30">
                         {/* Job Details Section */}
-                        <div className="bg-white p-5 rounded-md border border-slate-200 shadow-sm space-y-4">
+                        <div className="bg-white p-4 sm:p-5 rounded-md border border-slate-200 shadow-sm space-y-4">
                             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 border-l-2 border-[#4C1F7A] pl-3">Job Details</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                                 <div className="space-y-1.5">
                                     <Label className="text-xs font-medium text-slate-600">Job No.</Label>
                                     <Input defaultValue="JB-2026-0037" readOnly className="h-9 bg-slate-50 text-slate-500 border-slate-200 text-sm font-medium" />
                                 </div>
                                 <div className="space-y-1.5">
                                     <Label className="text-xs font-medium text-slate-600">Customer <span className="text-rose-500">*</span></Label>
-                                    <Select defaultValue="crona">
-                                        <SelectTrigger className="h-9 border-slate-200 text-sm font-medium">
-                                            <SelectValue placeholder="Select Customer" />
-                                        </SelectTrigger>
-                                        <SelectContent className="rounded-md">
-                                            <SelectItem value="crona" className="text-sm">Crona Group</SelectItem>
-                                            <SelectItem value="harris" className="text-sm">Harris Group</SelectItem>
-                                            <SelectItem value="denesik" className="text-sm">Denesik-Keeling</SelectItem>
-                                        </SelectContent>
-                                    </Select>
+                                    <SearchableSelect
+                                        options={[
+                                            { value: 'crona', label: 'Crona Group' },
+                                            { value: 'harris', label: 'Harris Group' },
+                                            { value: 'denesik', label: 'Denesik-Keeling' }
+                                        ]}
+                                        value="crona"
+                                        onValueChange={(val) => console.log(val)}
+                                        placeholder="Select Customer"
+                                        className="h-9 border-slate-200 text-sm font-medium"
+                                    />
                                 </div>
                                 <div className="space-y-1.5">
                                     <Label className="text-xs font-medium text-slate-600">Start Date</Label>
@@ -157,8 +152,8 @@ export default function ProductionJobsPage() {
                                     <Plus className="h-3 w-3 mr-1" /> Add New Row
                                 </Button>
                             </div>
-                            <div className="p-0 overflow-x-auto">
-                                <table className="w-full text-sm text-left border-collapse">
+                            <div className="p-0 overflow-x-auto scrollbar-thin">
+                                <table className="w-full text-sm text-left border-collapse min-w-[600px]">
                                     <thead>
                                         <tr className="bg-slate-50/50 border-b border-slate-100">
                                             <th className="px-4 py-2.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 w-[65%]">Description & Specifications</th>
@@ -234,7 +229,12 @@ export default function ProductionJobsPage() {
                             <div className="bg-white p-5 rounded-md border border-slate-200 shadow-sm space-y-4">
                                 <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">Design Reference</h3>
                                 <div className="space-y-3">
-                                    <div className="flex items-center gap-3 p-3 border border-dashed border-slate-200 rounded-md bg-slate-50/50 hover:bg-white transition-all group cursor-pointer">
+                                    <label className="flex items-center gap-3 p-3 border border-dashed border-slate-200 rounded-md bg-slate-50/50 hover:bg-white transition-all group cursor-pointer relative overflow-hidden">
+                                        <input type="file" className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" accept=".jpg,.jpeg,.png,.pdf" onChange={(e) => {
+                                            if (e.target.files && e.target.files[0]) {
+                                                toast.success("Design file selected", { description: e.target.files[0].name });
+                                            }
+                                        }} />
                                         <div className="p-2 rounded-md bg-white border border-slate-100 text-slate-400 group-hover:text-[#4C1F7A] group-hover:border-[#EDE9FE] transition-all">
                                             <ImageIcon className="h-5 w-5" />
                                         </div>
@@ -242,7 +242,7 @@ export default function ProductionJobsPage() {
                                             <p className="text-xs font-bold">In-house Design Asset</p>
                                             <p className="text-[10px] text-slate-400">Click to upload or drag & drop (JPG, PNG)</p>
                                         </div>
-                                    </div>
+                                    </label>
                                 </div>
                             </div>
                             <div className="bg-white p-5 rounded-md border border-slate-200 shadow-sm space-y-4">
@@ -259,7 +259,7 @@ export default function ProductionJobsPage() {
                         <Button variant="ghost" className="h-9 px-5 text-xs font-medium text-slate-500" onClick={() => setOpen(false)}>
                             Discard
                         </Button>
-                        <Button className="h-9 px-6 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-md shadow-sm transition-all" onClick={() => {
+                        <Button className="h-9 px-6 text-white font-semibold text-xs rounded-md shadow-sm transition-all" style={{ background: 'var(--primary)' }} onClick={() => {
                             toast.success("Job Ticket Created")
                             setOpen(false)
                         }}>
@@ -290,18 +290,19 @@ export default function ProductionJobsPage() {
                     <div className="p-5 space-y-4 bg-white">
                         <div className="space-y-1.5">
                             <Label className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Select New Status</Label>
-                            <Select defaultValue={status} onValueChange={setStatus}>
-                                <SelectTrigger className="h-9 border-slate-200 text-xs font-medium">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent className="rounded-md">
-                                    <SelectItem value="Pending" className="text-xs">Pending</SelectItem>
-                                    <SelectItem value="Pre-Press" className="text-xs">Pre-Press</SelectItem>
-                                    <SelectItem value="Printing" className="text-xs">Printing</SelectItem>
-                                    <SelectItem value="Post-Press" className="text-xs">Post-Press</SelectItem>
-                                    <SelectItem value="Completed" className="text-xs">Completed</SelectItem>
-                                </SelectContent>
-                            </Select>
+                            <SearchableSelect
+                                options={[
+                                    { value: 'Pending', label: 'Pending' },
+                                    { value: 'Pre-Press', label: 'Pre-Press' },
+                                    { value: 'Printing', label: 'Printing' },
+                                    { value: 'Post-Press', label: 'Post-Press' },
+                                    { value: 'Completed', label: 'Completed' }
+                                ]}
+                                value={status}
+                                onValueChange={setStatus}
+                                placeholder="Select Status"
+                                className="h-9 border-slate-200 text-xs font-medium"
+                            />
                         </div>
                     </div>
                     <DialogFooter className="px-5 py-3 bg-slate-50 border-t border-slate-100 flex justify-end gap-2">
@@ -326,25 +327,36 @@ export default function ProductionJobsPage() {
     const columns: ColumnDef<Job>[] = [
         {
             key: "id",
-            label: "Job No.",
+            label: "Ticket ID",
             headerClassName: "w-[120px] text-[10px] font-bold uppercase tracking-wider text-slate-400",
             render: (val, job) => (
                 <div className="flex flex-col gap-0.5">
-                    <span className="text-[#4C1F7A] font-bold text-xs tracking-tight">{val}</span>
-                    <span className="text-[10px] text-slate-400 font-medium">{job.date}</span>
+                    <span className="text-[#4C1F7A] font-bold text-xs tracking-tight italic">#{val}</span>
+                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">{job.date}</span>
                 </div>
             )
         },
         {
             key: "hasDesign",
-            label: "Design",
-            headerClassName: "w-[70px] text-[10px] font-bold uppercase tracking-wider text-slate-400",
+            label: "Files",
+            className: "hidden md:table-cell",
+            headerClassName: "w-[70px] text-[10px] font-bold uppercase tracking-wider text-slate-400 hidden md:table-cell",
             render: (val) => (
                 val ? <div className="p-1 rounded-md bg-blue-50 w-fit border border-blue-100"><DownloadImage className="h-3.5 w-3.5 text-blue-500" /></div> : <span className="text-slate-200">-</span>
             )
         },
-        { key: "customer", label: "Customer", className: "text-xs font-semibold text-slate-700", headerClassName: "text-[10px] font-bold uppercase tracking-wider text-slate-400" },
-        { key: "description", label: "Description", className: "text-xs text-slate-500 max-w-[250px] truncate font-medium", headerClassName: "text-[10px] font-bold uppercase tracking-wider text-slate-400" },
+        { 
+            key: "customer", 
+            label: "Client Info", 
+            className: "text-xs font-bold text-slate-700 tracking-tight", 
+            headerClassName: "text-[10px] font-bold uppercase tracking-wider text-slate-400" 
+        },
+        { 
+            key: "description", 
+            label: "Work Specifications", 
+            className: "text-[11px] text-slate-500 max-w-[250px] truncate font-medium hidden sm:table-cell", 
+            headerClassName: "text-[10px] font-bold uppercase tracking-wider text-slate-400 hidden sm:table-cell" 
+        },
         {
             key: "status",
             label: "Status",
@@ -367,10 +379,11 @@ export default function ProductionJobsPage() {
         },
         {
             key: "deadline",
-            label: "Deadline",
-            headerClassName: "w-[120px] text-[10px] font-bold uppercase tracking-wider text-slate-400",
+            label: "Urgency",
+            className: "hidden lg:table-cell",
+            headerClassName: "w-[120px] text-[10px] font-bold uppercase tracking-wider text-slate-400 hidden lg:table-cell",
             render: (val) => (
-                <span className="text-rose-600 font-bold text-xs flex items-center gap-1.5 whitespace-nowrap">
+                <span className="text-rose-600 font-bold text-xs flex items-center gap-1.5 whitespace-nowrap italic">
                     <Calendar className="h-3 w-3" /> {val}
                 </span>
             )
@@ -400,58 +413,58 @@ export default function ProductionJobsPage() {
         return (
             <div className="space-y-0 font-sans">
                 {/* Top Action Bar */}
-                <div className="bg-white border-b px-8 py-4 flex items-center justify-between sticky top-0 z-10 shadow-sm">
+                <div className="bg-white border-b px-8 py-4 flex flex-col sm:flex-row items-center justify-between sticky top-0 z-10 shadow-sm gap-4 italic uppercase">
                     <div className="flex items-center gap-2 text-slate-600">
                         <FileText className="h-4 w-4" />
-                        <span className="text-sm font-semibold">Job Card</span>
+                        <span className="text-sm font-black">Job Card</span>
                     </div>
-                    <div className="flex items-center gap-3">
-                        <Button className="gap-2 font-bold h-9 px-4 rounded-md shadow-sm text-xs text-white" style={{ background: 'var(--primary)' }}>
-                            <FileText className="h-4 w-4" /> Print Job Card
+                    <div className="flex flex-wrap items-center justify-center gap-3 w-full sm:w-auto">
+                        <Button className="gap-2 font-bold h-9 px-4 rounded-md shadow-sm text-xs text-white w-full sm:w-auto" style={{ background: 'var(--primary)' }}>
+                            <FileText className="h-4 w-4" /> <span className="sm:inline">Print Job Card</span>
                         </Button>
-                        <Button size="sm" className="text-white h-9 px-4 gap-2 rounded-md shadow-sm" style={{ background: 'var(--primary)' }}>
-                            <Edit className="h-4 w-4" /> Edit Job Ticket
+                        <Button size="sm" className="text-white h-9 px-4 gap-2 rounded-md shadow-sm w-full sm:w-auto" style={{ background: 'var(--primary)' }}>
+                            <Edit className="h-4 w-4" /> <span className="sm:inline">Edit Job Ticket</span>
                         </Button>
-                        <Button variant="outline" size="sm" className="h-9 px-4 rounded-md border-slate-200" onClick={() => setSelectedJob(null)}>
+                        <Button variant="outline" size="sm" className="h-9 px-4 rounded-md border-slate-200 w-full sm:w-auto bg-white font-black" onClick={() => setSelectedJob(null)}>
                             Back to List
                         </Button>
                     </div>
                 </div>
 
-                <div className="p-10 bg-white min-h-screen">
-                    <div className="max-w-[1100px] mx-auto border border-slate-300 p-8 rounded-sm space-y-8">
+                <div className="p-4 sm:p-10 bg-white min-h-screen">
+                    <div className="max-w-[1100px] mx-auto border border-slate-300 p-4 sm:p-8 rounded-sm space-y-6 sm:space-y-8">
                         {/* Ticket Header */}
-                        <div className="flex justify-between items-start border-b border-slate-900 pb-4">
+                        <div className="flex flex-col sm:flex-row justify-between items-start border-b-2 border-slate-900 pb-4 gap-4 italic font-sans uppercase">
                             <div>
-                                <h1 className="text-4xl font-black text-slate-900 tracking-tight">JOB TICKET</h1>
-                                <p className="text-lg font-medium text-slate-600 mt-1 uppercase tracking-wider">Ganesha Prints</p>
+                                <h1 className="text-4xl sm:text-5xl font-black text-slate-900 tracking-tighter">JOB TICKET</h1>
+                                <p className="text-base sm:text-lg font-black text-slate-600 mt-1 uppercase tracking-widest leading-none">Ganesha Softwares & Prints</p>
                             </div>
-                            <div className="text-right">
-                                <h2 className="text-3xl font-bold text-slate-900 tracking-tight">{job.id}-2026-0037</h2>
-                                <Badge className="mt-2 bg-slate-500 text-white font-bold px-4 py-1.5 rounded-md border-none">{job.status}</Badge>
+                            <div className="text-left sm:text-right">
+                                <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tighter leading-none">{job.id}-2026-0037</h2>
+                                <Badge className="mt-2 bg-slate-900 text-white font-black px-4 py-1.5 rounded-sm border-none shadow-sm uppercase text-[10px] tracking-widest">{job.status}</Badge>
                             </div>
                         </div>
 
                         {/* Summary Boxes */}
-                        <div className="grid grid-cols-1 md:grid-cols-4 border border-slate-200 divide-x divide-slate-200 rounded-sm">
-                            <div className="p-5 bg-white space-y-2">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 border border-slate-200 divide-y sm:divide-y-0 sm:divide-x divide-slate-200 rounded-sm">
+                            <div className="p-4 sm:p-5 bg-white space-y-2">
                                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">Customer</span>
                                 <div className="pl-1">
-                                    <p className="text-base font-black text-slate-800 leading-tight">{job.customer}</p>
+                                    <p className="text-sm sm:text-base font-black text-slate-800 leading-tight">{job.customer}</p>
                                     <p className="text-[10px] text-slate-500 mt-1">Cristina Hermiston | 1-585-837-5878</p>
                                 </div>
                             </div>
-                            <div className="p-5 bg-white space-y-2">
+                            <div className="p-4 sm:p-5 bg-white space-y-2">
                                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">Start Date</span>
-                                <p className="text-base font-black text-slate-800 pl-1">{job.date}, 2026</p>
+                                <p className="text-sm sm:text-base font-black text-slate-800 pl-1">{job.date}, 2026</p>
                             </div>
-                            <div className="p-5 bg-white space-y-2">
+                            <div className="p-4 sm:p-5 bg-white space-y-2">
                                 <span className="text-[10px] font-bold text-rose-400 uppercase tracking-widest pl-1">Deadline</span>
-                                <p className="text-base font-black text-rose-600 pl-1">{job.deadline}, 2026</p>
+                                <p className="text-sm sm:text-base font-black text-rose-600 pl-1">{job.deadline}, 2026</p>
                             </div>
-                            <div className="p-5 bg-white space-y-2 text-center">
+                            <div className="p-4 sm:p-5 bg-white space-y-2 text-left sm:text-center">
                                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Design Reference</span>
-                                <div className="flex justify-center mt-2">
+                                <div className="flex justify-start sm:justify-center mt-2">
                                     {job.hasDesign ? (
                                         <div className="p-2 bg-blue-50 text-blue-600 rounded-md border border-blue-100 italic font-medium cursor-pointer flex items-center gap-2">
                                             <ImageIcon className="h-4 w-4" /> Design
@@ -466,44 +479,46 @@ export default function ProductionJobsPage() {
                         {/* Production Details */}
                         <div className="space-y-4">
                             <h3 className="text-lg font-black text-slate-800 tracking-tight">Production Details</h3>
-                            <table className="w-full border-collapse border border-slate-300">
-                                <thead className="bg-slate-50 border-b border-slate-300">
-                                    <tr>
-                                        <th className="border border-slate-300 p-3 text-left w-[50px] text-[11px] font-bold uppercase text-slate-500">#</th>
-                                        <th className="border border-slate-300 p-3 text-left text-[11px] font-bold uppercase text-slate-500">Description</th>
-                                        <th className="border border-slate-300 p-3 text-center w-[120px] text-[11px] font-bold uppercase text-slate-500">Quantity</th>
-                                        <th className="border border-slate-300 p-3 text-left w-[300px] text-[11px] font-bold uppercase text-slate-500">Specifications / Machine</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td className="border border-slate-300 p-4 text-center font-bold text-slate-800">1</td>
-                                        <td className="border border-slate-300 p-4">
-                                            <p className="font-bold text-base text-slate-900 leading-snug">
-                                                Book Printing • Specs: 8.27*11.69 Size | 50 Pages • Cover: Chromo Paper (170GSM) - ₹7.0400 + Gloss Lamination • Inner: Newsprint (170GSM) - ₹13.3600 (B/W) • Binding: Perfect Binding
-                                            </p>
-                                        </td>
-                                        <td className="border border-slate-300 p-4 text-center">
-                                            <span className="text-3xl font-black text-slate-800 tracking-tighter tabular-nums">1000</span>
-                                        </td>
-                                        <td className="border border-slate-300 p-4 bg-slate-50/30">
-                                            <div className="space-y-1.5 text-[11px] text-slate-500 font-medium">
-                                                <p><span className="font-bold text-slate-400">Size:</span> 8.27*11.69</p>
-                                                <p><span className="font-bold text-slate-400">Cover:</span> Chromo Paper | Machine: Konica Minolta C6085 | Mode: Color</p>
-                                                <p><span className="font-bold text-slate-400">Inner:</span> Newsprint | Machine: Konica Minolta C6085 | Mode: Bw</p>
-                                                <p><span className="font-bold text-slate-400">Unit_price:</span> 273.44</p>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                            <div className="overflow-x-auto scrollbar-thin">
+                                <table className="w-full border-collapse border border-slate-300 min-w-[800px]">
+                                    <thead className="bg-slate-50 border-b border-slate-300">
+                                        <tr>
+                                            <th className="border border-slate-300 p-3 text-left w-[50px] text-[11px] font-bold uppercase text-slate-500">#</th>
+                                            <th className="border border-slate-300 p-3 text-left text-[11px] font-bold uppercase text-slate-500">Description</th>
+                                            <th className="border border-slate-300 p-3 text-center w-[120px] text-[11px] font-bold uppercase text-slate-500">Quantity</th>
+                                            <th className="border border-slate-300 p-3 text-left w-[300px] text-[11px] font-bold uppercase text-slate-500">Specifications / Machine</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td className="border border-slate-300 p-4 text-center font-bold text-slate-800">1</td>
+                                            <td className="border border-slate-300 p-4">
+                                                <p className="font-bold text-sm sm:text-base text-slate-900 leading-snug">
+                                                    Book Printing • Specs: 8.27*11.69 Size | 50 Pages • Cover: Chromo Paper (170GSM) - ₹7.0400 + Gloss Lamination • Inner: Newsprint (170GSM) - ₹13.3600 (B/W) • Binding: Perfect Binding
+                                                </p>
+                                            </td>
+                                            <td className="border border-slate-300 p-4 text-center">
+                                                <span className="text-2xl sm:text-3xl font-black text-slate-800 tracking-tighter tabular-nums">1000</span>
+                                            </td>
+                                            <td className="border border-slate-300 p-4 bg-slate-50/30">
+                                                <div className="space-y-1.5 text-[11px] text-slate-500 font-medium">
+                                                    <p><span className="font-bold text-slate-400">Size:</span> 8.27*11.69</p>
+                                                    <p><span className="font-bold text-slate-400">Cover:</span> Chromo Paper | Machine: Konica Minolta C6085 | Mode: Color</p>
+                                                    <p><span className="font-bold text-slate-400">Inner:</span> Newsprint | Machine: Konica Minolta C6085 | Mode: Bw</p>
+                                                    <p><span className="font-bold text-slate-400">Unit_price:</span> 273.44</p>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
 
                         {/* Digital Progress Tracking */}
                         <div className="space-y-4 pt-4">
                             <h3 className="text-lg font-black text-slate-800 tracking-tight">Digital Progress Tracking</h3>
-                            <div className="border border-slate-300 rounded-sm">
-                                <table className="w-full text-sm">
+                            <div className="border border-slate-300 rounded-sm overflow-x-auto scrollbar-thin">
+                                <table className="w-full text-sm min-w-[500px]">
                                     <thead className="bg-slate-50 border-b border-slate-300">
                                         <tr>
                                             <th className="px-6 py-4 text-left font-black uppercase text-[10px] tracking-widest text-slate-400">Stage</th>
@@ -538,14 +553,14 @@ export default function ProductionJobsPage() {
                         </div>
 
                         {/* Signature Section */}
-                        <div className="flex justify-between pt-16 pb-12 px-12">
-                            <div className="text-center w-[250px] space-y-3">
+                        <div className="flex flex-col sm:flex-row justify-between items-center pt-8 sm:pt-16 pb-8 sm:pb-12 px-4 sm:px-12 gap-8 sm:gap-0">
+                            <div className="text-center w-full sm:w-[250px] space-y-3">
                                 <div className="border-b-2 border-slate-900 h-8" />
-                                <p className="text-xs font-black uppercase tracking-widest text-slate-600">Operator Signature</p>
+                                <p className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-slate-600">Operator Signature</p>
                             </div>
-                            <div className="text-center w-[250px] space-y-3">
+                            <div className="text-center w-full sm:w-[250px] space-y-3">
                                 <div className="border-b-2 border-slate-900 h-8" />
-                                <p className="text-xs font-black uppercase tracking-widest text-slate-600">Supervisor Signature</p>
+                                <p className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-slate-600">Supervisor Signature</p>
                             </div>
                         </div>
                     </div>
@@ -555,11 +570,10 @@ export default function ProductionJobsPage() {
     }
 
     return (
-        <div className="space-y-4 font-sans bg-slate-50/10 p-4 rounded-lg">
-            <div className="flex items-center justify-between border-b border-slate-200 pb-4 mb-2 px-1">
+        <div className="space-y-4 font-sans bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-slate-100">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-200 pb-4 mb-2 px-1 gap-4 font-sans italic uppercase">
                 <div>
-                    <h1 className="text-xl font-bold tracking-tight text-slate-800">Production Workflow</h1>
-                    <p className="text-xs text-slate-500 font-medium">Manage and monitor live print jobs and production stages</p>
+                    <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900">Production Board</h1>
                 </div>
 
                 <div className="flex items-center gap-3">
@@ -574,6 +588,8 @@ export default function ProductionJobsPage() {
                     title="None"
                     hideTitle={true}
                     searchPlaceholder="Filter jobs by ID, customer or status..."
+                    enableDateRange={true}
+                    dateFilterKey="date"
                     toolbarClassName="border-b px-4 py-3 bg-white"
                 />
             </div>

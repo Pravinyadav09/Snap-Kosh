@@ -5,12 +5,10 @@ import {
     Search, Download, ChevronDown,
     Landmark, Calendar, FileText,
     Filter, ArrowUpRight, BarChart3,
-    FileSpreadsheet, PieChart, ShieldCheck
+    FileSpreadsheet, PieChart, ShieldCheck,
+    ArrowDownRight
 } from "lucide-react"
-import {
-    Table, TableBody, TableCell, TableHead,
-    TableHeader, TableRow,
-} from "@/components/ui/table"
+import { DataGrid, type ColumnDef } from "@/components/shared/data-grid"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -32,55 +30,118 @@ const gstr1Data = [
     { id: "INV-2026-003", customer: "Galaxy Media", gstNo: "27CCCC T9012C1Z3", taxableValue: 25000, gstRate: "18%", igst: 0, cgst: 2250, sgst: 2250, total: 29500 },
 ]
 
+type Gstr1Entry = typeof gstr1Data[0]
+
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function GstReportsPage() {
+    const columns: ColumnDef<Gstr1Entry>[] = [
+        { key: "id", label: "Inv Number", className: "font-bold text-blue-600 whitespace-nowrap", initialWidth: 150 },
+        { key: "customer", label: "Customer", className: "font-bold whitespace-nowrap", initialWidth: 200 },
+        { key: "gstNo", label: "GST Number", className: "font-mono text-[10px] opacity-70 whitespace-nowrap", initialWidth: 180 },
+        {
+            key: "taxableValue",
+            label: "Taxable Value",
+            type: "number",
+            headerClassName: "text-right",
+            className: "text-right font-medium whitespace-nowrap",
+            initialWidth: 130,
+            render: (val: number) => `₹${val.toLocaleString()}`
+        },
+        { key: "gstRate", label: "Rate", className: "text-center font-bold text-slate-500 whitespace-nowrap", headerClassName: "text-center", initialWidth: 80 },
+        {
+            key: "igst",
+            label: "IGST",
+            type: "number",
+            headerClassName: "text-right",
+            className: "text-right font-bold text-slate-600 whitespace-nowrap",
+            initialWidth: 100,
+            render: (val: number) => val > 0 ? `₹${val.toLocaleString()}` : '-'
+        },
+        {
+            key: "cgst",
+            label: "CGST",
+            type: "number",
+            headerClassName: "text-right",
+            className: "text-right font-bold text-slate-600 whitespace-nowrap",
+            initialWidth: 100,
+            render: (val: number) => val > 0 ? `₹${val.toLocaleString()}` : '-'
+        },
+        {
+            key: "sgst",
+            label: "SGST",
+            type: "number",
+            headerClassName: "text-right",
+            className: "text-right font-bold text-slate-600 whitespace-nowrap",
+            initialWidth: 100,
+            render: (val: number) => val > 0 ? `₹${val.toLocaleString()}` : '-'
+        },
+        {
+            key: "total",
+            label: "Total",
+            type: "number",
+            headerClassName: "text-right",
+            className: "text-right font-black text-slate-800 whitespace-nowrap",
+            initialWidth: 130,
+            render: (val: number) => `₹${val.toLocaleString()}`
+        },
+    ]
+
     return (
-        <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-1">
-                <h1 className="text-2xl font-bold tracking-tight">GST Reports</h1>
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                    <Select defaultValue="feb-2026">
-                        <SelectTrigger className="w-full sm:w-[180px] h-9">
-                            <SelectValue placeholder="Period" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="feb-2026">February 2026</SelectItem>
-                            <SelectItem value="jan-2026">January 2026</SelectItem>
-                            <SelectItem value="dec-2025">December 2025</SelectItem>
-                        </SelectContent>
-                    </Select>
-                    <Button className="h-9 gap-2 bg-emerald-600 hover:bg-emerald-700 font-bold whitespace-nowrap">
-                        <Download className="h-4 w-4" /> Download JSON
-                    </Button>
-                </div>
+        <div className="space-y-4 bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between px-1 gap-4 font-sans italic uppercase">
+                <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900">Taxation Intelligence</h1>
+                <Button className="h-11 px-6 text-white font-black text-[10px] uppercase tracking-widest shadow-xl rounded-xl gap-2 transition-all active:scale-95 w-full sm:w-auto" style={{ background: 'var(--primary)' }}>
+                    <Download className="h-4 w-4" /> Download GST JSON
+                </Button>
             </div>
 
             {/* GST Summary Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Card className="shadow-sm border-l-4 border-l-blue-500">
-                    <CardContent className="pt-6">
-                        <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Total Output GST (Sales)</p>
-                        <div className="flex items-end justify-between mt-1">
-                            <p className="text-2xl font-black italic">₹{summaryData.outputGst.toLocaleString()}</p>
-                            <Badge variant="outline" className="text-blue-600 border-blue-200">+12% vs last month</Badge>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <Card className="relative overflow-hidden border-none shadow-xl bg-white rounded-2xl">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-60">
+                            Output GST (Liability)
+                        </CardTitle>
+                        <div className="p-2 rounded-xl bg-blue-50 text-blue-500 shadow-sm border border-blue-100">
+                            <ArrowUpRight className="h-4 w-4" />
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-3xl font-black italic tracking-tighter">₹{summaryData.outputGst.toLocaleString()}</div>
+                        <div className="mt-2 flex items-center gap-2">
+                             <Badge className="bg-blue-500/10 text-blue-600 border-none font-black text-[9px] uppercase">B2B + B2C Sales</Badge>
                         </div>
                     </CardContent>
                 </Card>
-                <Card className="shadow-sm border-l-4 border-l-emerald-500">
-                    <CardContent className="pt-6">
-                        <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Input Tax Credit (Purchases)</p>
-                        <div className="flex items-end justify-between mt-1">
-                            <p className="text-2xl font-black italic">₹{summaryData.inputTaxCredit.toLocaleString()}</p>
-                            <Badge variant="outline" className="text-emerald-600 border-emerald-200">Verified ITC</Badge>
+                <Card className="relative overflow-hidden border-none shadow-xl bg-white rounded-2xl">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-60">
+                            Input Tax (Credit)
+                        </CardTitle>
+                        <div className="p-2 rounded-xl bg-emerald-50 text-emerald-500 shadow-sm border border-emerald-100">
+                            <ArrowDownRight className="h-4 w-4" />
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-3xl font-black italic tracking-tighter">₹{summaryData.inputTaxCredit.toLocaleString()}</div>
+                        <div className="mt-2 flex items-center gap-2">
+                             <Badge className="bg-emerald-500/10 text-emerald-600 border-none font-black text-[9px] uppercase">Verified 2B Ledger</Badge>
                         </div>
                     </CardContent>
                 </Card>
-                <Card className="shadow-sm border-l-4 border-l-rose-500 bg-rose-50/30">
-                    <CardContent className="pt-6">
-                        <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Net GST Payable</p>
-                        <div className="flex items-end justify-between mt-1">
-                            <p className="text-2xl font-black italic text-rose-600">₹{summaryData.payableGst.toLocaleString()}</p>
-                            <Button size="sm" variant="outline" className="h-7 text-[10px] font-bold uppercase bg-white">Pay Now</Button>
+                <Card className="relative overflow-hidden border-none shadow-xl bg-white rounded-2xl">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-60">
+                            Net Payable (Cash)
+                        </CardTitle>
+                        <div className="p-2 rounded-xl bg-rose-50 text-rose-500 shadow-sm border border-rose-100">
+                            <Landmark className="h-4 w-4" />
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-3xl font-black italic tracking-tighter text-rose-600">₹{summaryData.payableGst.toLocaleString()}</div>
+                        <div className="mt-2 flex items-center gap-2">
+                             <Badge className="bg-rose-500/10 text-rose-600 border-none font-black text-[9px] uppercase tracking-tighter italic">Due by 20th</Badge>
                         </div>
                     </CardContent>
                 </Card>
@@ -97,71 +158,22 @@ export default function GstReportsPage() {
                         color: white !important;
                     }
                 `}</style>
-                <div className="px-4 sm:px-6 pt-4 border-b bg-muted/20 overflow-x-auto scrollbar-hide">
-                    <TabsList className="gst-tabs-list h-10 bg-transparent gap-4 sm:gap-6 w-full justify-start sm:justify-start">
-                        <TabsTrigger value="gstr1" className="data-[state=active]:shadow-none rounded-t-lg px-4 font-bold uppercase text-[10px] sm:text-xs tracking-widest whitespace-nowrap transition-all">GSTR-1 (Sales)</TabsTrigger>
-                        <TabsTrigger value="gstr3b" className="data-[state=active]:shadow-none rounded-t-lg px-4 font-bold uppercase text-[10px] sm:text-xs tracking-widest whitespace-nowrap transition-all">GSTR-3B (Summary)</TabsTrigger>
-                        <TabsTrigger value="itc" className="data-[state=active]:shadow-none rounded-t-lg px-4 font-bold uppercase text-[10px] sm:text-xs tracking-widest whitespace-nowrap transition-all">ITC Ledger</TabsTrigger>
+                <div className="px-4 sm:px-6 pt-4 border-b bg-muted/20 overflow-x-auto no-scrollbar">
+                    <TabsList className="gst-tabs-list h-12 bg-transparent gap-4 sm:gap-6 w-max justify-start">
+                        <TabsTrigger value="gstr1" className="data-[state=active]:shadow-none rounded-t-lg px-6 font-black uppercase text-[10px] tracking-widest whitespace-nowrap transition-all h-full">GSTR-1 Records</TabsTrigger>
+                        <TabsTrigger value="gstr3b" className="data-[state=active]:shadow-none rounded-t-lg px-6 font-black uppercase text-[10px] tracking-widest whitespace-nowrap transition-all h-full">GSTR-3B Summary</TabsTrigger>
+                        <TabsTrigger value="itc" className="data-[state=active]:shadow-none rounded-t-lg px-6 font-black uppercase text-[10px] tracking-widest whitespace-nowrap transition-all h-full">ITC Registry</TabsTrigger>
                     </TabsList>
                 </div>
 
-                <TabsContent value="gstr1" className="p-4 sm:p-6 outline-none">
-                    <div className="flex flex-col md:flex-row gap-4 mb-6 items-center justify-between">
-                        <div className="flex items-center gap-2">
-                            <Button variant="outline" size="sm" className="h-9 gap-2">
-                                <FileSpreadsheet className="h-4 w-4" /> Export Excel
-                            </Button>
-                        </div>
-                        <div className="relative w-full md:w-80">
-                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                            <Input
-                                placeholder="Search by customer or GST..."
-                                className="pl-8 h-9 border-none bg-muted/50"
-                            />
-                        </div>
-                    </div>
-
-                    <div className="rounded-md border overflow-x-auto scrollbar-thin">
-                        <Table className="min-w-[800px]">
-                            <TableHeader>
-                                <TableRow className="bg-muted/50 uppercase text-[10px] font-black">
-                                    <TableHead className="whitespace-nowrap">Inv Number</TableHead>
-                                    <TableHead className="whitespace-nowrap">Customer</TableHead>
-                                    <TableHead className="whitespace-nowrap">GST Number</TableHead>
-                                    <TableHead className="text-right whitespace-nowrap">Taxable Value</TableHead>
-                                    <TableHead className="text-center whitespace-nowrap">Rate</TableHead>
-                                    <TableHead className="text-right whitespace-nowrap">IGST</TableHead>
-                                    <TableHead className="text-right whitespace-nowrap">CGST</TableHead>
-                                    <TableHead className="text-right whitespace-nowrap">SGST</TableHead>
-                                    <TableHead className="text-right whitespace-nowrap">Total</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {gstr1Data.map((row, i) => (
-                                    <TableRow key={i} className="text-xs group hover:bg-muted/5">
-                                        <TableCell className="font-bold text-blue-600 whitespace-nowrap">{row.id}</TableCell>
-                                        <TableCell className="font-bold whitespace-nowrap">{row.customer}</TableCell>
-                                        <TableCell className="font-mono text-[10px] opacity-70 whitespace-nowrap">{row.gstNo}</TableCell>
-                                        <TableCell className="text-right font-medium whitespace-nowrap">₹{row.taxableValue.toLocaleString()}</TableCell>
-                                        <TableCell className="text-center font-bold text-slate-500 whitespace-nowrap">{row.gstRate}</TableCell>
-                                        <TableCell className="text-right font-bold text-slate-600 whitespace-nowrap">{row.igst > 0 ? `₹${row.igst.toLocaleString()}` : '-'}</TableCell>
-                                        <TableCell className="text-right font-bold text-slate-600 whitespace-nowrap">{row.cgst > 0 ? `₹${row.cgst.toLocaleString()}` : '-'}</TableCell>
-                                        <TableCell className="text-right font-bold text-slate-600 whitespace-nowrap">{row.sgst > 0 ? `₹${row.sgst.toLocaleString()}` : '-'}</TableCell>
-                                        <TableCell className="text-right font-black text-slate-800 whitespace-nowrap">₹{row.total.toLocaleString()}</TableCell>
-                                    </TableRow>
-                                ))}
-                                <TableRow className="bg-slate-50 font-black text-xs">
-                                    <TableCell colSpan={3} className="text-right uppercase tracking-widest text-muted-foreground whitespace-nowrap">Monthly Totals</TableCell>
-                                    <TableCell className="text-right whitespace-nowrap">₹40,000</TableCell>
-                                    <TableCell></TableCell>
-                                    <TableCell className="text-right whitespace-nowrap">₹1,800</TableCell>
-                                    <TableCell className="text-right whitespace-nowrap">₹2,550</TableCell>
-                                    <TableCell className="text-right whitespace-nowrap">₹2,550</TableCell>
-                                    <TableCell className="text-right text-sm whitespace-nowrap">₹46,900</TableCell>
-                                </TableRow>
-                            </TableBody>
-                        </Table>
-                    </div>
+                <TabsContent value="gstr1" className="p-0 sm:p-2 outline-none mt-2 mb-2">
+                    <DataGrid
+                        data={gstr1Data}
+                        columns={columns}
+                        searchPlaceholder="Search by customer or GST..."
+                        enableCardView={false}
+                        enableSelection={true}
+                    />
                 </TabsContent>
 
                 <TabsContent value="gstr3b" className="p-12 text-center text-muted-foreground italic">
@@ -178,10 +190,3 @@ export default function GstReportsPage() {
     )
 }
 
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select"

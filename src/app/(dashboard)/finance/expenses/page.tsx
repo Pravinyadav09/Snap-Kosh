@@ -12,10 +12,7 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import {
-    Select, SelectContent, SelectItem,
-    SelectTrigger, SelectValue,
-} from "@/components/ui/select"
+import { SearchableSelect } from "@/components/shared/searchable-select"
 import {
     Dialog,
     DialogContent,
@@ -55,136 +52,142 @@ function AddExpenseDialog({ onClose }: { onClose: () => void }) {
     const [isGst, setIsGst] = useState(false)
 
     return (
-        <DialogContent className="sm:max-w-[700px] p-0 overflow-hidden border-none shadow-2xl rounded-3xl flex flex-col max-h-[92vh]">
-            <DialogHeader className="px-10 pt-10 pb-6 text-left border-b bg-white">
-                <div className="flex items-center gap-4 mb-2">
-                    <div className="p-3 rounded-2xl shadow-sm border border-slate-100 transition-all" style={{ background: 'color-mix(in srgb, var(--primary), white 95%)', color: 'var(--primary)' }}>
-                        <Receipt className="h-5 w-5" />
+        <DialogContent className="max-w-[calc(100%-1rem)] sm:max-w-[700px] p-0 overflow-hidden border border-slate-200 shadow-xl rounded-md bg-white max-h-[90vh] flex flex-col uppercase font-sans">
+            <DialogHeader className="px-4 sm:px-6 py-4 text-left border-b border-slate-100 bg-white italic font-sans uppercase">
+                <div className="flex items-center gap-3">
+                    <div className="p-1.5 rounded-md border" style={{ background: 'var(--sidebar-accent)', color: 'var(--primary)', borderColor: 'var(--border)' }}>
+                        <Receipt className="h-4 w-4" />
                     </div>
-                    <DialogTitle className="text-2xl font-black tracking-tight text-slate-800 font-heading">Record Expense</DialogTitle>
+                    <div>
+                        <DialogTitle className="text-sm font-black tracking-tight text-slate-800 leading-none">Record New Expense</DialogTitle>
+                        <DialogDescription className="text-[10px] text-slate-400 font-medium mt-1">Track new expenditure and GST bills for accurate accounting.</DialogDescription>
+                    </div>
                 </div>
-                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 pl-1">
-                    Track new expenditure and GST bills for accounting
-                </p>
             </DialogHeader>
-            <div className="px-10 py-8 space-y-8 flex-1 overflow-y-auto custom-scrollbar bg-white">
-                {/* 01: Identification */}
-                <div className="space-y-4">
-                    <div className="flex items-center gap-2 mb-2">
-                        <span className="flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-black text-white" style={{ background: 'var(--primary)' }}>01</span>
-                        <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-500">Expense Details</h3>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <Label className="text-[10px] font-black uppercase text-slate-500 tracking-widest pl-1">Expense Title <span className="text-rose-500">*</span></Label>
-                            <Input
-                                className="h-12 rounded-xl border-slate-200 bg-slate-50 font-bold text-slate-700 px-4 transition-all"
-                                placeholder="e.g. Printer Paper Bundle"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <Label className="text-[10px] font-black uppercase text-slate-500 tracking-widest pl-1">Category <span className="text-rose-500">*</span></Label>
-                            <Select>
-                                <SelectTrigger className="h-12 rounded-xl border-slate-100 bg-white font-medium text-slate-600 px-4">
-                                    <SelectValue placeholder="Select Category" />
-                                </SelectTrigger>
-                                <SelectContent className="rounded-xl">
-                                    {categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    </div>
-                </div>
 
-                {/* 02: Transaction Details */}
-                <div className="space-y-4">
-                    <div className="flex items-center gap-2 mb-2">
-                        <span className="flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-black text-white" style={{ background: 'var(--primary)' }}>02</span>
-                        <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-500">Transaction Details</h3>
-                    </div>
-                    <div className="grid grid-cols-3 gap-4">
-                        <div className="space-y-2">
-                            <Label className="text-[10px] font-black uppercase text-slate-500 tracking-widest pl-1">Amount (₹) <span className="text-rose-500">*</span></Label>
-                            <Input type="number" step="0.01" className="h-12 rounded-xl border-none bg-emerald-50 font-black text-emerald-700 px-4 shadow-sm" placeholder="0.00" />
+            <div className="flex-1 overflow-y-auto custom-scrollbar">
+                <div className="px-4 sm:px-6 py-6 space-y-6">
+                    {/* 01: Identification */}
+                    <div className="space-y-4">
+                        <div className="flex items-center gap-2">
+                            <Info className="h-3 w-3 text-slate-400" />
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Expense Details</span>
                         </div>
-                        <div className="space-y-2">
-                            <Label className="text-[10px] font-black uppercase text-slate-500 tracking-widest pl-1">Date <span className="text-rose-500">*</span></Label>
-                            <Input type="date" className="h-12 rounded-xl border-slate-100 bg-white font-medium text-slate-600 px-4" defaultValue="2026-02-11" />
-                        </div>
-                        <div className="space-y-2">
-                            <Label className="text-[10px] font-black uppercase text-slate-500 tracking-widest pl-1">Payment Method</Label>
-                            <Select>
-                                <SelectTrigger className="h-12 rounded-xl border-slate-100 bg-white font-medium text-slate-600 px-4">
-                                    <SelectValue placeholder="Select Method" />
-                                </SelectTrigger>
-                                <SelectContent className="rounded-xl">
-                                    <SelectItem value="cash">Cash</SelectItem>
-                                    <SelectItem value="upi">UPI / Online</SelectItem>
-                                    <SelectItem value="bank">Bank Transfer</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="space-y-2">
-                    <Label className="text-[10px] font-black uppercase text-slate-500 tracking-widest pl-1">Reference / Bill Number</Label>
-                    <Input placeholder="Enter Reference No." className="h-12 rounded-xl border-slate-100 bg-white font-medium text-slate-600 px-4" />
-                </div>
-
-                {/* GST Checkbox */}
-                <div className="flex items-center space-x-3 p-5 rounded-2xl border border-slate-100 transition-all" style={{ background: 'color-mix(in srgb, var(--primary), white 97%)' }}>
-                    <Checkbox id="gst" checked={isGst} onCheckedChange={(v: boolean) => setIsGst(v)} className="h-5 w-5 rounded-md transition-all" style={{ color: 'var(--primary)', borderColor: 'color-mix(in srgb, var(--primary), white 80%)' } as any} />
-                    <label htmlFor="gst" className="text-xs font-black uppercase tracking-widest text-slate-600 cursor-pointer">
-                        Is GST Bill? (For Input Tax Credit)
-                    </label>
-                </div>
-
-                {/* GST Details - Conditional */}
-                {isGst && (
-                    <div className="space-y-6 pt-4 animate-in fade-in slide-in-from-top-4 duration-300">
-                        <div className="flex items-center gap-2 border-b pb-2">
-                            <Info className="h-4 w-4" style={{ color: 'var(--primary)' }} />
-                            <h4 className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'var(--primary)' }}>Identify Vendor</h4>
-                        </div>
-                        <div className="grid grid-cols-2 gap-6">
-                            <div className="space-y-2">
-                                <Label className="text-[10px] font-black uppercase text-slate-500 tracking-widest pl-1">Vendor</Label>
-                                <Select>
-                                    <SelectTrigger className="h-12 rounded-xl border-slate-100 bg-white font-medium text-slate-600 px-4">
-                                        <SelectValue placeholder="Select Vendor" />
-                                    </SelectTrigger>
-                                    <SelectContent className="rounded-xl">
-                                        <SelectItem value="v1">Modern Paper Mart</SelectItem>
-                                        <SelectItem value="v2">Ganesh Machinery</SelectItem>
-                                    </SelectContent>
-                                </Select>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="space-y-1.5">
+                                <Label className="text-xs font-medium text-slate-600">Expense Title <span className="text-rose-500">*</span></Label>
+                                <Input
+                                    placeholder="e.g. Printer Paper Bundle"
+                                    className="h-9 border-slate-200 bg-slate-50/50 font-bold text-sm focus:bg-white transition-all rounded-md"
+                                />
+                            </div>
+                            <div className="space-y-1.5">
+                                <Label className="text-xs font-medium text-slate-600">Category <span className="text-rose-500">*</span></Label>
+                                <SearchableSelect
+                                    options={categories.map(c => ({ value: c, label: c }))}
+                                    placeholder="Select Category"
+                                    onValueChange={(val) => console.log(val)}
+                                    className="h-9 rounded-md border-slate-200 bg-white font-medium text-xs shadow-none"
+                                />
                             </div>
                         </div>
                     </div>
-                )}
 
-                <div className="space-y-4">
-                    <div className="flex items-center gap-2 mb-2">
-                        <span className="flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-black text-white" style={{ background: 'var(--primary)' }}>03</span>
-                        <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-500">Additional Info</h3>
+                    {/* 02: Transaction Details */}
+                    <div className="space-y-4">
+                        <div className="flex items-center gap-2">
+                            <Wallet className="h-3 w-3 text-slate-400" />
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Transaction Details</span>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-slate-50/50 p-4 rounded-md border border-slate-100">
+                            <div className="space-y-1.5">
+                                <Label className="text-xs font-medium text-slate-600">Amount (₹) <span className="text-rose-500">*</span></Label>
+                                <Input type="number" step="0.01" className="h-9 border-slate-200 bg-white font-bold text-sm text-emerald-600 rounded-md" placeholder="0.00" />
+                            </div>
+                            <div className="space-y-1.5">
+                                <Label className="text-xs font-medium text-slate-600">Date <span className="text-rose-500">*</span></Label>
+                                <Input type="date" className="h-9 border-slate-200 bg-white font-medium text-sm rounded-md" defaultValue="2026-02-11" />
+                            </div>
+                            <div className="space-y-1.5">
+                                <Label className="text-xs font-medium text-slate-600">Payment Method</Label>
+                                <SearchableSelect
+                                    options={[
+                                        { value: 'cash', label: 'Cash' },
+                                        { value: 'upi', label: 'UPI / Online' },
+                                        { value: 'bank', label: 'Bank Transfer' }
+                                    ]}
+                                    placeholder="Select Method"
+                                    onValueChange={(val) => console.log(val)}
+                                    className="h-9 rounded-md border-slate-200 bg-white font-medium text-xs shadow-none"
+                                />
+                            </div>
+                        </div>
+                        <div className="space-y-1.5">
+                            <Label className="text-xs font-medium text-slate-600">Reference / Bill Number</Label>
+                            <Input placeholder="Enter Reference No." className="h-9 border-slate-200 bg-white font-medium text-sm rounded-md" />
+                        </div>
                     </div>
-                    <div className="space-y-2">
-                        <Label className="text-[10px] font-black uppercase text-slate-500 tracking-widest pl-1">Description / Notes</Label>
-                        <Textarea
-                            placeholder="Any additional notes..."
-                            className="min-h-[100px] rounded-xl border-slate-100 bg-white font-medium text-slate-600 p-4 resize-none focus-visible:ring-indigo-500/20"
-                        />
+
+                    {/* GST Checkbox */}
+                    <div className="p-3 bg-white rounded-md border border-slate-200 flex items-center justify-between shadow-sm">
+                        <div className="flex items-center gap-3">
+                            <div className={`p-2 rounded-md ${isGst ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-slate-50 text-slate-400 border border-slate-200'}`}>
+                                <CheckCircle className="h-4 w-4" />
+                            </div>
+                            <div>
+                                <p className="text-xs font-bold text-slate-800">Has GST Bill?</p>
+                                <p className="text-[10px] text-slate-400 font-medium">For Input Tax Credit calculation</p>
+                            </div>
+                        </div>
+                        <Checkbox checked={isGst} onCheckedChange={(v: boolean) => setIsGst(v)} className="data-[state=checked]:bg-primary" />
+                    </div>
+
+                    {/* GST Details - Conditional */}
+                    {isGst && (
+                        <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-300">
+                             <div className="flex items-center gap-2">
+                                <Info className="h-3 w-3 text-slate-400" />
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Vendor Info</span>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-1.5">
+                                    <Label className="text-xs font-medium text-slate-600">Vendor</Label>
+                                    <SearchableSelect
+                                        options={[
+                                            { value: 'v1', label: 'Modern Paper Mart' },
+                                            { value: 'v2', label: 'Ganesh Machinery' }
+                                        ]}
+                                        placeholder="Select Vendor"
+                                        onValueChange={(val) => console.log(val)}
+                                        className="h-9 rounded-md border-slate-200 bg-white font-medium text-xs shadow-none"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="space-y-4">
+                        <div className="flex items-center gap-2">
+                            <FileText className="h-3 w-3 text-slate-400" />
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Additional Info</span>
+                        </div>
+                        <div className="space-y-1.5">
+                            <Label className="text-xs font-medium text-slate-600">Description / Notes</Label>
+                            <Textarea
+                                placeholder="Any additional notes..."
+                                className="min-h-[80px] border-slate-200 bg-slate-50/50 text-sm font-medium text-slate-600 px-3 py-2 resize-none focus:bg-white transition-all rounded-md"
+                            />
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <DialogFooter className="p-8 mt-2 flex flex-row items-center justify-end gap-3 px-10 border-t bg-slate-50/50">
-                <Button variant="ghost" className="h-11 px-8 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-600 transition-colors" onClick={onClose}>
-                    Cancel
+            <DialogFooter className="px-6 py-4 border-t border-slate-100 bg-slate-50/50 flex flex-row items-center justify-between">
+                <Button variant="ghost" className="h-9 px-4 rounded-md text-xs font-medium text-slate-500 hover:text-slate-800" onClick={onClose}>
+                    Discard Entry
                 </Button>
                 <Button
-                    className="h-11 px-8 rounded-xl font-bold text-[10px] font-black uppercase tracking-widest shadow-lg shadow-indigo-200 transition-all text-white"
+                    className="h-9 px-8 text-white font-bold text-xs shadow-sm rounded-md transition-all active:scale-95"
                     style={{ background: 'var(--primary)' }}
                     onClick={() => {
                         toast.success("Expense Recorded", { description: "Expenditure has been logged successfully." })
@@ -206,12 +209,16 @@ export default function ExpensesPage() {
         {
             key: "date",
             label: "Date",
+            className: "hidden sm:table-cell",
+            headerClassName: "hidden sm:table-cell",
             render: (val) => <span className="text-xs font-bold text-slate-500">{val}</span>
         },
         {
             key: "vendor",
             label: "Vendor",
-            render: (val) => <span className="text-xs font-medium text-slate-400">{val}</span>
+            className: "hidden lg:table-cell",
+            headerClassName: "hidden lg:table-cell",
+            render: (val) => <span className="text-xs font-medium text-slate-400 uppercase">{val}</span>
         },
         {
             key: "title",
@@ -221,15 +228,19 @@ export default function ExpensesPage() {
         {
             key: "category",
             label: "Category",
+            className: "hidden md:table-cell",
+            headerClassName: "hidden md:table-cell",
             render: (val) => (
                 <Badge variant="outline" className="text-[10px] font-black uppercase bg-slate-50 border-slate-200 text-slate-500 tracking-wider">
-                    {val}
+                    {val as string}
                 </Badge>
             )
         },
         {
             key: "reference",
             label: "Ref #",
+            className: "hidden xl:table-cell",
+            headerClassName: "hidden xl:table-cell",
             render: (val) => <span className="text-xs font-mono text-slate-400">{val}</span>
         },
         {
@@ -260,20 +271,16 @@ export default function ExpensesPage() {
     ]
 
     return (
-        <div className="space-y-6">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 px-1">
+        <div className="space-y-6 bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-slate-100 font-sans uppercase">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 px-1 font-sans italic">
                 <div>
-                    <h1 className="text-4xl font-black tracking-tight text-slate-900 font-heading">Expenses</h1>
-                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Track and manage business expenditures</p>
+                    <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 uppercase">Expense Board</h1>
                 </div>
-                <div className="flex items-center gap-3">
-                    <Button variant="outline" className="h-11 px-6 rounded-xl border-slate-200 font-bold gap-2 hover:bg-slate-50">
-                        <Download className="h-4 w-4 text-slate-400" /> Export List
-                    </Button>
+                <div className="flex items-center justify-end gap-3 w-full sm:w-auto">
                     <Dialog>
                         <DialogTrigger asChild>
-                            <Button className="h-11 px-8 rounded-xl font-bold gap-2 shadow-lg shadow-indigo-100 transition-all text-white" style={{ background: 'var(--primary)' }}>
-                                <Plus className="h-4 w-4" /> New Expense
+                            <Button className="h-9 px-5 rounded-md font-bold gap-2 shadow-sm transition-all text-white text-[10px] uppercase tracking-wider active:scale-95 w-full sm:w-auto" style={{ background: 'var(--primary)' }}>
+                                <Plus className="h-4 w-4" /> <span className="sm:inline">New Expense</span>
                             </Button>
                         </DialogTrigger>
                         <AddExpenseDialog onClose={() => { }} />
@@ -281,36 +288,13 @@ export default function ExpensesPage() {
                 </div>
             </div>
 
-            {/* Statistics Bar - Premium look */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <Card className="border-none shadow-sm rounded-2xl" style={{ background: 'color-mix(in srgb, var(--primary), white 95%)' }}>
-                    <CardContent className="p-4 flex flex-row items-center gap-4">
-                        <div className="p-3 rounded-xl bg-white shadow-sm" style={{ color: 'var(--primary)' }}>
-                            <Wallet className="h-5 w-5" />
-                        </div>
-                        <div>
-                            <p className="text-[10px] font-black uppercase text-slate-500 tracking-wider">Today's Spend</p>
-                            <p className="text-xl font-black text-slate-900 font-heading">₹2,450.00</p>
-                        </div>
-                    </CardContent>
-                </Card>
-                <Card className="border-none shadow-sm bg-emerald-50/30 rounded-2xl">
-                    <CardContent className="p-4 flex flex-row items-center gap-4">
-                        <div className="p-3 rounded-xl bg-white text-emerald-600 shadow-sm">
-                            <CheckCircle className="h-5 w-5" />
-                        </div>
-                        <div>
-                            <p className="text-[10px] font-black uppercase text-slate-500 tracking-wider">GST Recoverable</p>
-                            <p className="text-xl font-black text-slate-900 font-heading">₹12,840.00</p>
-                        </div>
-                    </CardContent>
-                </Card>
-                {/* Add more stats if needed */}
-            </div>
+
 
             <DataGrid
                 data={expenses}
                 columns={columns}
+                enableDateRange={true}
+                dateFilterKey="date"
                 searchPlaceholder="Search descriptions, vendors or categories..."
             />
         </div>

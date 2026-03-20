@@ -19,13 +19,6 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue
-} from "@/components/ui/select"
-import {
     Table,
     TableBody,
     TableCell,
@@ -47,6 +40,7 @@ import { CostEstimator } from "@/components/shared/cost-estimator"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { toast } from "sonner"
+import { SearchableSelect } from "@/components/shared/searchable-select"
 
 type QuoteItem = {
     id: string
@@ -76,101 +70,101 @@ export default function CreateQuotationPage() {
     const grandTotal = subtotal + taxAmount
 
     return (
-        <div className="space-y-6 pb-20">
+        <div className="space-y-3 pb-10">
             {/* Page Header */}
-            <div className="flex items-center justify-between px-1">
-                <div className="flex items-center gap-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between px-1 gap-4 font-sans">
+                <div className="flex items-center gap-2.5">
                     <Button
                         variant="ghost"
                         size="icon"
-                        className="h-9 w-9 border bg-background shadow-sm rounded-full"
+                        className="h-8 w-8 border bg-background shadow-sm rounded-full shrink-0"
                         onClick={() => router.back()}
                     >
-                        <ChevronLeft className="h-5 w-5" />
+                        <ChevronLeft className="h-4 w-4" />
                     </Button>
                     <div>
-                        <h1 className="text-2xl font-black tracking-tight text-slate-800">Create Quotation</h1>
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">New Sales Proposal Generator</p>
+                        <h1 className="text-xl font-black tracking-tight text-slate-900 leading-none uppercase italic">Create Quotation</h1>
+                        <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground leading-none mt-1">Digital Proposal Console</p>
                     </div>
                 </div>
-                <div className="flex items-center gap-2">
-                    <Button variant="outline" className="h-10 font-bold border-2" onClick={() => router.back()}>
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                    <Button variant="outline" className="h-9 px-4 text-[10px] font-black uppercase tracking-widest border border-slate-200 flex-1 sm:flex-none" onClick={() => router.back()}>
                         Cancel
                     </Button>
                     <Button
-                        className="h-10 font-bold px-6 shadow-lg gap-2 text-white"
+                        className="h-9 font-black px-5 text-[10px] uppercase tracking-widest shadow-md gap-2 text-white transition-all active:scale-95 flex-1 sm:flex-none"
                         style={{ background: 'var(--primary)' }}
                         onClick={() => {
                             toast.success("Quotation Saved", { description: "Quotation QT-2026-0063 has been saved successfully." })
                             router.push("/estimator")
                         }}
                     >
-                        <Save className="h-4 w-4" /> Save Quotation
+                        <Save className="h-3.5 w-3.5" /> <span className="sm:inline">Save Draft</span>
                     </Button>
                 </div>
             </div>
 
             {/* Main Form */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
                 <div className="lg:col-span-12">
-                    <Card className="shadow-xl border-none ring-1 ring-slate-200 ring-inset">
-                        <CardHeader className="bg-slate-50 border-b py-4">
-                            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                                <div className="space-y-2">
-                                    <Label className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Quotation No.</Label>
-                                    <Input className="h-10 font-bold bg-white" defaultValue="QT-2026-0063" readOnly />
+                    <Card className="shadow-lg border-none ring-1 ring-slate-200 ring-inset">
+                        <CardHeader className="bg-slate-50 border-b py-3 px-5">
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                <div className="space-y-1.5">
+                                    <Label className="text-[9px] font-black uppercase text-slate-500 tracking-widest">Quotation No.</Label>
+                                    <Input className="h-8 text-xs font-bold bg-white" defaultValue="QT-2026-0063" readOnly />
                                 </div>
-                                <div className="space-y-2">
-                                    <Label className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Customer <span className="text-rose-500">*</span></Label>
-                                    <Select>
-                                        <SelectTrigger className="h-10 bg-white font-medium">
-                                            <SelectValue placeholder="Select Customer" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="c1">Bailey-Champlin</SelectItem>
-                                            <SelectItem value="c2">Crona Group</SelectItem>
-                                            <SelectItem value="c3">Denesik-Keeling</SelectItem>
-                                        </SelectContent>
-                                    </Select>
+                                <div className="space-y-1.5">
+                                    <Label className="text-[9px] font-black uppercase text-slate-500 tracking-widest">Customer <span className="text-rose-500">*</span></Label>
+                                    <SearchableSelect
+                                        options={[
+                                            { value: "c1", label: "Bailey-Champlin" },
+                                            { value: "c2", label: "Crona Group" },
+                                            { value: "c3", label: "Denesik-Keeling" },
+                                        ]}
+                                        placeholder="Select Customer"
+                                        onValueChange={(val: string) => console.log(val)}
+                                        className="h-8 text-xs"
+                                    />
                                 </div>
-                                <div className="space-y-2">
-                                    <Label className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Date</Label>
-                                    <Input type="date" className="h-10 bg-white" defaultValue="2026-02-26" />
+                                <div className="space-y-1.5">
+                                    <Label className="text-[9px] font-black uppercase text-slate-500 tracking-widest">Date</Label>
+                                    <Input type="date" className="h-8 text-xs bg-white py-1" defaultValue="2026-02-26" />
                                 </div>
-                                <div className="space-y-2">
-                                    <Label className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Valid Until</Label>
-                                    <Input type="date" className="h-10 bg-white" defaultValue="2026-03-13" />
+                                <div className="space-y-1.5">
+                                    <Label className="text-[9px] font-black uppercase text-slate-500 tracking-widest">Valid Until</Label>
+                                    <Input type="date" className="h-8 text-xs bg-white py-1" defaultValue="2026-03-13" />
                                 </div>
                             </div>
                         </CardHeader>
                         <CardContent className="p-0">
-                            <div className="p-6 bg-slate-50/50">
-                                <div className="flex items-center justify-between mb-4">
-                                    <h3 className="text-xs font-black uppercase tracking-widest text-slate-400">Items & Estimation</h3>
-                                    <Button size="sm" variant="outline" className="h-9 gap-2 font-bold px-4 bg-white border-2" onClick={addItem}>
-                                        <Plus className="h-4 w-4 text-blue-600" /> Add Item
+                            <div className="p-4 bg-slate-50/50">
+                                <div className="flex items-center justify-between mb-3 px-1">
+                                    <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Items & Estimation</h3>
+                                    <Button size="sm" variant="outline" className="h-7 gap-1.5 font-bold px-3 bg-white border text-[10px]" onClick={addItem}>
+                                        <Plus className="h-3 w-3 text-primary" /> Add Item
                                     </Button>
                                 </div>
 
-                                <div className="rounded-xl border bg-white overflow-hidden shadow-sm">
-                                    <Table>
+                                <div className="rounded-lg border bg-white overflow-hidden shadow-sm overflow-x-auto no-scrollbar">
+                                    <Table className="min-w-[800px]">
                                         <TableHeader>
-                                            <TableRow className="bg-slate-900 hover:bg-slate-900 border-none">
-                                                <TableHead className="text-white font-bold text-xs py-4 px-6">Description</TableHead>
-                                                <TableHead className="text-white font-bold text-xs text-center w-[120px]">Qty</TableHead>
-                                                <TableHead className="text-white font-bold text-xs text-center w-[150px]">Rate (₹)</TableHead>
-                                                <TableHead className="text-white font-bold text-xs text-center w-[180px]">Amount (₹)</TableHead>
-                                                <TableHead className="text-white font-bold text-xs text-right px-6 w-[80px]">Action</TableHead>
+                                            <TableRow className="bg-white hover:bg-white border-b border-slate-100 italic">
+                                                <TableHead className="text-slate-500 font-black uppercase tracking-widest text-[9px] py-2 px-5 h-10">Description</TableHead>
+                                                <TableHead className="text-slate-500 font-black uppercase tracking-widest text-[9px] text-center w-[100px] h-10">Qty</TableHead>
+                                                <TableHead className="text-slate-500 font-black uppercase tracking-widest text-[9px] text-center w-[120px] h-10">Rate (₹)</TableHead>
+                                                <TableHead className="text-slate-500 font-black uppercase tracking-widest text-[9px] text-center w-[140px] h-10">Amount (₹)</TableHead>
+                                                <TableHead className="text-slate-500 font-black uppercase tracking-widest text-[9px] text-right px-5 w-[70px] h-10">Action</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
                                             {items.map((item, index) => (
-                                                <TableRow key={item.id} className="group border-b last:border-0">
-                                                    <TableCell className="p-4 px-6 md:min-w-[400px]">
-                                                        <div className="relative">
+                                                <TableRow key={item.id} className="group border-b last:border-0 hover:bg-slate-50/50">
+                                                    <TableCell className="p-2 px-5">
+                                                        <div className="relative group/field">
                                                             <Textarea
                                                                 placeholder="Item Details, Specs, Sizes..."
-                                                                className="min-h-[60px] resize-none border-none shadow-none focus-visible:ring-0 p-0 text-sm font-medium pr-10"
+                                                                className="min-h-[40px] resize-none border-none shadow-none focus-visible:ring-0 p-0 text-[13px] font-medium pr-8"
                                                                 value={item.description}
                                                                 onChange={(e) => {
                                                                     const newItems = [...items]
@@ -183,32 +177,32 @@ export default function CreateQuotationPage() {
                                                                     <Button
                                                                         variant="ghost"
                                                                         size="icon"
-                                                                        className="absolute bottom-0 right-0 h-8 w-8 text-blue-600 hover:bg-blue-50 bg-white border border-blue-100 shadow-sm"
+                                                                        className="absolute top-0 right-0 h-6 w-6 text-primary hover:bg-primary/10 opacity-0 group-hover/field:opacity-100 transition-opacity"
                                                                     >
-                                                                        <Calculator className="h-4 w-4" />
+                                                                        <Calculator className="h-3 w-3" />
                                                                     </Button>
                                                                 </DialogTrigger>
                                                                 <DialogContent className="max-w-[calc(100%-2rem)] sm:max-w-[1200px] md:w-[1200px] p-0 overflow-hidden rounded-lg border border-slate-200 shadow-2xl bg-white">
-                                                                    <DialogHeader className="px-6 py-4 text-left border-b border-slate-100 bg-white">
-                                                                        <div className="flex items-center gap-3">
-                                                                            <div className="p-1.5 rounded-md bg-[#F5F3FF] text-[#4C1F7A] border border-[#EDE9FE]">
-                                                                                <Calculator className="h-4 w-4" />
+                                                                    <DialogHeader className="px-5 py-3 text-left border-b border-slate-100 bg-white font-sans italic">
+                                                                        <div className="flex items-center gap-2">
+                                                                            <div className="p-1 rounded-md bg-primary/10 text-primary border border-primary/20">
+                                                                                <Calculator className="h-3.5 w-3.5" />
                                                                             </div>
-                                                                            <DialogTitle className="text-sm font-semibold tracking-tight text-slate-800">Cost Estimator & Specs Generator</DialogTitle>
+                                                                            <DialogTitle className="text-xs font-bold tracking-tight text-slate-800 uppercase">Production Cost Estimator</DialogTitle>
                                                                         </div>
                                                                     </DialogHeader>
-                                                                    <div className="max-h-[75vh] overflow-y-auto custom-scrollbar">
+                                                                    <div className="max-h-[70vh] overflow-y-auto custom-scrollbar">
                                                                         <CostEstimator />
                                                                     </div>
-                                                                    <DialogFooter className="p-4 flex flex-row items-center justify-end gap-2 px-6 border-t border-slate-100 bg-slate-50/50">
+                                                                    <DialogFooter className="p-3 flex flex-row items-center justify-end gap-2 px-5 border-t border-slate-100 bg-slate-50/50">
                                                                         <DialogTrigger asChild>
-                                                                            <Button variant="outline" className="h-8 px-4 rounded-md text-xs font-medium text-slate-500 border-slate-200 bg-white">
+                                                                            <Button variant="outline" className="h-7 px-3 rounded-md text-[10px] font-medium text-slate-500 border-slate-200 bg-white">
                                                                                 Close
                                                                             </Button>
                                                                         </DialogTrigger>
                                                                         <DialogTrigger asChild>
-                                                                            <Button className="h-8 px-5 rounded-md bg-[#4C1F7A] hover:bg-[#3d1862] font-semibold text-xs text-white shadow-sm transition-all">
-                                                                                Apply to Item
+                                                                            <Button className="h-7 px-4 rounded-md bg-primary hover:opacity-90 font-semibold text-[10px] text-white shadow-sm transition-all text-primary-foreground">
+                                                                                Apply Estimates
                                                                             </Button>
                                                                         </DialogTrigger>
                                                                     </DialogFooter>
@@ -216,10 +210,10 @@ export default function CreateQuotationPage() {
                                                             </Dialog>
                                                         </div>
                                                     </TableCell>
-                                                    <TableCell className="text-center">
+                                                    <TableCell className="text-center p-2">
                                                         <Input
                                                             type="number"
-                                                            className="h-10 text-center font-bold border-none shadow-none focus-visible:ring-1"
+                                                            className="h-8 text-center text-xs font-bold border-none shadow-none focus-visible:ring-1 bg-transparent px-1"
                                                             value={item.qty}
                                                             onChange={(e) => {
                                                                 const newItems = [...items]
@@ -229,10 +223,10 @@ export default function CreateQuotationPage() {
                                                             }}
                                                         />
                                                     </TableCell>
-                                                    <TableCell className="text-center">
+                                                    <TableCell className="text-center p-2">
                                                         <Input
                                                             type="number"
-                                                            className="h-10 text-center font-medium border-none shadow-none focus-visible:ring-1"
+                                                            className="h-8 text-center text-xs font-medium border-none shadow-none focus-visible:ring-1 bg-transparent px-1"
                                                             value={item.rate}
                                                             onChange={(e) => {
                                                                 const newItems = [...items]
@@ -242,17 +236,17 @@ export default function CreateQuotationPage() {
                                                             }}
                                                         />
                                                     </TableCell>
-                                                    <TableCell className="text-center font-black text-slate-800">
+                                                    <TableCell className="text-center p-2 font-black text-slate-800 text-xs">
                                                         ₹{item.amount.toLocaleString()}
                                                     </TableCell>
-                                                    <TableCell className="text-right px-6">
+                                                    <TableCell className="text-right p-2 px-5">
                                                         <Button
                                                             variant="ghost"
                                                             size="icon"
-                                                            className="h-8 w-8 text-slate-400 hover:text-rose-600 hover:bg-rose-50"
+                                                            className="h-7 w-7 text-slate-300 hover:text-rose-600 hover:bg-rose-50 rounded-md"
                                                             onClick={() => removeItem(item.id)}
                                                         >
-                                                            <Trash2 className="h-4 w-4" />
+                                                            <Trash2 className="h-3.5 w-3.5" />
                                                         </Button>
                                                     </TableCell>
                                                 </TableRow>
@@ -263,44 +257,45 @@ export default function CreateQuotationPage() {
                             </div>
                         </CardContent>
                         <div className="grid grid-cols-1 md:grid-cols-12 border-t">
-                            <div className="md:col-span-8 p-6 bg-slate-50/30">
-                                <Label className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Quotations Terms & Notes</Label>
+                            <div className="md:col-span-8 p-4 bg-slate-50/30">
+                                <Label className="text-[9px] font-black uppercase text-slate-500 tracking-widest mb-2 block">Quotations Terms & Notes</Label>
                                 <Textarea
                                     placeholder="Enter payment terms, delivery time, etc..."
-                                    className="mt-2 min-h-[120px] bg-white border-2 border-slate-100 rounded-xl resize-none"
+                                    className="min-h-[80px] bg-white border-slate-200 text-xs rounded-lg resize-none p-3 font-medium"
                                 />
                             </div>
-                            <div className="md:col-span-4 p-6 space-y-4 border-l bg-slate-50/10">
-                                <div className="flex justify-between items-center text-xs">
+                            <div className="md:col-span-4 p-5 space-y-3 border-l bg-slate-50/10">
+                                <div className="flex justify-between items-center text-[10px]">
                                     <span className="font-bold text-slate-500 uppercase tracking-wider">Subtotal:</span>
-                                    <span className="font-bold text-slate-800">₹{subtotal.toLocaleString()}</span>
+                                    <span className="font-bold text-slate-800 text-xs">₹{subtotal.toLocaleString()}</span>
                                 </div>
-                                <div className="space-y-4">
-                                    <div className="flex justify-between items-center text-xs">
-                                        <span className="font-bold text-slate-500 uppercase tracking-wider">Applicable Tax:</span>
-                                        <Select defaultValue="gst-18">
-                                            <SelectTrigger className="h-8 w-32 text-[10px] font-bold">
-                                                <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="gst-18">GST 18%</SelectItem>
-                                                <SelectItem value="gst-12">GST 12%</SelectItem>
-                                                <SelectItem value="no-tax">No Tax</SelectItem>
-                                            </SelectContent>
-                                        </Select>
+                                <div className="space-y-3">
+                                    <div className="flex justify-between items-center text-[10px]">
+                                        <span className="font-bold text-slate-500 uppercase tracking-wider">Tax Type:</span>
+                                        <SearchableSelect
+                                            options={[
+                                                { value: "gst-18", label: "GST 18%" },
+                                                { value: "gst-12", label: "GST 12%" },
+                                                { value: "no-tax", label: "No Tax" }
+                                            ]}
+                                            value="gst-18"
+                                            onValueChange={(val: any) => console.log(val)}
+                                            placeholder="Tax Type"
+                                            className="h-7 w-28 text-[9px] font-bold py-0 bg-white"
+                                        />
                                     </div>
-                                    <div className="flex justify-between items-center text-xs">
+                                    <div className="flex justify-between items-center text-[10px]">
                                         <span className="font-bold text-slate-500 uppercase tracking-wider">Tax Amount:</span>
-                                        <span className="font-bold text-slate-800">₹{taxAmount.toLocaleString()}</span>
+                                        <span className="font-bold text-slate-800 text-xs">₹{taxAmount.toLocaleString()}</span>
                                     </div>
                                 </div>
-                                <Separator />
-                                <div className="flex justify-between items-center pt-2">
-                                    <span className="font-black text-slate-800 uppercase tracking-widest text-sm">Grand Total:</span>
-                                    <span className="font-black text-2xl text-blue-600">₹{grandTotal.toLocaleString()}</span>
+                                <Separator className="bg-slate-200" />
+                                <div className="flex justify-between items-center pt-1">
+                                    <span className="font-black text-slate-800 uppercase tracking-widest text-[11px]">Grand Total:</span>
+                                    <span className="font-black text-xl text-primary tabular-nums">₹{grandTotal.toLocaleString()}</span>
                                 </div>
-                                <Button className="w-full h-12 bg-slate-900 hover:bg-slate-800 text-white font-bold uppercase tracking-widest text-xs gap-3">
-                                    <Printer className="h-4 w-4" /> Print Quotation
+                                <Button className="w-full h-10 bg-primary hover:opacity-90 text-primary-foreground font-bold uppercase tracking-widest text-[10px] gap-2 rounded-lg shadow-sm transition-all active:scale-95">
+                                    <Printer className="h-3.5 w-3.5" /> Print Quotation
                                 </Button>
                             </div>
                         </div>

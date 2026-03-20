@@ -26,7 +26,8 @@ import {
     ChevronRight,
     FileText,
     ArrowDownToLine,
-    ShieldCheck
+    ShieldCheck,
+    Info
 } from "lucide-react"
 import { DataGrid, type ColumnDef } from "@/components/shared/data-grid"
 import {
@@ -51,10 +52,8 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Textarea } from "@/components/ui/textarea"
-import { Separator } from "@/components/ui/separator"
 import { toast } from "sonner"
+import { SearchableSelect } from "@/components/shared/searchable-select"
 
 // ─── Mock Data for Real-time Status ──────────────────────────────────────────
 const stockItems = [
@@ -69,7 +68,8 @@ const stockItems = [
         unit: "Sheets",
         threshold: 1000,
         status: "Normal",
-        lastActivity: "2h ago"
+        lastActivity: "2h ago",
+        date: "02 Mar, 2026"
     },
     {
         id: "STK-002",
@@ -82,7 +82,8 @@ const stockItems = [
         unit: "Sheets",
         threshold: 500,
         status: "Low Stock",
-        lastActivity: "5h ago"
+        lastActivity: "5h ago",
+        date: "01 Mar, 2026"
     },
     {
         id: "STK-003",
@@ -95,7 +96,8 @@ const stockItems = [
         unit: "Sheets",
         threshold: 3000,
         status: "Normal",
-        lastActivity: "1d ago"
+        lastActivity: "1d ago",
+        date: "28 Feb, 2026"
     },
     {
         id: "STK-004",
@@ -108,101 +110,158 @@ const stockItems = [
         unit: "Meters",
         threshold: 50,
         status: "Normal",
-        lastActivity: "3h ago"
+        lastActivity: "3h ago",
+        date: "27 Feb, 2026"
+    }
+]
+
+// ─── Mock Data for Deduction History ─────────────────────────────────────────
+const deductionLogs = [
+    {
+        id: "DED-8821",
+        jobId: "JB-2026-0045",
+        material: "170 GSM Art Paper",
+        quantity: 1200,
+        unit: "Sheets",
+        operator: "Shubham Soni",
+        date: "11 Mar, 2026",
+        status: "Completed",
+        category: "Paper"
+    },
+    {
+        id: "DED-8819",
+        jobId: "JB-2026-0042",
+        material: "300 GSM Art Card",
+        quantity: 450,
+        unit: "Sheets",
+        operator: "Vikas Shah",
+        date: "10 Mar, 2026",
+        status: "Completed",
+        category: "Paper"
+    },
+    {
+        id: "DED-8815",
+        jobId: "JB-2026-0038",
+        material: "Flexible Vinyl (White)",
+        quantity: 25,
+        unit: "Meters",
+        operator: "Rahul Verma",
+        date: "09 Mar, 2026",
+        status: "Completed",
+        category: "Media"
+    },
+    {
+        id: "DED-8810",
+        jobId: "JB-2026-0035",
+        material: "Standard Bond (70 GSM)",
+        quantity: 2000,
+        unit: "Sheets",
+        operator: "Shubham Soni",
+        date: "08 Mar, 2026",
+        status: "Completed",
+        category: "Paper"
+    },
+    {
+        id: "DED-8804",
+        jobId: "JB-2026-0031",
+        material: "300 GSM Art Card",
+        quantity: 400,
+        unit: "Sheets",
+        operator: "Vikas Shah",
+        date: "07 Mar, 2026",
+        status: "Completed",
+        category: "Paper"
     }
 ]
 
 // ─── GRN (Goods Received Note) Dialog ─────────────────────────────────────────
 function GRNEntryDialog({ onClose }: { onClose: () => void }) {
     return (
-        <DialogContent className="max-w-2xl p-0 overflow-hidden border border-slate-200 shadow-xl rounded-md bg-white font-sans flex flex-col">
-            <DialogHeader className="px-6 py-4 text-left border-b border-slate-100 bg-white">
+        <DialogContent className="max-w-[calc(100%-1rem)] sm:max-w-[700px] p-0 overflow-hidden border border-slate-200 shadow-xl rounded-md bg-white max-h-[90vh] flex flex-col uppercase font-sans">
+            <DialogHeader className="px-4 sm:px-6 py-4 text-left border-b border-slate-100 bg-white italic font-sans uppercase">
                 <div className="flex items-center gap-3">
-                    <div className="p-1.5 rounded-md bg-emerald-50 text-emerald-600 border border-emerald-100">
+                    <div className="p-1.5 rounded-md border" style={{ background: 'var(--sidebar-accent)', color: 'var(--primary)', borderColor: 'var(--border)' }}>
                         <ArrowDownToLine className="h-4 w-4" />
                     </div>
                     <div>
-                        <DialogTitle className="text-sm font-semibold tracking-tight text-slate-800">Goods Received Entry</DialogTitle>
-                        <DialogDescription className="text-[10px] text-slate-400">
-                            Register inward stock and update warehouse inventory
-                        </DialogDescription>
+                        <DialogTitle className="text-sm font-black tracking-tight text-slate-800 leading-none">Purchase Inward (GRN)</DialogTitle>
+                        <DialogDescription className="text-[10px] text-slate-400 font-medium mt-1">Register inward stock and synchronize warehouse inventory levels.</DialogDescription>
                     </div>
                 </div>
             </DialogHeader>
 
-            <div className="px-6 py-6 space-y-6 flex-1 bg-white">
-                {/* 01: Metadata */}
-                <div className="space-y-4">
-                    <div className="flex items-center gap-2">
-                        <Calendar className="h-3 w-3 text-slate-400" />
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">General Information</span>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-1.5">
-                            <Label className="text-xs font-medium text-slate-600">Receipt Date</Label>
-                            <Input type="date" className="h-9 rounded-md border-slate-200 bg-white font-medium text-slate-800 text-sm" defaultValue="2026-03-02" />
+            <div className="flex-1 overflow-y-auto custom-scrollbar">
+                <div className="px-6 py-6 space-y-6">
+                    {/* 01: Metadata */}
+                    <div className="space-y-4">
+                        <div className="flex items-center gap-2">
+                            <Info className="h-3 w-3 text-slate-400" />
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">General Information</span>
                         </div>
-                        <div className="space-y-1.5">
-                            <Label className="text-xs font-medium text-slate-600">Supplier</Label>
-                            <Select>
-                                <SelectTrigger className="h-9 rounded-md border-slate-200 bg-white font-medium text-slate-800 text-sm">
-                                    <SelectValue placeholder="Select Supplier" />
-                                </SelectTrigger>
-                                <SelectContent className="rounded-md">
-                                    <SelectItem value="gh" className="text-sm">Gallia-Hegmann</SelectItem>
-                                    <SelectItem value="be" className="text-sm">Bergstrom Paper</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    </div>
-                </div>
-
-                {/* 02: Stock Details */}
-                <div className="space-y-4">
-                    <div className="flex items-center gap-2">
-                        <Boxes className="h-3 w-3 text-slate-400" />
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Material Details</span>
-                    </div>
-                    <div className="grid grid-cols-1 gap-4 bg-slate-50/50 p-4 rounded-md border border-slate-100">
-                        <div className="space-y-1.5">
-                            <Label className="text-xs font-medium text-slate-600">Item Name <span className="text-rose-500">*</span></Label>
-                            <Select>
-                                <SelectTrigger className="h-9 rounded-md border-slate-200 bg-white font-medium text-slate-800 text-sm">
-                                    <SelectValue placeholder="Select existing paper/media..." />
-                                </SelectTrigger>
-                                <SelectContent className="rounded-md">
-                                    {stockItems.map(item => (
-                                        <SelectItem key={item.id} value={item.id} className="text-sm">
-                                            {item.name} ({item.unit})
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="space-y-1.5">
-                                <Label className="text-xs font-medium text-slate-600">Quantity Received</Label>
-                                <Input type="number" className="h-9 rounded-md border-slate-200 bg-white font-bold text-slate-900 text-sm" placeholder="0" />
+                                <Label className="text-xs font-medium text-slate-600">Receipt Date</Label>
+                                <Input type="date" className="h-9 border-slate-200 bg-white font-medium text-sm rounded-md" defaultValue="2026-03-02" />
                             </div>
                             <div className="space-y-1.5">
-                                <Label className="text-xs font-medium text-slate-600">Unit</Label>
-                                <Input className="h-9 rounded-md border-slate-200 bg-slate-100/50 font-medium text-slate-500 text-sm" readOnly defaultValue="Sheets" />
+                                <Label className="text-xs font-medium text-slate-600">Supplier</Label>
+                                <SearchableSelect
+                                    options={[
+                                        { value: 'gh', label: 'Gallia-Hegmann' },
+                                        { value: 'be', label: 'Bergstrom Paper' }
+                                    ]}
+                                    placeholder="Select Supplier"
+                                    onValueChange={(val) => console.log(val)}
+                                    className="h-9 rounded-md border-slate-200 bg-white font-medium text-xs"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* 02: Stock Details */}
+                    <div className="space-y-4">
+                        <div className="flex items-center gap-2">
+                            <Boxes className="h-3 w-3 text-slate-400" />
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Material Details</span>
+                        </div>
+                        <div className="grid grid-cols-1 gap-4 bg-slate-50/50 p-4 rounded-md border border-slate-100">
+                            <div className="space-y-1.5">
+                                <Label className="text-xs font-medium text-slate-600">Item Name <span className="text-rose-500">*</span></Label>
+                                <SearchableSelect
+                                    options={stockItems.map(item => ({
+                                        value: item.id,
+                                        label: `${item.name} (${item.unit})`
+                                    }))}
+                                    placeholder="Select existing paper/media..."
+                                    onValueChange={(val) => console.log(val)}
+                                    className="h-9 rounded-md border-slate-200 bg-white font-medium text-xs"
+                                />
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className="space-y-1.5">
+                                    <Label className="text-xs font-medium text-slate-600">Quantity Received</Label>
+                                    <Input type="number" className="h-9 border-slate-200 bg-white font-bold text-sm rounded-md" placeholder="0" />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <Label className="text-xs font-medium text-slate-600">Unit</Label>
+                                    <Input className="h-9 border-slate-200 bg-slate-50/50 font-medium text-slate-500 text-sm rounded-md" readOnly defaultValue="Sheets" />
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <DialogFooter className="p-4 flex flex-row items-center justify-end gap-2 px-6 border-t bg-slate-50/50">
+            <DialogFooter className="px-6 py-4 border-t border-slate-100 bg-slate-50/50 flex flex-row items-center justify-between">
                 <Button
                     variant="ghost"
                     className="h-9 px-4 rounded-md text-xs font-medium text-slate-500 hover:text-slate-800"
                     onClick={onClose}
                 >
-                    Cancel
+                    Discard Entry
                 </Button>
                 <Button
-                    className="h-9 px-6 rounded-md text-xs font-semibold text-white shadow-sm"
+                    className="h-9 px-8 text-white font-bold text-xs shadow-sm rounded-md transition-all active:scale-95"
                     style={{ background: 'var(--primary)' }}
                     onClick={() => {
                         toast.success("Stock Updated", {
@@ -225,7 +284,9 @@ export default function InventoryPage() {
         {
             key: "id",
             label: "Inward ID",
-            render: (val) => <span className="font-mono text-[10px] font-bold text-slate-400 lowercase">{val as string}</span>
+            className: "hidden xl:table-cell",
+            headerClassName: "hidden xl:table-cell",
+            render: (val) => <span className="font-mono text-[10px] font-bold text-slate-400 lowercase italic">#{val as string}</span>
         },
         {
             key: "name",
@@ -242,6 +303,8 @@ export default function InventoryPage() {
         {
             key: "category",
             label: "Category",
+            className: "hidden lg:table-cell",
+            headerClassName: "hidden lg:table-cell",
             render: (val) => (
                 <Badge variant="outline" className="border-slate-100 bg-white font-medium text-[10px] px-2 h-5 shadow-none text-slate-500">{val as string}</Badge>
             )
@@ -249,19 +312,22 @@ export default function InventoryPage() {
         {
             key: "opening",
             label: "Opening",
-            className: "text-right",
+            className: "text-right hidden sm:table-cell",
+            headerClassName: "text-right hidden sm:table-cell",
             render: (val) => <span className="font-medium text-xs tabular-nums text-slate-400">{(val as number).toLocaleString()}</span>
         },
         {
             key: "received",
-            label: "Received (+)",
-            className: "text-right font-semibold text-xs tabular-nums text-emerald-600",
+            label: "Rev (+)",
+            className: "text-right font-semibold text-xs tabular-nums text-emerald-600 hidden md:table-cell",
+            headerClassName: "text-right hidden md:table-cell",
             render: (val) => `+${(val as number).toLocaleString()}`
         },
         {
             key: "deducted",
-            label: "Issued (-)",
-            className: "text-right font-semibold text-xs tabular-nums text-rose-500",
+            label: "Iss (-)",
+            className: "text-right font-semibold text-xs tabular-nums text-rose-500 hidden md:table-cell",
+            headerClassName: "text-right hidden md:table-cell",
             render: (val) => `-${(val as number).toLocaleString()}`
         },
         {
@@ -289,24 +355,94 @@ export default function InventoryPage() {
         }
     ]
 
-    return (
-        <div className="space-y-4 font-sans">
-            {/* Header Section */}
-            <div className="flex items-center justify-between bg-white p-4 rounded-md shadow-sm border border-slate-200">
-                <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-md bg-slate-50 text-slate-500 border border-slate-100">
-                        <Package className="h-5 w-5" />
-                    </div>
-                    <div>
-                        <h1 className="text-base font-semibold tracking-tight text-slate-800">Inventory Master</h1>
-                        <p className="text-[11px] text-slate-400">GRN Entry & Real-time Stock Status</p>
-                    </div>
+    const historyColumns: ColumnDef<typeof deductionLogs[0]>[] = [
+        {
+            key: "id",
+            label: "Log ID",
+            className: "hidden sm:table-cell",
+            headerClassName: "hidden sm:table-cell",
+            render: (val) => <span className="font-mono text-[10px] font-bold text-slate-400 lowercase">#{val as string}</span>
+        },
+        {
+            key: "date",
+            label: "Timestamp",
+            className: "hidden md:table-cell",
+            headerClassName: "hidden md:table-cell",
+            render: (val) => (
+                <div className="flex items-center gap-2 text-slate-500 font-medium text-xs">
+                    <Calendar className="h-3 w-3" /> {val as string}
                 </div>
+            )
+        },
+        {
+            key: "jobId",
+            label: "Job Ref",
+            className: "hidden xl:table-cell",
+            headerClassName: "hidden xl:table-cell",
+            render: (val) => (
+                <Badge variant="outline" className="font-bold text-[10px] border-slate-100 bg-slate-50 text-slate-500 h-5">
+                    {val as string}
+                </Badge>
+            )
+        },
+        {
+            key: "material",
+            label: "Material Information",
+            render: (val, item) => (
+                <div className="flex flex-col gap-0.5">
+                    <span className="font-bold text-slate-800 text-sm tracking-tight leading-tight">{val as string}</span>
+                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">{item.category}</span>
+                </div>
+            )
+        },
+        {
+            key: "quantity",
+            label: "Qty Deducted",
+            className: "text-right",
+            render: (val, item) => (
+                <span className="font-bold text-sm tabular-nums text-rose-600">
+                    -{(val as number).toLocaleString()} <span className="text-[10px] text-slate-400 font-normal">{item.unit}</span>
+                </span>
+            )
+        },
+        {
+            key: "operator",
+            label: "Issued By",
+            className: "hidden lg:table-cell",
+            headerClassName: "hidden lg:table-cell",
+            render: (val) => (
                 <div className="flex items-center gap-2">
+                    <div className="h-5 w-5 rounded-full bg-slate-100 flex items-center justify-center text-[8px] font-bold text-slate-500 border border-slate-200 uppercase">
+                        {(val as string).charAt(0)}
+                    </div>
+                    <span className="text-xs font-semibold text-slate-700">{val as string}</span>
+                </div>
+            )
+        },
+        {
+            key: "status",
+            label: "Status",
+            className: "text-center",
+            render: (val) => (
+                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md">
+                    <CheckCircle2 className="h-3 w-3" /> {val as string}
+                </span>
+            )
+        }
+    ]
+
+    return (
+        <div className="space-y-4 font-sans bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+            {/* Header Section */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 px-1 pb-2 font-sans italic uppercase">
+                <div>
+                    <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 font-sans">Inventory Master</h1>
+                </div>
+                <div className="flex items-center justify-end gap-3 w-full sm:w-auto">
                     <Dialog open={isGRNOpen} onOpenChange={setIsGRNOpen}>
                         <DialogTrigger asChild>
-                            <Button className="h-9 px-5 text-white font-medium text-xs rounded-md shadow-sm gap-2" style={{ background: 'var(--primary)' }}>
-                                <Plus className="h-4 w-4" /> New GRN Entry
+                            <Button className="h-9 px-5 text-white font-bold text-xs shadow-sm rounded-md gap-2 transition-all active:scale-95 w-full sm:w-auto" style={{ background: 'var(--primary)' }}>
+                                <Plus className="h-4 w-4" /> <span className="sm:inline">New GRN Piece</span>
                             </Button>
                         </DialogTrigger>
                         <GRNEntryDialog onClose={() => setIsGRNOpen(false)} />
@@ -345,6 +481,8 @@ export default function InventoryPage() {
                         <DataGrid
                             data={stockItems}
                             columns={columns}
+                            enableDateRange={true}
+                            dateFilterKey="date"
                             searchPlaceholder="Search inventory by name, category..."
                             title="None"
                             hideTitle={true}
@@ -353,14 +491,18 @@ export default function InventoryPage() {
                     </div>
                 </TabsContent>
 
-                <TabsContent value="history">
-                    <div className="h-[400px] flex flex-col items-center justify-center rounded-md border border-slate-200 bg-white/50 backdrop-blur-sm">
-                        <div className="text-center space-y-3">
-                            <div className="p-3 rounded-full bg-slate-50 text-slate-300 inline-block border border-slate-100">
-                                <History className="h-6 w-6" />
-                            </div>
-                            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">No deduction logs recorded for this period</p>
-                        </div>
+                <TabsContent value="history" className="mt-0 outline-none">
+                    <div className="bg-white rounded-md overflow-hidden border border-slate-200 shadow-sm">
+                        <DataGrid
+                            data={deductionLogs}
+                            columns={historyColumns}
+                            enableDateRange={true}
+                            dateFilterKey="date"
+                            searchPlaceholder="Search logs by material, job ID, operator..."
+                            title="None"
+                            hideTitle={true}
+                            toolbarClassName="border-b px-4 py-3 bg-white"
+                        />
                     </div>
                 </TabsContent>
             </Tabs>

@@ -25,6 +25,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
+import { StateSelect } from "./state-select"
 import {
     Select,
     SelectContent,
@@ -43,7 +44,7 @@ interface CustomerAddModalProps {
 
 export function CustomerAddModal({ onSuccess, trigger }: CustomerAddModalProps) {
     const [isOpen, setIsOpen] = useState(false)
-    const [portalActive, setPortalActive] = useState(false)
+    const [state, setState] = useState("")
 
     const handleRegister = () => {
         toast.success("Client Registered", {
@@ -89,7 +90,7 @@ export function CustomerAddModal({ onSuccess, trigger }: CustomerAddModalProps) 
                                     AUTOID-2026
                                 </Badge>
                             </div>
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-1.5">
                                     <Label className="text-xs font-medium text-slate-600">Company Name <span className="text-rose-500">*</span></Label>
                                     <Input placeholder="Enter company legal name" className="h-9 border-slate-200 bg-slate-50/50 font-bold text-sm focus:bg-white transition-all rounded-md" />
@@ -115,7 +116,7 @@ export function CustomerAddModal({ onSuccess, trigger }: CustomerAddModalProps) 
                                 <Wallet className="h-3 w-3 text-slate-400" />
                                 <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Tax & Financial Defaults</span>
                             </div>
-                            <div className="grid grid-cols-2 gap-4 bg-slate-50/50 p-4 rounded-md border border-slate-100">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50/50 p-4 rounded-md border border-slate-100">
                                 <div className="space-y-1.5">
                                     <Label className="text-xs font-medium text-slate-600">GSTIN Number</Label>
                                     <Input placeholder="Tax Registration ID" className="h-9 border-slate-200 bg-white font-bold text-sm uppercase rounded-md" />
@@ -124,18 +125,6 @@ export function CustomerAddModal({ onSuccess, trigger }: CustomerAddModalProps) 
                                     <Label className="text-xs font-medium text-slate-600">Opening Balance (₹)</Label>
                                     <Input type="number" placeholder="0.00" className="h-9 border-slate-200 bg-white font-bold text-sm rounded-md" />
                                     <p className="text-[9px] text-slate-400 font-medium">Positive: Receivable, Negative: Payable</p>
-                                </div>
-                                <div className="space-y-1.5">
-                                    <Label className="text-xs font-medium text-slate-600">Price List</Label>
-                                    <Select defaultValue="standard">
-                                        <SelectTrigger className="h-9 rounded-md border-slate-200 bg-white font-medium text-xs">
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="standard" className="text-xs">Standard Wholesale</SelectItem>
-                                            <SelectItem value="premium" className="text-xs">Premium Dealer</SelectItem>
-                                        </SelectContent>
-                                    </Select>
                                 </div>
                             </div>
                         </div>
@@ -151,23 +140,18 @@ export function CustomerAddModal({ onSuccess, trigger }: CustomerAddModalProps) 
                                     <Label className="text-xs font-medium text-slate-600">Address Line 1</Label>
                                     <Input placeholder="Street, Building, Area" className="h-9 border-slate-200 bg-white font-medium text-sm rounded-md" />
                                 </div>
-                                <div className="grid grid-cols-3 gap-3">
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                                     <div className="space-y-1.5">
                                         <Label className="text-xs font-medium text-slate-600">City</Label>
                                         <Input placeholder="City" className="h-9 border-slate-200 bg-white font-medium text-sm rounded-md" />
                                     </div>
                                     <div className="space-y-1.5">
                                         <Label className="text-xs font-medium text-slate-600">State <span className="text-rose-500">*</span></Label>
-                                        <Select>
-                                            <SelectTrigger className="h-9 rounded-md border-slate-200 bg-white font-medium text-xs">
-                                                <SelectValue placeholder="State" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="delhi">Delhi (07)</SelectItem>
-                                                <SelectItem value="up">Uttar Pradesh (09)</SelectItem>
-                                                <SelectItem value="hr">Haryana (06)</SelectItem>
-                                            </SelectContent>
-                                        </Select>
+                                        <StateSelect 
+                                            value={state} 
+                                            onValueChange={setState} 
+                                            className="h-9 text-xs"
+                                        />
                                     </div>
                                     <div className="space-y-1.5">
                                         <Label className="text-xs font-medium text-slate-600">Pincode</Label>
@@ -176,28 +160,14 @@ export function CustomerAddModal({ onSuccess, trigger }: CustomerAddModalProps) 
                                 </div>
                             </div>
                         </div>
-
-                        {/* Section 4: Access Policy */}
-                        <div className="p-3 bg-white rounded-md border border-slate-200 flex items-center justify-between shadow-sm">
-                            <div className="flex items-center gap-3">
-                                <div className={`p-2 rounded-md ${portalActive ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-slate-50 text-slate-400 border border-slate-200'}`}>
-                                    <ShieldCheck className="h-4 w-4" />
-                                </div>
-                                <div>
-                                    <p className="text-xs font-bold text-slate-800">Assign Client Portal Access</p>
-                                    <p className="text-[10px] text-slate-400 font-medium">B2B Dashboard Visibility</p>
-                                </div>
-                            </div>
-                            <Switch checked={portalActive} onCheckedChange={setPortalActive} className="data-[state=checked]:bg-primary" />
-                        </div>
                     </div>
                 </div>
 
                 <DialogFooter className="px-6 py-4 border-t border-slate-100 bg-slate-50/50 flex flex-row items-center justify-between">
-                    <Button variant="ghost" onClick={() => setIsOpen(false)} className="h-9 px-4 rounded-md text-xs font-medium text-slate-500 hover:text-slate-800">Discard Entry</Button>
+                    <Button variant="ghost" onClick={() => setIsOpen(false)} className="h-9 px-4 rounded-md text-xs font-medium text-slate-500 hover:text-slate-800 shrink-0">Discard</Button>
                     <Button
                         onClick={handleRegister}
-                        className="h-9 px-8 text-white font-bold text-xs shadow-sm rounded-md transition-all active:scale-95"
+                        className="h-9 px-6 md:px-8 text-white font-bold text-xs shadow-sm rounded-md transition-all active:scale-95 whitespace-nowrap"
                         style={{ background: 'var(--primary)' }}
                     >
                         Create Customer

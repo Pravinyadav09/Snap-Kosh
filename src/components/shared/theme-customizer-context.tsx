@@ -29,28 +29,28 @@ export interface ThemeCustomizerState {
 // ─── Default values (matches current globals.css) ────────────────────────────
 
 const DEFAULT_COLORS: ThemeColors = {
-    primary: "#4C1F7A",
+    primary: "#1E4D5C",
     primaryForeground: "#FAFAFA",
-    background: "#FAFAFA",
+    background: "#FFFFFF",
     foreground: "#111111",
     card: "#FFFFFF",
-    sidebar: "#FAFAFA",
-    sidebarPrimary: "#4C1F7A",
-    sidebarAccent: "#F5F3FF",
+    sidebar: "#FFFFFF",
+    sidebarPrimary: "#1E4D5C",
+    sidebarAccent: "#F1F5F9",
     border: "#E5E5E5",
     muted: "#F5F5F5",
     accent: "#F5F5F5",
     destructive: "#EF4444",
 }
 
-const STORAGE_KEY = "digitalerp-theme-customizer"
+const STORAGE_KEY = "digitalerp-theme-v2"
 
 // ─── Preset Themes ────────────────────────────────────────────────────────────
 
 export const PRESET_THEMES: { name: string; emoji: string; colors: ThemeColors }[] = [
     {
-        name: "Royal Purple",
-        emoji: "💜",
+        name: "Dark Teal",
+        emoji: "🩵",
         colors: { ...DEFAULT_COLORS },
     },
     {
@@ -196,15 +196,15 @@ export function ThemeCustomizerProvider({ children }: { children: React.ReactNod
         root.style.setProperty("--accent-foreground", colors.foreground)
         root.style.setProperty("--destructive", colors.destructive)
 
-        // ── Sidebar tokens — ALL of them so shadcn sidebar.tsx picks them up ──
+        // ── Sidebar tokens ──
         root.style.setProperty("--sidebar", colors.sidebar)
         root.style.setProperty("--sidebar-foreground", colors.foreground)
         root.style.setProperty("--sidebar-border", colors.border)
-        root.style.setProperty("--sidebar-primary", colors.sidebarPrimary)
+        root.style.setProperty("--sidebar-primary", colors.primary)
         root.style.setProperty("--sidebar-primary-foreground", colors.primaryForeground)
         root.style.setProperty("--sidebar-accent", colors.sidebarAccent)
-        root.style.setProperty("--sidebar-accent-foreground", colors.sidebarPrimary)
-        root.style.setProperty("--sidebar-ring", colors.sidebarPrimary)
+        root.style.setProperty("--sidebar-accent-foreground", colors.primary)
+        root.style.setProperty("--sidebar-ring", colors.primary)
 
         // ── Radius & font ──
         root.style.setProperty("--radius", `${radius}rem`)

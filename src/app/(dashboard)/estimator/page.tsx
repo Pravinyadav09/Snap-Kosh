@@ -63,9 +63,10 @@ export default function QuotationsPage() {
         {
             key: "id",
             label: "QT Number",
-            headerClassName: "w-[120px]",
+            headerClassName: "w-[120px] hidden md:table-cell",
+            className: "hidden md:table-cell",
             render: (val) => (
-                <span className="font-bold text-slate-900 font-mono text-xs hover:underline cursor-pointer uppercase tracking-tight italic">
+                <span className="font-sans text-slate-900 text-xs hover:underline cursor-pointer font-bold italic">
                     {val}
                 </span>
             )
@@ -73,19 +74,19 @@ export default function QuotationsPage() {
         {
             key: "date",
             label: "Date",
-            headerClassName: "w-[140px]",
-            className: "text-slate-500 font-medium text-xs",
+            headerClassName: "w-[140px] hidden md:table-cell",
+            className: "text-slate-500 font-sans text-xs hidden md:table-cell",
         },
         {
             key: "customer",
             label: "Customer",
-            className: "font-bold text-slate-800 text-sm",
+            className: "font-sans text-slate-800 text-sm",
         },
         {
             key: "amount",
             label: "Amount",
             render: (val) => (
-                <span className="font-black text-slate-900 tracking-tight">
+                <span className="font-sans text-slate-900">
                     ₹{Number(val).toLocaleString("en-IN", { minimumFractionDigits: 2 })}
                 </span>
             )
@@ -93,9 +94,10 @@ export default function QuotationsPage() {
         {
             key: "status",
             label: "Status",
-            headerClassName: "w-[100px]",
+            headerClassName: "w-[100px] hidden lg:table-cell",
+            className: "hidden lg:table-cell",
             render: (val) => (
-                <Badge className={`text-[10px] uppercase font-black px-2.5 h-5 border shadow-none ${statusStyles[String(val)] || statusStyles.draft}`}>
+                <Badge className={`text-[10px] font-sans px-2.5 h-5 border shadow-none ${statusStyles[String(val)] || statusStyles.draft}`}>
                     {val}
                 </Badge>
             )
@@ -108,25 +110,25 @@ export default function QuotationsPage() {
             className: "text-right",
             render: (_, qt) => (
                 <div className="flex items-center justify-end gap-1 px-1">
-                    <Button size="icon" variant="outline" className="h-7 w-7 rounded-md border-slate-300 bg-white text-slate-500 hover:text-slate-700 hover:bg-slate-50 transition-colors shadow-none" title="Download">
-                        <FileText className="h-3.5 w-3.5" />
+                    <Button size="icon" variant="outline" className="h-7 w-7 rounded-md border-slate-200 bg-white text-slate-400 hover:text-slate-600 transition-all shadow-none" title="Download">
+                        <FileDown className="h-3.5 w-3.5" />
                     </Button>
-                    <Button size="icon" variant="outline" className="h-7 w-7 rounded-md border-blue-300 bg-white text-blue-500 hover:text-blue-600 hover:bg-blue-50 transition-colors shadow-none" title="View">
+                    <Button size="icon" variant="outline" className="h-7 w-7 rounded-md border-slate-200 bg-white text-slate-400 hover:text-blue-600 transition-all shadow-none" title="View">
                         <Eye className="h-3.5 w-3.5" />
                     </Button>
-                    <Button size="icon" variant="outline" className="h-7 w-7 rounded-md border-emerald-300 bg-white text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors shadow-none" title="Approve">
+                    <Button size="icon" variant="outline" className="h-7 w-7 rounded-md border-slate-200 bg-white text-slate-400 hover:text-emerald-600 transition-all shadow-none hidden sm:inline-flex" title="Approve">
                         <Check className="h-3.5 w-3.5" />
                     </Button>
-                    <Button size="icon" variant="outline" className="h-7 w-7 rounded-md border-rose-300 bg-white text-rose-500 hover:text-rose-600 hover:bg-rose-50 transition-colors shadow-none" title="Reject">
+                    <Button size="icon" variant="outline" className="h-7 w-7 rounded-md border-slate-200 bg-white text-slate-400 hover:text-rose-600 transition-all shadow-none hidden sm:inline-flex" title="Reject">
                         <X className="h-3.5 w-3.5" />
                     </Button>
-                    <Button size="icon" variant="outline" className="h-7 w-7 rounded-md border-emerald-600 bg-white text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors shadow-none" title="Convert to Job Card" onClick={() => toast.success("Quotation approved successfully.", { description: `Converted to Job Card.` })}>
+                    <Button size="icon" variant="outline" className="h-7 w-7 rounded-md border-slate-200 bg-white text-emerald-600 hover:text-emerald-700 transition-all shadow-none" title="Convert to Job Card" onClick={() => toast.success("Quotation approved successfully.", { description: `Converted to Job Card.` })}>
                         <Hammer className="h-3.5 w-3.5" />
                     </Button>
-                    <Button size="icon" variant="outline" className="h-7 w-7 rounded-md border-blue-500 bg-white text-blue-500 hover:text-blue-600 hover:bg-blue-50 transition-colors shadow-none" title="Edit">
+                    <Button size="icon" variant="outline" className="h-7 w-7 rounded-md border-slate-200 bg-white text-slate-400 hover:text-blue-500 transition-all shadow-none hidden md:inline-flex" title="Edit">
                         <Edit2 className="h-3.5 w-3.5" />
                     </Button>
-                    <Button size="icon" variant="outline" className="h-7 w-7 rounded-md border-rose-500 bg-white text-rose-500 hover:text-rose-600 hover:bg-rose-50 transition-colors shadow-none" title="Delete">
+                    <Button size="icon" variant="outline" className="h-7 w-7 rounded-md border-slate-200 bg-white text-slate-400 hover:text-rose-500 transition-all shadow-none" title="Delete">
                         <Trash2 className="h-3.5 w-3.5" />
                     </Button>
                 </div>
@@ -135,33 +137,32 @@ export default function QuotationsPage() {
     ]
 
     return (
-        <div className="space-y-4 font-sans">
+        <div className="space-y-4 font-sans bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-slate-100 uppercase">
             {/* Header */}
-            <div className="flex items-center justify-between px-1">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 px-1 font-sans">
                 <div className="space-y-0.5 text-left">
-                    <h1 className="text-2xl font-black tracking-tight text-slate-900 uppercase font-sans">Estimation Ledger</h1>
-                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] font-sans">Commercial Bidding Console</p>
+                    <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 uppercase italic">Estimation Ledger</h1>
                 </div>
 
                 <div className="flex items-center gap-2">
                     <Button
-                        variant="outline"
-                        className="gap-2 border-slate-200 font-bold h-11 px-6 text-xs"
+                        className="w-full sm:w-auto gap-2 font-bold h-11 px-6 text-white shadow-sm rounded-md transition-all active:scale-95 text-[10px] uppercase tracking-wider"
+                        style={{ background: 'var(--primary)' }}
                         onClick={() => router.push('/estimator/new')}
                     >
-                        <Calculator className="h-4 w-4" /> Advanced Estimator
+                        <Calculator className="h-4 w-4" /> <span className="sm:inline">Advanced Estimator</span>
                     </Button>
-
-
                 </div>
             </div>
 
-            <Card className="shadow-2xl shadow-blue-100/50 border-none bg-background rounded-3xl overflow-hidden border border-slate-100">
-                <CardContent className="p-6">
+            <Card className="shadow-2xl shadow-blue-100/50 border-none bg-background rounded-2xl sm:rounded-3xl overflow-hidden border border-slate-100">
+                <CardContent className="p-2 sm:p-6">
                     <DataGrid
                         data={quotations}
                         columns={columns}
                         title="Quotations"
+                        enableDateRange={true}
+                        dateFilterKey="date"
                         searchPlaceholder="Search QT#, Client or Amount..."
                         enableSelection={true}
                     />

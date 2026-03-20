@@ -47,38 +47,34 @@ export default function SettingsPage() {
     }
 
     return (
-        <div className="space-y-4 font-sans">
+        <div className="space-y-4 font-sans bg-white p-6 rounded-xl shadow-sm border border-slate-100">
             {/* Header */}
-            <div className="flex items-center justify-between bg-white p-4 rounded-md shadow-sm border border-slate-200">
-                <div className="flex items-center gap-3 text-slate-800">
-                    <Globe className="h-5 w-5 text-slate-500" />
-                    <h1 className="text-base font-medium tracking-tight">System Settings</h1>
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between px-1 gap-4 font-sans italic uppercase">
+                <div>
+                    <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900">System Settings</h1>
                 </div>
-                <Button className="h-9 px-5 text-white font-medium text-xs rounded-md shadow-sm gap-2" style={{ background: 'var(--primary)' }} onClick={handleSave}>
-                    <CheckCircle2 className="h-3.5 w-3.5" /> Save Settings
+                <Button className="h-11 px-6 text-white font-black text-[10px] uppercase tracking-widest rounded-xl shadow-xl gap-2 active:scale-95 w-full sm:w-auto" style={{ background: 'var(--primary)' }} onClick={handleSave}>
+                    <CheckCircle2 className="h-4 w-4" /> Save Configuration
                 </Button>
             </div>
 
             {/* Tabs */}
             <Tabs defaultValue="general" className="space-y-4">
-                <TabsList className="bg-white p-1 h-9 rounded-md border border-slate-200 shadow-sm">
+                <TabsList className="bg-white p-1 h-10 rounded-lg border border-slate-200 shadow-sm w-full sm:w-auto overflow-x-auto no-scrollbar justify-start sm:justify-center">
                     <TabsTrigger
                         value="general"
-                        className="rounded px-4 text-xs font-bold data-[state=active]:text-white data-[state=active]:shadow-sm text-slate-500 transition-all h-7"
+                        className="rounded-md px-6 text-[10px] font-black uppercase tracking-widest data-[state=active]:text-white data-[state=active]:shadow-sm text-slate-400 transition-all h-8 shrink-0"
                         style={{ ['--active-bg' as any]: 'var(--primary)' }}
                     >
-                        <style jsx>{`
-                            [data-state=active] { background-color: var(--active-bg) !important; color: white !important; }
-                            [data-state=active] :global(svg) { color: white !important; }
-                        `}</style>
-                        <Globe className="h-3.5 w-3.5 mr-1.5" /> General
+                        <Globe className="h-3.5 w-3.5 mr-2" /> General
                     </TabsTrigger>
                     <TabsTrigger
                         value="billing"
-                        className="rounded px-4 text-xs font-bold data-[state=active]:text-white data-[state=active]:shadow-sm text-slate-500 transition-all h-7"
+                        className="rounded-md px-6 text-[10px] font-black uppercase tracking-widest data-[state=active]:text-white data-[state=active]:shadow-sm text-slate-400 transition-all h-8 shrink-0"
                         style={{ ['--active-bg' as any]: 'var(--primary)' }}
                     >
-                        <CreditCard className="h-3.5 w-3.5 mr-1.5" /> Company & Billing
+                        <CreditCard className="h-3.5 w-3.5 mr-2" /> Billing
                     </TabsTrigger>
                 </TabsList>
 
@@ -161,19 +157,10 @@ export default function SettingsPage() {
                                     <Input defaultValue="+(91) 9540046568" className="h-9 rounded-md border-slate-200 bg-white text-sm font-medium" />
                                 </div>
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-1.5">
                                     <Label className="text-xs font-medium text-slate-600">GST Number</Label>
                                     <Input defaultValue="27ABCDE1234F2Z5" className="h-9 rounded-md border-slate-200 bg-white text-sm font-bold uppercase tracking-wider" />
                                 </div>
-                                <div className="flex items-center justify-between p-4 rounded-md bg-slate-50 border border-slate-100">
-                                    <div>
-                                        <p className="text-xs font-semibold text-slate-700">Tax Application</p>
-                                        <p className="text-[10px] text-slate-400 mt-0.5">Enable GST Calculation in Invoices</p>
-                                    </div>
-                                    <Switch checked={enableGst} onChange={setEnableGst} />
-                                </div>
-                            </div>
                         </div>
                     </div>
 

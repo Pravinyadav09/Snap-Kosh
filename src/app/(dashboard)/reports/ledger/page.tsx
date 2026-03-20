@@ -7,10 +7,7 @@ import {
     Filter, ArrowUpRight, ArrowDownLeft,
     Layers, Hash, User, Activity
 } from "lucide-react"
-import {
-    Table, TableBody, TableCell, TableHead,
-    TableHeader, TableRow,
-} from "@/components/ui/table"
+import { DataGrid, type ColumnDef } from "@/components/shared/data-grid"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -46,130 +43,115 @@ const initialLedger: LedgerEntry[] = [
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function PaperUsageLedgerPage() {
     const [ledger, setLedger] = useState<LedgerEntry[]>(initialLedger)
-    const [search, setSearch] = useState("")
+
+    const columns: ColumnDef<LedgerEntry>[] = [
+        { key: "date", label: "Date", type: "date", initialWidth: 120 },
+        {
+            key: "jobId",
+            label: "Job Ref",
+            initialWidth: 150,
+            render: (val) => (
+                <span className="font-sans font-bold text-blue-600 text-[11px] bg-blue-50 px-2 py-0.5 rounded border border-blue-100">
+                    {val}
+                </span>
+            )
+        },
+        { key: "paperName", label: "Paper Stock", className: "font-bold text-sm text-slate-800", initialWidth: 200 },
+        { key: "openingStock", label: "Opening", className: "hidden xl:table-cell text-xs text-muted-foreground", headerClassName: "hidden xl:table-cell", type: "number", initialWidth: 100 },
+        {
+            key: "quantityUsed",
+            label: "Consumed",
+            type: "number",
+            initialWidth: 100,
+            render: (val: number) => (
+                <span className={val > 0 ? "text-rose-600 font-black text-sm" : "text-emerald-600 font-black text-sm"}>
+                    {val > 0 ? `-${val}` : `+${Math.abs(val)}`}
+                </span>
+            )
+        },
+        { key: "closingStock", label: "Closing", className: "hidden lg:table-cell font-bold text-sm", headerClassName: "hidden lg:table-cell", type: "number", initialWidth: 100 },
+        { key: "operator", label: "Operator", className: "hidden md:table-cell text-xs", headerClassName: "hidden md:table-cell", initialWidth: 120 },
+        {
+            key: "type",
+            label: "Type",
+            initialWidth: 120,
+            render: (val: string) => (
+                <Badge variant="outline" className={`text-[10px] font-black uppercase h-5 ${val === 'Issue' ? 'border-rose-200 text-rose-700 bg-rose-50' : val === 'Return' ? 'border-emerald-200 text-emerald-700 bg-emerald-50' : 'border-slate-300 text-slate-700 bg-slate-50'}`}>
+                    {val}
+                </Badge>
+            )
+        }
+    ]
 
     return (
-        <div className="space-y-4">
-            <div className="flex items-center justify-between px-1">
-                <h1 className="text-2xl font-bold tracking-tight">Paper Usage Ledger</h1>
+        <div className="space-y-4 bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between px-1 gap-4 font-sans italic uppercase">
+                <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900">Consumption Ledger</h1>
+                <Button className="h-11 px-6 text-white font-black text-[10px] uppercase tracking-widest shadow-xl rounded-xl gap-2 transition-all active:scale-95 w-full sm:w-auto" style={{ background: 'var(--primary)' }}>
+                    <Download className="h-4 w-4" /> Export Excel
+                </Button>
             </div>
 
             {/* Metrics */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Card className="text-white border-none shadow-md" style={{ background: 'var(--primary)' }}>
-                    <CardContent className="p-6">
-                        <div className="flex items-center justify-between">
-                            <p className="text-xs font-bold uppercase tracking-widest opacity-80">Total Usage (Monthly)</p>
-                            <ArrowUpRight className="h-4 w-4 opacity-50" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <Card className="relative overflow-hidden border-none shadow-xl bg-white rounded-2xl">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-60">
+                            Total Consumption
+                        </CardTitle>
+                        <div className="p-2 rounded-xl bg-blue-50 text-blue-500 shadow-sm border border-blue-100">
+                            <ArrowUpRight className="h-4 w-4" />
                         </div>
-                        <p className="text-3xl font-black mt-2 italic">14,250 <span className="text-sm font-normal not-italic opacity-70">Sheets</span></p>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-3xl font-black italic tracking-tighter">14,250 <span className="text-sm font-black uppercase opacity-40">Sheets</span></div>
+                        <div className="mt-2 flex items-center gap-2">
+                             <Badge className="bg-blue-500/10 text-blue-600 border-none font-black text-[9px] uppercase">+5% vs Last Period</Badge>
+                        </div>
                     </CardContent>
                 </Card>
-                <Card className="bg-emerald-600 text-white border-none shadow-md">
-                    <CardContent className="p-6">
-                        <div className="flex items-center justify-between">
-                            <p className="text-xs font-bold uppercase tracking-widest opacity-80">Recycled / Returns</p>
-                            <ArrowDownLeft className="h-4 w-4 opacity-50" />
+                <Card className="relative overflow-hidden border-none shadow-xl bg-white rounded-2xl">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-60">
+                            Returns / Credit
+                        </CardTitle>
+                        <div className="p-2 rounded-xl bg-emerald-50 text-emerald-500 shadow-sm border border-emerald-100">
+                            <ArrowDownLeft className="h-4 w-4" />
                         </div>
-                        <p className="text-3xl font-black mt-2 italic">480 <span className="text-sm font-normal not-italic opacity-70">Sheets</span></p>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-3xl font-black italic tracking-tighter">480 <span className="text-sm font-black uppercase opacity-40">Sheets</span></div>
+                        <div className="mt-2 flex items-center gap-2">
+                             <Badge className="bg-emerald-500/10 text-emerald-600 border-none font-black text-[9px] uppercase">Stable</Badge>
+                        </div>
                     </CardContent>
                 </Card>
-                <Card className="bg-amber-500 text-white border-none shadow-md">
-                    <CardContent className="p-6">
-                        <div className="flex items-center justify-between">
-                            <p className="text-xs font-bold uppercase tracking-widest opacity-80">Waste % (Avg)</p>
-                            <Activity className="h-4 w-4 opacity-50" />
+                <Card className="relative overflow-hidden border-none shadow-xl bg-white rounded-2xl">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-60">
+                            Efficiency Index
+                        </CardTitle>
+                        <div className="p-2 rounded-xl bg-amber-50 text-amber-500 shadow-sm border border-amber-100">
+                            <Activity className="h-4 w-4" />
                         </div>
-                        <p className="text-3xl font-black mt-2 italic">4.2%</p>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-3xl font-black italic tracking-tighter">4.2% <span className="text-sm font-black uppercase opacity-40">Waste</span></div>
+                        <div className="mt-2 flex items-center gap-2">
+                             <Badge className="bg-amber-500/10 text-amber-600 border-none font-black text-[9px] uppercase">Optimal</Badge>
+                        </div>
                     </CardContent>
                 </Card>
             </div>
 
-            <Card className="shadow-sm border-none bg-background">
-                <CardHeader className="pb-4 border-b">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2 text-muted-foreground">
-                            <FileSpreadsheet className="h-4 w-4" />
-                            <CardTitle className="text-sm font-medium">Stock Consumption Logs</CardTitle>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <Button variant="outline" size="sm" className="h-9 gap-2 font-bold">
-                                <Calendar className="h-4 w-4" /> This Month
-                            </Button>
-                            <Button className="h-9 font-bold px-5 text-white shadow-lg transition-all" style={{ background: 'var(--primary)' }}>
-                                Print Ledger
-                            </Button>
-                        </div>
-                    </div>
-                </CardHeader>
-                <CardContent className="pt-6">
-                    {/* Toolbar */}
-                    <div className="flex flex-col md:flex-row gap-4 mb-6 items-center justify-between">
-                        <div className="flex items-center gap-2">
-                            <Button variant="outline" size="sm" className="gap-2 h-9">
-                                <Download className="h-4 w-4" /> Export CSV
-                            </Button>
-                        </div>
-                        <div className="relative w-full md:w-80">
-                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                            <Input
-                                placeholder="Search by Job ID or Paper..."
-                                className="pl-8 h-9 bg-muted/20 border-none"
-                                value={search}
-                                onChange={e => setSearch(e.target.value)}
-                            />
-                        </div>
-                    </div>
-
-                    <div className="rounded-md border">
-                        <Table>
-                            <TableHeader>
-                                <TableRow className="bg-muted/50 uppercase text-[10px]">
-                                    <TableHead className="font-black">Date</TableHead>
-                                    <TableHead className="font-black">Job Ref</TableHead>
-                                    <TableHead className="font-black">Paper Stock</TableHead>
-                                    <TableHead className="font-black">Opening</TableHead>
-                                    <TableHead className="font-black">Consumed</TableHead>
-                                    <TableHead className="font-black">Closing</TableHead>
-                                    <TableHead className="font-black">Operator</TableHead>
-                                    <TableHead className="font-black">Type</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {ledger.map(entry => (
-                                    <TableRow key={entry.id} className="group hover:bg-muted/5">
-                                        <TableCell className="text-xs font-medium">{entry.date}</TableCell>
-                                        <TableCell>
-                                            <span className="font-mono font-bold text-blue-600 text-[11px] bg-blue-50 px-2 py-0.5 rounded border border-blue-100 italic">
-                                                {entry.jobId}
-                                            </span>
-                                        </TableCell>
-                                        <TableCell className="font-bold text-sm text-slate-800">{entry.paperName}</TableCell>
-                                        <TableCell className="text-xs text-muted-foreground">{entry.openingStock}</TableCell>
-                                        <TableCell className="font-black text-sm">
-                                            <span className={entry.quantityUsed > 0 ? "text-rose-600" : "text-emerald-600"}>
-                                                {entry.quantityUsed > 0 ? `-${entry.quantityUsed}` : `+${Math.abs(entry.quantityUsed)}`}
-                                            </span>
-                                        </TableCell>
-                                        <TableCell className="font-bold text-sm">{entry.closingStock}</TableCell>
-                                        <TableCell className="text-xs">{entry.operator}</TableCell>
-                                        <TableCell>
-                                            <Badge variant="outline" className={`
-                                                text-[10px] font-black uppercase h-5
-                                                ${entry.type === 'Issue' ? 'border-rose-200 text-rose-700 bg-rose-50' :
-                                                    entry.type === 'Return' ? 'border-emerald-200 text-emerald-700 bg-emerald-50' :
-                                                        'border-slate-300 text-slate-700 bg-slate-50'}
-                                            `}>
-                                                {entry.type}
-                                            </Badge>
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </div>
-                </CardContent>
-            </Card>
+            <DataGrid
+                data={ledger}
+                columns={columns}
+                searchPlaceholder="Search by Job ID or Paper..."
+                enableDateRange={true}
+                dateFilterKey="date"
+                enableSelection={true}
+            />
         </div>
     )
 }

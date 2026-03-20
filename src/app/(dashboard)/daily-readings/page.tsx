@@ -3,7 +3,7 @@
 import React, { useState } from "react"
 import { toast } from "sonner"
 import {
-    Plus, BookOpen, CheckCircle
+    Plus, BookOpen, CheckCircle, QrCode, Scan, History as HistoryIcon, TrendingUp, Gauge
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -14,13 +14,9 @@ import {
     Dialog, DialogContent, DialogDescription, DialogFooter,
     DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog"
-import {
-    Select, SelectContent, SelectItem,
-    SelectTrigger, SelectValue,
-} from "@/components/ui/select"
-
 // Generic Grid
 import { DataGrid, ColumnDef } from "@/components/shared/data-grid"
+import { SearchableSelect } from "@/components/shared/searchable-select"
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 type Reading = {
@@ -76,26 +72,34 @@ function LogReadingDialog({
     const impressions = closing !== "" ? (closing as number) - opening : 0
 
     return (
-        <DialogContent className="max-w-[600px] p-0 border-none shadow-xl rounded-md bg-white font-sans sm:max-w-[600px]">
-            <div className="p-6 border-b border-slate-100">
-                <DialogTitle className="text-lg font-medium text-slate-700">New Meter Entry</DialogTitle>
-                <DialogDescription className="sr-only">New Meter Entry Form</DialogDescription>
+        <DialogContent className="max-w-[calc(100%-1rem)] sm:max-w-[600px] p-0 border border-slate-200 shadow-xl rounded-md bg-white font-sans uppercase">
+            <div className="p-4 sm:p-6 border-b border-slate-100 italic">
+                <div className="flex items-center gap-3">
+                    <div className="p-1.5 rounded-md border" style={{ background: 'var(--sidebar-accent)', color: 'var(--primary)', borderColor: 'var(--border)' }}>
+                        <Gauge className="h-4 w-4" />
+                    </div>
+                    <div>
+                        <DialogTitle className="text-sm font-black tracking-tight text-slate-800 leading-none">New Meter Entry</DialogTitle>
+                        <DialogDescription className="text-[10px] text-slate-400 font-medium mt-1">Log production output and calculate wastage levels.</DialogDescription>
+                    </div>
+                </div>
             </div>
 
-            <div className="p-6 space-y-6 flex-1 font-sans">
-                <div className="grid grid-cols-2 gap-4">
+            <div className="p-4 sm:p-6 space-y-6 flex-1 font-sans">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                         <Label className="text-xs font-medium text-slate-600">Machine <span className="text-rose-500">*</span></Label>
-                        <Select value={machine} onValueChange={setMachine}>
-                            <SelectTrigger className="h-9 border-slate-200 bg-white font-medium text-slate-800 text-sm">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="Konica Minolta C6085" className="text-sm">Konica Minolta C6085 (Digital)</SelectItem>
-                                <SelectItem value="Heidelberg Speedmaster" className="text-sm">Heidelberg Offset</SelectItem>
-                                <SelectItem value="Epson SureColor S80670" className="text-sm">Epson Wide-Format</SelectItem>
-                            </SelectContent>
-                        </Select>
+                        <SearchableSelect 
+                            options={[
+                                { value: "Konica Minolta C6085", label: "Konica Minolta C6085 (Digital)" },
+                                { value: "Heidelberg Speedmaster", label: "Heidelberg Offset" },
+                                { value: "Epson SureColor S80670", label: "Epson Wide-Format" }
+                            ]}
+                            value={machine}
+                            onValueChange={setMachine}
+                            placeholder="Select Machine"
+                            className="h-9 border-slate-200 bg-white font-medium text-slate-800 text-sm"
+                        />
                     </div>
                     <div className="space-y-1.5">
                         <Label className="text-xs font-medium text-slate-600">Date <span className="text-rose-500">*</span></Label>
@@ -103,7 +107,7 @@ function LogReadingDialog({
                     </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                         <Label className="text-xs font-medium text-slate-600">Opening Reading <span className="text-rose-500">*</span></Label>
                         <Input
@@ -181,7 +185,8 @@ export default function DailyReadingsPage() {
             key: "date",
             label: "Audit Date",
             type: "date",
-            headerClassName: "w-[130px]",
+            className: "hidden md:table-cell",
+            headerClassName: "w-[130px] hidden md:table-cell",
             render: (val) => (
                 <span className="text-xs font-medium text-slate-500 italic">{val}</span>
             )
@@ -199,7 +204,7 @@ export default function DailyReadingsPage() {
         {
             key: "impressions",
             label: "Meter Actual",
-            headerClassName: "w-[120px]",
+            headerClassName: "w-[120px] text-right",
             className: "text-right",
             render: (val) => (
                 <span className="font-bold text-xs tabular-nums text-slate-900">{val.toLocaleString()}</span>
@@ -208,8 +213,8 @@ export default function DailyReadingsPage() {
         {
             key: "remarks",
             label: "Wastage / Loss",
-            headerClassName: "w-[140px]",
-            className: "text-center",
+            className: "text-center hidden sm:table-cell",
+            headerClassName: "w-[140px] text-center hidden sm:table-cell",
             render: (_, row) => {
                 const expected = Math.floor(row.impressions * 0.96)
                 const wastage = row.impressions - expected
@@ -228,8 +233,8 @@ export default function DailyReadingsPage() {
         {
             key: "id",
             label: "Status",
-            headerClassName: "w-[120px]",
-            className: "text-center",
+            className: "text-center hidden lg:table-cell",
+            headerClassName: "w-[120px] text-center hidden lg:table-cell",
             filterable: false,
             render: (_, row) => {
                 const expected = Math.floor(row.impressions * 0.96)
@@ -246,21 +251,75 @@ export default function DailyReadingsPage() {
     ]
 
     return (
-        <div className="space-y-4 font-sans bg-slate-50/30 p-4 rounded-xl">
-            <div className="flex items-center justify-between bg-white p-4 rounded-md shadow-sm border border-slate-200 mb-2">
-                <div className="flex items-center gap-3 text-slate-800">
-                    <BookOpen className="h-5 w-5 text-slate-500" />
-                    <h1 className="text-base font-medium tracking-tight">Daily Machine Readings</h1>
+        <div className="space-y-4 font-sans bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-slate-100">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-200 pb-4 mb-2 px-1 gap-4 italic uppercase">
+                <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-xl bg-indigo-50/50 border border-indigo-100/50">
+                        <BookOpen className="h-5 w-5 text-indigo-600" />
+                    </div>
+                    <div>
+                        <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 font-sans">Daily Machine Readings</h1>
+                        <p className="text-[10px] font-bold text-slate-400 tracking-widest leading-none mt-1">Meter Logs & Production Efficiency</p>
+                    </div>
                 </div>
 
-                <Dialog open={showLog} onOpenChange={setShowLog}>
-                    <DialogTrigger asChild>
-                        <Button className="gap-2 font-bold h-9 px-4 rounded-md shadow-sm text-xs text-white" style={{ background: 'var(--primary)' }}>
-                            <Plus className="h-4 w-4" /> Log Daily Reading
-                        </Button>
-                    </DialogTrigger>
-                    <LogReadingDialog onSave={addReading} onClose={() => setShowLog(false)} readings={readings} />
-                </Dialog>
+                <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
+                    <Button 
+                        variant="outline" 
+                        className="gap-2 font-bold h-9 px-4 rounded-xl border-slate-200 text-slate-600 py-0 hover:bg-slate-50 transition-all text-[10px] uppercase w-full sm:w-auto"
+                        onClick={() => {
+                            toast.info("Opening QR Scanner...", {
+                                description: "Point your camera at the machine's QR code",
+                                duration: 3000
+                            })
+                            // Simulate scanning after 2s
+                            setTimeout(() => {
+                                setShowLog(true)
+                                toast.success("QR Scanned: Konica Minolta C6085", {
+                                    icon: <Scan className="size-4 animate-pulse" />
+                                })
+                            }, 1500)
+                        }}
+                    >
+                        <QrCode className="h-4 w-4" style={{ color: 'var(--primary)' }} /> Scan QR
+                    </Button>
+                    <Dialog open={showLog} onOpenChange={setShowLog}>
+                        <DialogTrigger asChild>
+                            <Button className="gap-2 font-bold h-9 px-4 rounded-xl shadow-lg shadow-indigo-500/20 text-[10px] uppercase text-white transition-all hover:scale-105 active:scale-95 py-0 w-full sm:w-auto" style={{ background: 'var(--primary)' }}>
+                                <Plus className="h-4 w-4" /> Log Reading
+                            </Button>
+                        </DialogTrigger>
+                        <LogReadingDialog onSave={addReading} onClose={() => setShowLog(false)} readings={readings} />
+                    </Dialog>
+                </div>
+            </div>
+
+            {/* Production Stats Summary */}
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-6 italic uppercase">
+                <div className="bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-2xl p-4 text-white shadow-lg relative overflow-hidden group">
+                    <div className="absolute -bottom-2 -right-2 opacity-20 transform group-hover:rotate-12 transition-transform duration-500">
+                        <Gauge className="size-16 sm:size-20" />
+                    </div>
+                    <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-[0.2em] opacity-80 mb-1">Today's Load</p>
+                    <div className="flex items-baseline gap-1 sm:gap-2">
+                        <h3 className="text-xl sm:text-2xl font-black tracking-tighter">1,424</h3>
+                        <span className="text-[8px] sm:text-[10px] font-bold opacity-70">IMPR.</span>
+                    </div>
+                </div>
+                <div className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm relative overflow-hidden group">
+                    <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-1">Average Waste</p>
+                    <div className="flex items-baseline gap-1 sm:gap-2">
+                        <h3 className="text-xl sm:text-2xl font-black text-rose-500 tracking-tighter">4.2%</h3>
+                        <Badge className="bg-rose-50 text-rose-600 border-none text-[7px] sm:text-[8px] font-black h-3.5 sm:h-4 px-1 sm:px-1.5 animate-pulse">REDUCE</Badge>
+                    </div>
+                </div>
+                <div className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm relative overflow-hidden group font-sans col-span-2 lg:col-span-1">
+                    <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-1">Active Machines</p>
+                    <div className="flex items-baseline gap-2">
+                        <h3 className="text-xl sm:text-2xl font-black text-slate-800 tracking-tighter">3/4</h3>
+                        <span className="text-[9px] sm:text-[10px] font-bold text-emerald-500 tracking-tighter">Running</span>
+                    </div>
+                </div>
             </div>
 
             <div className="bg-white rounded-md overflow-hidden border border-slate-200 shadow-sm">
@@ -269,6 +328,10 @@ export default function DailyReadingsPage() {
                     columns={columns}
                     title="None"
                     hideTitle={true}
+                    initialPageSize={8}
+                    pageSizeOptions={[8, 16, 32, 64]}
+                    enableDateRange={true}
+                    dateFilterKey="date"
                     searchPlaceholder="Search current page..."
                     toolbarClassName="border-b px-4 py-3"
                 />

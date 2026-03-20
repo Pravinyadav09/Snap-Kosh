@@ -1,6 +1,7 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
+import { toast } from "sonner"
 import {
     FileText,
     Search,
@@ -27,6 +28,7 @@ import {
     Coins
 } from "lucide-react"
 import { DataGrid } from "@/components/shared/data-grid"
+import { PageActionButtons } from "@/components/shared/page-action-buttons"
 import {
     Table,
     TableBody,
@@ -37,6 +39,8 @@ import {
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Progress } from "@/components/ui/progress"
+import { SearchableSelect } from "@/components/shared/searchable-select"
 import { Badge } from "@/components/ui/badge"
 import {
     Dialog,
@@ -48,13 +52,7 @@ import {
     DialogFooter,
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select"
+
 import {
     Card,
     CardContent,
@@ -108,13 +106,52 @@ const initialInvoices = [
 ]
 
 export default function InvoicesPage() {
-    const [invoices, setInvoices] = useState(initialInvoices)
+    const [invoices, setInvoices] = useState<typeof initialInvoices>([])
+    const [isLoading, setIsLoading] = useState(true)
     const [viewMode, setViewMode] = useState<'list' | 'create' | 'view'>('list')
     const [selectedInvoice, setSelectedInvoice] = useState<typeof initialInvoices[0] | null>(null)
     const [formItems, setFormItems] = useState([
         { id: 1, desc: "Print Job", qty: "1000", rate: "6.89", amount: "6890" },
         { id: 2, desc: "Book Printing", qty: "100", rate: "354.39", amount: "35439" }
     ])
+    const [taxRate, setTaxRate] = useState(18)
+
+    useEffect(() => {
+        const fetchInvoices = async () => {
+            try {
+                const response = await fetch("http://localhost:5037/api/invoices?size=100")
+                if (response.ok) {
+                    const data = await response.json()
+                    const mapped = (data.items || []).map((apiInv: any) => ({
+                        id: apiInv.invoiceNumber || `INV-${apiInv.id}`,
+                        date: new Date(apiInv.invoiceDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+                        dueDate: "N/A",
+                        customer: apiInv.customerName || `Customer #${apiInv.customerId}`,
+                        jobRef: "N/A",
+                        amount: `₹${apiInv.grandTotal.toLocaleString('en-IN')}`,
+                        tax: `₹${apiInv.taxAmount.toLocaleString('en-IN')}`,
+                        status: apiInv.paymentStatus || "Unpaid",
+                        items: (apiInv.items || []).map((i: any) => ({
+                            id: i.id,
+                            desc: i.description,
+                            qty: i.quantity,
+                            rate: i.rate,
+                            amount: i.amount
+                        })),
+                        notes: ""
+                    }))
+                    setInvoices(mapped)
+                } else {
+                    toast.error("Failed to load invoice history")
+                }
+            } catch (error) {
+                console.error("Error fetching invoices:", error)
+            } finally {
+                setIsLoading(false)
+            }
+        }
+        fetchInvoices()
+    }, [])
 
     const addFormItem = () => {
         setFormItems([...formItems, { id: Date.now(), desc: "", qty: "", rate: "", amount: "0" }])
@@ -132,8 +169,8 @@ export default function InvoicesPage() {
                         <ArrowLeft className="h-5 w-5" />
                     </Button>
                     <div>
-                        <h1 className="text-3xl font-bold tracking-tight">Create Invoice</h1>
-                        <p className="text-muted-foreground font-medium">Generate a new GST invoice for your customer.</p>
+                        <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 uppercase font-sans italic">Register Transaction</h1>
+                        <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-tight">Generate a new GST compliant invoice.</p>
                     </div>
                 </div>
 
@@ -145,15 +182,24 @@ export default function InvoicesPage() {
                                     <FileText className="h-4 w-4" style={{ color: 'var(--primary)' }} /> Invoice Details
                                 </CardTitle>
                             </CardHeader>
-                            <CardContent className="p-6">
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <CardContent className="p-4 sm:p-6">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
                                     <div className="space-y-2">
                                         <Label className="text-xs font-bold uppercase tracking-wider opacity-60">Invoice No.</Label>
                                         <Input defaultValue="INV-2026-0030" className="bg-muted/50 border-none font-mono font-bold" readOnly />
                                     </div>
-                                    <div className="space-y-2 lg:col-span-1">
-                                        <Label className="text-xs font-bold uppercase tracking-wider opacity-60">Customer <span className="text-rose-500">*</span></Label>
-                                        <Input placeholder="Select Customer" defaultValue="Denesik-Keeling" className="font-bold border-blue-100 focus-visible:ring-blue-500/20" />
+                                    <div className="space-y-1">
+                                        <Label className="text-[10px] font-bold text-slate-500 uppercase">Customer <span className="text-rose-500">*</span></Label>
+                                        <SearchableSelect
+                                            options={[
+                                                { value: 'dk', label: 'Denesik-Keeling' },
+                                                { value: 'cg', label: 'Crona Group' }
+                                            ]}
+                                            value="dk"
+                                            onValueChange={(val) => console.log(val)}
+                                            placeholder="Select Customer"
+                                            className="h-8 rounded-md border-slate-200 bg-white text-xs font-bold"
+                                        />
                                     </div>
                                     <div className="space-y-2">
                                         <Label className="text-xs font-bold uppercase tracking-wider opacity-60">Issue Date</Label>
@@ -176,41 +222,43 @@ export default function InvoicesPage() {
                                     <Plus className="h-3.5 w-3.5" /> Add Item
                                 </Button>
                             </CardHeader>
-                            <CardContent className="p-0">
-                                <Table>
-                                    <TableHeader className="bg-slate-50/50">
-                                        <TableRow>
-                                            <TableHead className="font-bold">Description</TableHead>
-                                            <TableHead className="w-[120px] font-bold text-center">Quantity</TableHead>
-                                            <TableHead className="w-[150px] font-bold text-center">Rate (₹)</TableHead>
-                                            <TableHead className="w-[150px] font-bold text-right">Amount (₹)</TableHead>
-                                            <TableHead className="w-[60px]"></TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {formItems.map((item) => (
-                                            <TableRow key={item.id} className="hover:bg-slate-50/30">
-                                                <TableCell className="py-4">
-                                                    <Input placeholder="Enter details..." defaultValue={item.desc} className="border-none shadow-none focus-visible:ring-0 font-medium" />
-                                                </TableCell>
-                                                <TableCell>
-                                                    <Input type="number" defaultValue={item.qty} className="text-center font-bold bg-muted/30 border-none h-9" />
-                                                </TableCell>
-                                                <TableCell>
-                                                    <Input type="number" defaultValue={item.rate} className="text-center font-bold bg-muted/30 border-none h-9" />
-                                                </TableCell>
-                                                <TableCell className="text-right font-black text-slate-800 tracking-tight">
-                                                    ₹{item.amount}
-                                                </TableCell>
-                                                <TableCell>
-                                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-rose-500 hover:bg-rose-50" onClick={() => removeFormItem(item.id)}>
-                                                        <Trash2 className="h-3.5 w-3.5" />
-                                                    </Button>
-                                                </TableCell>
+                            <CardContent className="p-0 overflow-x-auto scrollbar-thin">
+                                <div className="min-w-[700px]">
+                                    <Table>
+                                        <TableHeader className="bg-slate-50/50">
+                                            <TableRow>
+                                                <TableHead className="font-bold">Description</TableHead>
+                                                <TableHead className="w-[120px] font-bold text-center">Quantity</TableHead>
+                                                <TableHead className="w-[150px] font-bold text-center">Rate (₹)</TableHead>
+                                                <TableHead className="w-[150px] font-bold text-right">Amount (₹)</TableHead>
+                                                <TableHead className="w-[60px]"></TableHead>
                                             </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {formItems.map((item) => (
+                                                <TableRow key={item.id} className="hover:bg-slate-50/30">
+                                                    <TableCell className="py-2 sm:py-4">
+                                                        <Input placeholder="Enter details..." defaultValue={item.desc} className="border-none shadow-none focus-visible:ring-0 font-medium" />
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <Input type="number" defaultValue={item.qty} className="text-center font-bold bg-muted/30 border-none h-9" />
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <Input type="number" defaultValue={item.rate} className="text-center font-bold bg-muted/30 border-none h-9" />
+                                                    </TableCell>
+                                                    <TableCell className="text-right font-black text-slate-800 tracking-tight">
+                                                        ₹{item.amount}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-rose-500 hover:bg-rose-50" onClick={() => removeFormItem(item.id)}>
+                                                            <Trash2 className="h-3.5 w-3.5" />
+                                                        </Button>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </div>
                             </CardContent>
                         </Card>
                     </div>
@@ -227,16 +275,17 @@ export default function InvoicesPage() {
                                 </div>
                                 <div className="space-y-2">
                                     <Label className="text-[10px] font-bold tracking-widest uppercase opacity-40">Tax Setup</Label>
-                                    <Select defaultValue="gst18">
-                                        <SelectTrigger className="bg-white/10 border-white/10 text-white h-11">
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="gst18">GST 18% (18.00%)</SelectItem>
-                                            <SelectItem value="gst12">GST 12% (12.00%)</SelectItem>
-                                            <SelectItem value="none">No Tax (0.00%)</SelectItem>
-                                        </SelectContent>
-                                    </Select>
+                                    <SearchableSelect
+                                    options={[
+                                        { value: '18', label: 'GST 18% (18.00%)' },
+                                        { value: '12', label: 'GST 12% (12.00%)' },
+                                        { value: '0', label: 'No Tax (0.00%)' }
+                                    ]}
+                                    value={String(taxRate)}
+                                    onValueChange={v => setTaxRate(+v)}
+                                    placeholder="Select tax"
+                                    className="bg-white/10 border-white/10 text-white h-11"
+                                />
                                     <div className="flex justify-between items-center text-sm pt-2">
                                         <span className="opacity-60">Tax Amount</span>
                                         <span className="font-bold">₹7,619.22</span>
@@ -278,106 +327,105 @@ export default function InvoicesPage() {
     if (viewMode === 'view' && selectedInvoice) {
         return (
             <div className="space-y-6">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
                     <div className="flex items-center gap-4">
-                        <Button variant="ghost" size="icon" onClick={() => setViewMode('list')} className="rounded-full">
+                        <Button variant="ghost" size="icon" onClick={() => setViewMode('list')} className="rounded-full shrink-0">
                             <ArrowLeft className="h-5 w-5" />
                         </Button>
-                        <h1 className="text-3xl font-black tracking-tighter">Invoice View</h1>
+                        <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 uppercase font-sans">Invoice View</h1>
                     </div>
-                    <div className="flex flex-wrap items-center gap-2">
-                        <Button variant="outline" className="gap-2 bg-rose-600/5 text-rose-600 border-rose-600/10 font-bold">
-                            <FileDown className="h-4 w-4" /> Download PDF
+                    <div className="flex flex-wrap items-center gap-2 w-full xl:w-auto mt-2 xl:mt-0">
+                        <Button variant="outline" className="flex-1 sm:flex-none gap-2 bg-rose-600/5 text-rose-600 border-rose-600/10 font-bold h-11 text-[10px] uppercase tracking-widest rounded-xl">
+                            <FileDown className="h-4 w-4" /> <span className="hidden sm:inline">PDF</span>
                         </Button>
-                        <Button variant="outline" className="gap-2 bg-blue-600/5 text-blue-600 border-blue-600/10 font-bold">
-                            <Mail className="h-4 w-4" /> Email
+                        <Button variant="outline" className="flex-1 sm:flex-none gap-2 bg-blue-600/5 text-blue-600 border-blue-600/10 font-bold h-11 text-[10px] uppercase tracking-widest rounded-xl">
+                            <Mail className="h-4 w-4" /> <span className="hidden sm:inline">Mail</span>
                         </Button>
-                        <Button variant="outline" className="gap-2 bg-slate-900 text-white font-bold">
-                            <Printer className="h-4 w-4" /> Print
+                        <Button variant="outline" className="flex-1 sm:flex-none gap-2 bg-slate-100 text-slate-900 border-slate-200 font-bold h-11 text-[10px] uppercase tracking-widest rounded-xl">
+                            <Printer className="h-4 w-4" /> <span className="hidden sm:inline">Print</span>
                         </Button>
-                        <Button variant="outline" className="gap-2 text-white font-bold" style={{ background: 'var(--primary)' }}>
-                            <Edit className="h-4 w-4" /> Edit
-                        </Button>
-                        <Button className="gap-2 font-bold shadow-lg text-white" style={{ background: 'var(--primary)' }}>
+                        <Button className="w-full sm:w-auto gap-2 font-black text-white h-11 text-[10px] uppercase tracking-widest rounded-xl shadow-xl transition-all active:scale-95" style={{ background: 'var(--primary)' }}>
                             <DollarSign className="h-4 w-4" /> Add Payment
                         </Button>
                     </div>
                 </div>
 
                 <Card className="max-w-[1000px] mx-auto border-none shadow-2xl overflow-hidden bg-white">
-                    <div className="p-12 space-y-12">
+                    <div className="p-4 sm:p-8 md:p-12 space-y-8 sm:space-y-12">
                         {/* Branding & ID */}
-                        <div className="flex flex-row items-start justify-between">
+                        <div className="flex flex-col sm:flex-row items-start justify-between gap-6 sm:gap-4">
                             <div className="space-y-4">
                                 <div className="flex items-center gap-3">
-                                    <div className="h-10 w-10 rounded-lg flex items-center justify-center font-bold text-white text-xl" style={{ background: 'var(--primary)' }}>D</div>
+                                    <div className="h-10 w-10 rounded-lg flex items-center justify-center font-bold text-white text-xl shrink-0" style={{ background: 'var(--primary)' }}>D</div>
                                     <div className="flex flex-col">
-                                        <span className="font-black text-2xl tracking-tighter">DIGITAL ERP</span>
+                                        <span className="font-black text-2xl tracking-tighter leading-none">DIGITAL ERP</span>
                                         <span className="text-[10px] font-black uppercase tracking-[.4em] opacity-40">Premium Print Labs</span>
                                     </div>
                                 </div>
-                                <div className="text-xs text-muted-foreground leading-relaxed">
+                                <div className="text-[11px] sm:text-xs text-muted-foreground leading-relaxed">
                                     SF-37, Gaur City Center, <br />
                                     Greater Noida Extention <br />
                                     GSTIN: <span className="font-bold text-slate-800">27ABCDE1234F2Z5</span>
                                 </div>
                             </div>
-                            <div className="text-right space-y-2">
-                                <h2 className="text-6xl font-black tracking-tighter opacity-10">INVOICE</h2>
-                                <div className="inline-block px-4 py-1.5 rounded-full bg-rose-500 text-white font-bold text-[10px] uppercase tracking-[.2em] mb-4">
+                            <div className="text-left sm:text-right space-y-2 w-full sm:w-auto">
+                                <h2 className="hidden sm:block text-4xl md:text-6xl font-black tracking-tighter opacity-10">INVOICE</h2>
+                                <div className="inline-block px-4 py-1.5 rounded-full bg-rose-500 text-white font-bold text-[10px] uppercase tracking-[.2em] mb-2 sm:mb-4">
                                     {selectedInvoice.status}
                                 </div>
-                                <div className="space-y-1">
-                                    <div className="text-sm"><span className="opacity-40 font-bold">NO: </span> <span className="font-bold">{selectedInvoice.id}</span></div>
-                                    <div className="text-sm"><span className="opacity-40 font-bold">DATE: </span> <span className="font-bold">{selectedInvoice.date}</span></div>
-                                    <div className="text-sm"><span className="opacity-40 font-bold">DUE: </span> <span className="font-bold text-rose-500 italic">{selectedInvoice.dueDate}</span></div>
-                                    <div className="text-sm"><span className="opacity-40 font-bold">JOB REF: </span> <span className="font-bold text-slate-900 tracking-tight">{selectedInvoice.jobRef}</span></div>
+                                <div className="grid grid-cols-2 sm:grid-cols-1 gap-x-4 gap-y-1 sm:space-y-1">
+                                    <div className="text-[11px] sm:text-sm"><span className="opacity-40 font-bold">NO: </span> <span className="font-bold">{selectedInvoice.id}</span></div>
+                                    <div className="text-[11px] sm:text-sm"><span className="opacity-40 font-bold">DATE: </span> <span className="font-bold">{selectedInvoice.date}</span></div>
+                                    <div className="text-[11px] sm:text-sm"><span className="opacity-40 font-bold">DUE: </span> <span className="font-bold text-rose-500 italic">{selectedInvoice.dueDate}</span></div>
+                                    <div className="text-[11px] sm:text-sm"><span className="opacity-40 font-bold">JOB REF: </span> <span className="font-bold text-slate-900 tracking-tight">{selectedInvoice.jobRef}</span></div>
                                 </div>
                             </div>
                         </div>
 
                         {/* Bill To */}
-                        <div className="grid grid-cols-2 gap-12 bg-slate-50 p-8 rounded-2xl border border-slate-100">
-                            <div className="space-y-4">
-                                <Label className="text-[10px] font-black uppercase tracking-widest opacity-40">Bill From</Label>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-12 bg-slate-50 p-4 sm:p-8 rounded-2xl border border-slate-100">
+                            <div className="space-y-3 sm:space-y-4">
+                                <Label className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest opacity-40">Bill From</Label>
                                 <div className="space-y-1">
-                                    <p className="font-black text-slate-800 text-xl tracking-tight">Ganesha Prints</p>
-                                    <p className="text-xs text-slate-500">info@ganeshasoftwares | (91) 9540046568</p>
+                                    <p className="font-black text-slate-800 text-lg sm:text-xl tracking-tight leading-tight">Ganesha Prints</p>
+                                    <p className="text-[10px] sm:text-xs text-slate-500 truncate">info@ganeshasoftwares | (91) 9540046568</p>
                                 </div>
                             </div>
-                            <div className="space-y-4">
-                                <Label className="text-[10px] font-black uppercase tracking-widest opacity-40">Bill To</Label>
+                            <div className="space-y-3 sm:space-y-4">
+                                <Label className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest opacity-40">Bill To</Label>
                                 <div className="space-y-1">
-                                    <p className="font-black text-slate-800 text-xl tracking-tight">{selectedInvoice.customer}</p>
-                                    <p className="text-xs text-slate-500 leading-relaxed font-medium">Attn: Cristina Hermiston<br />202 Lebsack Station Suite 446<br />East Cordie, Michigan - 38083-7367</p>
+                                    <p className="font-black text-slate-800 text-lg sm:text-xl tracking-tight leading-tight">{selectedInvoice.customer}</p>
+                                    <p className="text-[10px] sm:text-xs text-slate-500 leading-relaxed font-medium">Attn: Cristina Hermiston<br />202 Lebsack Station Suite 446<br />East Cordie, Michigan - 38083-7367</p>
                                 </div>
                             </div>
                         </div>
 
                         {/* Items Table */}
-                        <div className="rounded-2xl border overflow-hidden shadow-sm">
-                            <Table>
-                                <TableHeader className="bg-slate-900 text-white">
-                                    <TableRow className="hover:bg-slate-900">
-                                        <TableHead className="w-12 font-bold text-white/60">#</TableHead>
-                                        <TableHead className="font-bold text-white">Description</TableHead>
-                                        <TableHead className="w-24 font-bold text-center text-white">Qty</TableHead>
-                                        <TableHead className="w-32 font-bold text-right text-white">Rate (₹)</TableHead>
-                                        <TableHead className="w-32 font-bold text-right text-white">Amount (₹)</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {selectedInvoice.items.map((item, idx) => (
-                                        <TableRow key={item.id} className="hover:bg-transparent">
-                                            <TableCell className="font-mono text-slate-400">{idx + 1}</TableCell>
-                                            <TableCell className="font-bold text-slate-800">{item.desc}</TableCell>
-                                            <TableCell className="text-center font-bold">{item.qty}</TableCell>
-                                            <TableCell className="text-right font-medium">₹{item.rate}</TableCell>
-                                            <TableCell className="text-right font-black tracking-tight italic">₹{item.amount}</TableCell>
+                        <div className="rounded-2xl border overflow-x-auto scrollbar-thin shadow-sm">
+                            <div className="min-w-[600px]">
+                                <Table>
+                                    <TableHeader className="bg-slate-900 text-white">
+                                        <TableRow className="hover:bg-slate-900 border-none">
+                                            <TableHead className="w-12 font-bold text-white/60">#</TableHead>
+                                            <TableHead className="font-bold text-white">Description</TableHead>
+                                            <TableHead className="w-24 font-bold text-center text-white">Qty</TableHead>
+                                            <TableHead className="w-32 font-bold text-right text-white">Rate (₹)</TableHead>
+                                            <TableHead className="w-32 font-bold text-right text-white">Amount (₹)</TableHead>
                                         </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {selectedInvoice.items.map((item, idx) => (
+                                            <TableRow key={item.id} className="hover:bg-transparent border-slate-100">
+                                                <TableCell className="font-mono text-slate-400 text-xs">{idx + 1}</TableCell>
+                                                <TableCell className="font-bold text-slate-800 text-sm">{item.desc}</TableCell>
+                                                <TableCell className="text-center font-bold text-sm">{item.qty}</TableCell>
+                                                <TableCell className="text-right font-medium text-sm">₹{item.rate}</TableCell>
+                                                <TableCell className="text-right font-black tracking-tight italic text-sm">₹{item.amount}</TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </div>
                         </div>
 
                         {/* Totals & Notes */}
@@ -421,21 +469,25 @@ export default function InvoicesPage() {
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between px-1">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between px-1 gap-4 font-sans italic">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-slate-900 to-blue-900 bg-clip-text text-transparent">GST Invoices</h1>
-                    <p className="text-muted-foreground font-medium flex items-center gap-2 mt-1">
-                        <Coins className="h-4 w-4 text-emerald-500" /> Manage customer billing and GST filings.
-                    </p>
+                    <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 uppercase font-sans">Revenue Ledger</h1>
                 </div>
-                <div className="flex items-center gap-2">
-                    <Button variant="outline" className="gap-2 border-slate-200 shadow-sm">
-                        <Download className="h-4 w-4" /> Export GST Report
-                    </Button>
-                    <Button onClick={() => setViewMode('create')} className="gap-2 font-bold shadow-lg px-6 text-white" style={{ background: 'var(--primary)' }}>
-                        <Plus className="h-4 w-4" /> New Invoice
-                    </Button>
-                </div>
+                <PageActionButtons
+                    buttons={[
+                        {
+                            label: "Export GST",
+                            icon: Download,
+                            variant: "outline",
+                            onClick: () => console.log("Export GST")
+                        },
+                        {
+                            label: "New Invoice",
+                            icon: Plus,
+                            onClick: () => setViewMode('create')
+                        }
+                    ]}
+                />
             </div>
 
             <div className="flex flex-col gap-4 md:flex-row md:items-center bg-card/40 p-4 rounded-2xl border backdrop-blur-sm">
@@ -469,6 +521,8 @@ export default function InvoicesPage() {
                         {
                             key: "date",
                             label: "Date",
+                            className: "hidden sm:table-cell",
+                            headerClassName: "hidden sm:table-cell",
                             render: (val: any, inv: any) => (
                                 <div className="space-y-0.5">
                                     <p className="text-xs font-bold text-slate-700">{val}</p>
@@ -484,6 +538,8 @@ export default function InvoicesPage() {
                         {
                             key: "jobRef",
                             label: "Job Ref",
+                            className: "hidden md:table-cell",
+                            headerClassName: "hidden md:table-cell",
                             render: (val: any) => (
                                 <Badge variant="outline" className="font-mono text-[10px] bg-slate-50 border-slate-200 text-slate-500">{val}</Badge>
                             )
@@ -531,6 +587,8 @@ export default function InvoicesPage() {
                     ]}
                     searchPlaceholder="Search invoices, customers or amount..."
                     hideTitle={true}
+                    enableDateRange={true}
+                    dateFilterKey="date"
                 />
             </div>
         </div>

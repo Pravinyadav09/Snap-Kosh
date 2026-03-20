@@ -17,6 +17,7 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { DataGrid, type ColumnDef } from "@/components/shared/data-grid"
 
 type JobProcess = "Printing" | "Binding" | "Lamination" | "Finishing"
 type JobStatus = "In Progress" | "Completed"
@@ -34,29 +35,53 @@ const generateMockJobs = (): ScheduledJob[] => {
     const year = today.getFullYear()
     const month = today.getMonth()
 
-    return [
-        { id: "JOB-42380", customer: "Powlow", date: new Date(year, month, 1), status: "In Progress", process: "Printing" },
-        { id: "JOB-83077", customer: "Hyatt-Kutch", date: new Date(year, month, 1), status: "In Progress", process: "Binding" },
-        { id: "JOB-88403", customer: "Crona Group", date: new Date(year, month, 1), status: "In Progress", process: "Finishing" },
-        { id: "JOB-13664", customer: "Powlow", date: new Date(year, month, 2), status: "In Progress", process: "Printing" },
-        { id: "JOB-27009", customer: "Kuhlman", date: new Date(year, month, 2), status: "In Progress", process: "Lamination" },
-        { id: "JOB-46608", customer: "Crona G", date: new Date(year, month, 2), status: "In Progress", process: "Finishing" },
-        { id: "JOB-56871", customer: "Harris", date: new Date(year, month, 2), status: "In Progress", process: "Binding" },
-        { id: "JOB-56246", customer: "Crona Group", date: new Date(year, month, 3), status: "In Progress", process: "Binding" },
-        { id: "JOB-60956", customer: "Harris", date: new Date(year, month, 3), status: "In Progress", process: "Printing" },
-        { id: "JOB-00207", customer: "Barton", date: new Date(year, month, 4), status: "In Progress", process: "Binding" },
-        { id: "JOB-26284", customer: "Barton", date: new Date(year, month, 5), status: "In Progress", process: "Printing" },
-        { id: "JOB-36922", customer: "Hegmann", date: new Date(year, month, 6), status: "In Progress", process: "Finishing" },
-        { id: "JB-2026-0033", customer: "Denesik", date: new Date(year, month, 6), status: "Completed", process: "Printing" },
-        { id: "JB-2026-0033", customer: "Denesik", date: new Date(year, month, 9), status: "In Progress", process: "Lamination" },
-        { id: "JB-2026-0034", customer: "Denesik", date: new Date(year, month, 11), status: "Completed", process: "Lamination" },
-        { id: "JB-2026-0034", customer: "Denesik", date: new Date(year, month, 13), status: "In Progress", process: "Finishing" },
-        { id: "JOB-41706", customer: "Senger", date: new Date(year, month, 4), status: "In Progress", process: "Printing" },
-        { id: "JOB-51824", customer: "Kuhlman", date: new Date(year, month, 4), status: "In Progress", process: "Binding" },
-        { id: "JOB-54761", customer: "Schuster", date: new Date(year, month, 4), status: "In Progress", process: "Lamination" },
-        { id: "JOB-90891", customer: "Glover", date: new Date(year, month, 6), status: "In Progress", process: "Lamination" },
-    ]
+    const customers = ["Powlow", "Hyatt-Kutch", "Crona Group", "Kuhlman", "Harris", "Barton", "Hegmann", "Denesik", "Senger", "Schuster", "Glover"]
+    const processes: JobProcess[] = ["Printing", "Binding", "Lamination", "Finishing"]
+
+    return Array.from({ length: 42 }).map((_, i) => ({
+        id: `JOB-${Math.floor(Math.random() * 90000) + 10000}`,
+        customer: customers[Math.floor(Math.random() * customers.length)],
+        date: new Date(year, month, i + 1),
+        status: Math.random() > 0.7 ? "Completed" : "In Progress",
+        process: processes[Math.floor(Math.random() * processes.length)],
+    }))
 }
+
+const listColumns: ColumnDef<ScheduledJob>[] = [
+    {
+        key: 'date',
+        label: 'Date',
+        type: 'date',
+        render: (val) => (val as Date).toLocaleDateString("en-GB", { day: '2-digit', month: 'short', year: 'numeric' })
+    },
+    {
+        key: 'id',
+        label: 'Job ID',
+        render: (val) => <span style={{ color: 'var(--primary)', fontWeight: 'bold' }}>{val as string}</span>
+    },
+    {
+        key: 'customer',
+        label: 'Customer',
+        render: (val) => <span className="text-slate-700 font-medium">{val as string}</span>
+    },
+    {
+        key: 'process',
+        label: 'Process',
+        render: (val) => <span className="text-slate-600 italic">{val as string}</span>
+    },
+    {
+        key: 'status',
+        label: 'Status',
+        render: (val) => (
+            <span
+                className="px-3 py-1 rounded-full text-[0.7rem] font-bold uppercase tracking-wider"
+                style={val !== "In Progress" ? { background: 'color-mix(in srgb, var(--primary), white 90%)', color: 'var(--primary)' } : { background: '#d9534f1a', color: '#d9534f' }}
+            >
+                {val as string}
+            </span>
+        )
+    }
+]
 
 export default function ProductionSchedulerPage() {
     const [currentDate, setCurrentDate] = useState(new Date())
@@ -189,47 +214,55 @@ export default function ProductionSchedulerPage() {
     }
 
     return (
-        <div className="flex flex-col h-[calc(100vh-100px)] font-sans bg-white p-6 pt-0">
+        <div className="flex flex-col h-[calc(100vh-100px)] font-sans bg-white p-6 rounded-xl shadow-sm border border-slate-100">
             {/* Header / Title */}
-            <div className="flex items-center gap-3 mb-2 pt-2">
-                <CalendarIcon className="h-5 w-5 text-slate-500" />
-                <h1 className="text-xl text-slate-700">Production Scheduler</h1>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-2 pt-2 font-sans italic uppercase">
+                <div className="flex items-center gap-3">
+                    <CalendarIcon className="h-6 w-6 text-slate-500" />
+                    <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900">Production Timeline</h1>
+                </div>
             </div>
 
             {/* Toolbar */}
-            <div className="flex items-center justify-between py-4">
-                <div className="flex items-center rounded-md border border-slate-300 text-slate-600 bg-white">
-                    <button onClick={prev} className="px-3 py-1.5 hover:bg-slate-50 border-r border-slate-300 flex items-center justify-center transition-colors">
-                        <ChevronLeft className="h-4 w-4" />
-                    </button>
-                    <button onClick={next} className="px-3 py-1.5 hover:bg-slate-50 border-r border-slate-300 flex items-center justify-center transition-colors">
-                        <ChevronRight className="h-4 w-4" />
-                    </button>
-                    <button onClick={today} className="px-5 py-1.5 text-[0.9rem] hover:bg-slate-50 pb-[0.4rem] transition-colors">
-                        today
-                    </button>
+            <div className="flex flex-col xl:flex-row xl:items-center justify-between py-4 gap-4 italic uppercase font-sans">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between sm:justify-start gap-4">
+                    <div className="flex items-center rounded-xl border border-slate-300 text-slate-600 bg-white shadow-sm overflow-hidden w-full sm:w-auto">
+                        <button onClick={prev} className="flex-1 sm:flex-none px-4 py-2 hover:bg-slate-50 border-r border-slate-300 flex items-center justify-center transition-colors">
+                            <ChevronLeft className="h-4 w-4" />
+                        </button>
+                        <button onClick={next} className="flex-1 sm:flex-none px-4 py-2 hover:bg-slate-50 border-r border-slate-300 flex items-center justify-center transition-colors">
+                            <ChevronRight className="h-4 w-4" />
+                        </button>
+                        <button onClick={today} className="flex-[2] sm:flex-none px-6 py-2 text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 transition-colors">
+                            Today
+                        </button>
+                    </div>
+
+                    <div className="text-lg sm:text-2xl text-slate-800 font-sans font-black uppercase tracking-tight hidden sm:block">
+                        {view === 'week' ? `Week of ${currentDate.toLocaleDateString("en-US", { month: 'short', day: 'numeric' })}` : `${monthNames[month]} ${year}`}
+                    </div>
                 </div>
 
-                <div className="text-2xl text-slate-700 font-sans">
+                <div className="text-lg text-slate-800 font-sans font-black uppercase tracking-tight sm:hidden text-center bg-slate-50 py-2 rounded-lg border border-slate-100 italic">
                     {view === 'week' ? `Week of ${currentDate.toLocaleDateString("en-US", { month: 'short', day: 'numeric' })}` : `${monthNames[month]} ${year}`}
                 </div>
 
-                <div className="flex items-center rounded-md border border-slate-300 bg-white overflow-hidden text-[0.9rem]">
+                <div className="flex items-center rounded-xl border border-slate-300 bg-white overflow-hidden shadow-sm w-full sm:w-auto">
                     <button
                         onClick={() => setView('month')}
-                        className={`px-4 py-1.5 border-r border-slate-300 pb-[0.4rem] transition-colors ${view === 'month' ? 'text-white' : 'text-slate-700 hover:bg-slate-50'}`}
+                        className={`flex-1 sm:flex-none px-4 sm:px-6 py-2 text-[10px] font-black uppercase tracking-widest border-r border-slate-300 transition-colors ${view === 'month' ? 'text-white' : 'text-slate-500 hover:bg-slate-50'}`}
                         style={view === 'month' ? { background: 'var(--primary)' } : {}}
-                    >month</button>
+                    >Month</button>
                     <button
                         onClick={() => setView('week')}
-                        className={`px-4 py-1.5 border-r border-slate-300 pb-[0.4rem] transition-colors ${view === 'week' ? 'text-white' : 'text-slate-700 hover:bg-slate-50'}`}
+                        className={`flex-1 sm:flex-none px-4 sm:px-6 py-2 text-[10px] font-black uppercase tracking-widest border-r border-slate-300 transition-colors ${view === 'week' ? 'text-white' : 'text-slate-500 hover:bg-slate-50'}`}
                         style={view === 'week' ? { background: 'var(--primary)' } : {}}
-                    >week</button>
+                    >Week</button>
                     <button
                         onClick={() => setView('list')}
-                        className={`px-4 py-1.5 pb-[0.4rem] transition-colors ${view === 'list' ? 'text-white' : 'text-slate-700 hover:bg-slate-50'}`}
+                        className={`flex-1 sm:flex-none px-4 sm:px-6 py-2 text-[10px] font-black uppercase tracking-widest transition-colors ${view === 'list' ? 'text-white' : 'text-slate-500 hover:bg-slate-50'}`}
                         style={view === 'list' ? { background: 'var(--primary)' } : {}}
-                    >list</button>
+                    >List</button>
                 </div>
             </div>
 
@@ -269,44 +302,13 @@ export default function ProductionSchedulerPage() {
                         </div>
                     </>
                 ) : (
-                    <div className="flex-1 overflow-y-auto bg-slate-50/30">
-                        <table className="w-full text-left border-collapse">
-                            <thead className="sticky top-0 bg-[#f8f9fa] border-b border-slate-300 z-10">
-                                <tr className="text-[0.75rem] font-bold text-slate-600">
-                                    <th className="px-6 py-3 border-r border-slate-300">Date</th>
-                                    <th className="px-6 py-3 border-r border-slate-300">Job ID</th>
-                                    <th className="px-6 py-3 border-r border-slate-300">Customer</th>
-                                    <th className="px-6 py-3 border-r border-slate-300">Process</th>
-                                    <th className="px-6 py-3">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody className="bg-white font-sans text-[0.85rem]">
-                                {listJobs.map((job, idx) => (
-                                    <tr key={idx} className="border-b border-slate-200 hover:bg-blue-50/30 transition-colors">
-                                        <td className="px-6 py-4 border-r border-slate-200 text-slate-500 whitespace-nowrap">
-                                            {job.date.toLocaleDateString("en-GB", { day: '2-digit', month: 'short', year: 'numeric' })}
-                                        </td>
-                                        <td className="px-6 py-4 border-r border-slate-200 font-bold" style={{ color: 'var(--primary)' }}>
-                                            {job.id}
-                                        </td>
-                                        <td className="px-6 py-4 border-r border-slate-200 text-slate-700">
-                                            {job.customer}
-                                        </td>
-                                        <td className="px-6 py-4 border-r border-slate-200 text-slate-600 italic">
-                                            {job.process}
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span
-                                                className="px-3 py-1 rounded-full text-[0.7rem] font-bold uppercase tracking-wider"
-                                                style={job.status !== "In Progress" ? { background: 'color-mix(in srgb, var(--primary), white 90%)', color: 'var(--primary)' } : { background: '#d9534f1a', color: '#d9534f' }}
-                                            >
-                                                {job.status}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                    <div className="flex-1 bg-slate-50/10 p-4 overflow-y-auto w-full custom-scrollbar-enhanced hidden-scrollbar-container">
+                        <DataGrid 
+                            columns={listColumns} 
+                            data={listJobs} 
+                            searchPlaceholder="Search schedule..." 
+                            title="Production Scheduler"
+                        />
                     </div>
                 )}
             </div>

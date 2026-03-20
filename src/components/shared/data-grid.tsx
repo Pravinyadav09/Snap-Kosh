@@ -43,6 +43,8 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
 import { toast } from "sonner"
+import { DateRange } from "react-day-picker"
+import { DatePickerWithRange } from "./date-range-picker"
 
 export type ColumnDef<T> = {
     key: string // Allows non-field keys like 'actions'
@@ -71,6 +73,8 @@ type DataGridProps<T> = {
     onSelectionChange?: (selectedIds: string[]) => void
     enableCardView?: boolean
     cardRender?: (item: T) => React.ReactNode
+    enableDateRange?: boolean
+    dateFilterKey?: string // The key to use for global date range filtering
 }
 
 export function DataGrid<T extends Record<string, any>>({
@@ -88,6 +92,8 @@ export function DataGrid<T extends Record<string, any>>({
     onSelectionChange,
     enableCardView = true,
     cardRender,
+    enableDateRange = false,
+    dateFilterKey = "date",
 }: DataGridProps<T>) {
     const [viewMode, setViewMode] = useState<"table" | "card">("table")
     const [search, setSearch] = useState("")
@@ -108,6 +114,7 @@ export function DataGrid<T extends Record<string, any>>({
         }, {})
     )
     const [isResizing, setIsResizing] = useState(false)
+    const [globalDateRange, setGlobalDateRange] = useState<DateRange | undefined>()
 
     const totalTableWidth = useMemo(() => {
         let width = enableSelection ? 60 : 0
@@ -128,6 +135,25 @@ export function DataGrid<T extends Record<string, any>>({
                 String(val).toLowerCase().includes(search.toLowerCase())
             )
             if (!globalMatch) return false
+
+            // Global Date Range
+            if (enableDateRange && globalDateRange?.from && item[dateFilterKey]) {
+                const itemDateStr = String(item[dateFilterKey])
+                // Attempt to parse date strings properly 
+                const itemDate = new Date(Date.parse(itemDateStr))
+                if (!isNaN(itemDate.getTime())) {
+                    // Reset time portions for comparison
+                    const compareDate = new Date(itemDate.getFullYear(), itemDate.getMonth(), itemDate.getDate())
+                    const fromDate = new Date(globalDateRange.from.getFullYear(), globalDateRange.from.getMonth(), globalDateRange.from.getDate())
+
+                    if (compareDate < fromDate) return false
+
+                    if (globalDateRange.to) {
+                        const toDate = new Date(globalDateRange.to.getFullYear(), globalDateRange.to.getMonth(), globalDateRange.to.getDate())
+                        if (compareDate > toDate) return false
+                    }
+                }
+            }
 
             // Column filters
             const columnMatch = Object.entries(columnFilters).every(([key, filterVal]) => {
@@ -178,7 +204,7 @@ export function DataGrid<T extends Record<string, any>>({
         }
 
         return result
-    }, [data, search, columnFilters, sortKey, sortOrder])
+    }, [data, search, columnFilters, sortKey, sortOrder, globalDateRange, enableDateRange, dateFilterKey])
 
     // Pagination
     const totalPages = Math.max(1, Math.ceil(filteredData.length / pageSize))
@@ -306,17 +332,17 @@ export function DataGrid<T extends Record<string, any>>({
     const isAllSelected = paginatedData.length > 0 && paginatedData.every(item => selectedIds.includes(String(item.id)))
 
     return (
-        <div className="space-y-2">
+        <div className="w-full">
             {/* ── Toolbar Row ───────────────────────────────────────── */}
-            <div className={`flex flex-col md:flex-row gap-2 items-center justify-between bg-slate-50/50 p-1.5 rounded-xl border border-slate-100/50 mb-1 ${toolbarClassName || ''}`}>
-                <div className="flex items-center gap-3">
-                    <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest px-2 border-r border-slate-200">
+            <div className={`flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between bg-slate-50/50 p-2 sm:p-1.5 rounded-xl border border-slate-100/50 mb-1 ${toolbarClassName || ''}`}>
+                <div className="flex items-center justify-between sm:justify-start gap-3">
+                    <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest px-2 sm:border-r border-slate-200">
                         {filteredData.length} Records
                     </p>
 
                     {enableSelection && selectedIds.length > 0 && (
                         <div className="flex items-center gap-2 px-2.5 py-1 bg-blue-100 text-blue-700 rounded-lg animate-in fade-in zoom-in duration-200">
-                            <span className="text-[10px] font-black uppercase tracking-wider">{selectedIds.length} Selected</span>
+                            <span className="text-[10px] font-black uppercase tracking-wider">{selectedIds.length} <span className="hidden xs:inline">Selected</span></span>
                             <Button
                                 variant="ghost"
                                 size="sm"
@@ -332,8 +358,16 @@ export function DataGrid<T extends Record<string, any>>({
                     )}
                 </div>
 
-                <div className="flex items-center gap-2 flex-1 md:flex-initial w-full md:w-auto">
-                    <div className="relative flex-1 md:w-80 group">
+                <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                    {enableDateRange && (
+                        <div className="w-full sm:w-auto">
+                            <DatePickerWithRange
+                                date={globalDateRange}
+                                setDate={setGlobalDateRange}
+                            />
+                        </div>
+                    )}
+                    <div className="relative flex-1 sm:w-64 lg:w-80 group">
                         <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-slate-400 group-focus-within:text-primary transition-colors" style={{ '--primary': 'var(--primary)' } as any} />
                         <Input
                             placeholder={searchPlaceholder}
@@ -343,228 +377,216 @@ export function DataGrid<T extends Record<string, any>>({
                             onChange={e => setSearch(e.target.value)}
                         />
                     </div>
-                    {/* View Toggle */}
-                    {enableCardView && (
-                        <div className="flex items-center bg-white border border-slate-200 rounded-lg p-0.5 shrink-0">
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                className={`h-8 w-8 p-0 rounded-md transition-all ${viewMode === 'table' ? 'text-white shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
-                                style={viewMode === 'table' ? { background: 'var(--primary)' } : {}}
-                                onClick={() => setViewMode('table')}
-                                title="Table View"
-                            >
-                                <TableProperties className="h-3.5 w-3.5" />
-                            </Button>
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                className={`h-8 w-8 p-0 rounded-md transition-all ${viewMode === 'card' ? 'text-white shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
-                                style={viewMode === 'card' ? { background: 'var(--primary)' } : {}}
-                                onClick={() => setViewMode('card')}
-                                title="Card View"
-                            >
-                                <LayoutGrid className="h-3.5 w-3.5" />
-                            </Button>
-                        </div>
-                    )}
-
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="sm" className="h-8 w-8 p-0 border-slate-200 hover:bg-slate-50 rounded-lg group/sett">
-                                <Settings2 className="h-3.5 w-3.5 text-slate-500 group-hover/sett:text-primary transition-colors" style={{ '--primary': 'var(--primary)' } as any} />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-56 rounded-xl shadow-xl border-slate-200 p-1.5">
-                            <DropdownMenuLabel className="text-[10px] uppercase font-black tracking-[0.2em] text-slate-400 px-2 py-1.5">Table Settings</DropdownMenuLabel>
-
-                            <DropdownMenuSeparator />
-
-                            {/* Column Selection Submenu */}
-                            <DropdownMenuLabel className="text-[10px] font-bold text-slate-600 px-2 py-1 flex items-center gap-2">
-                                <Columns className="h-3 w-3" /> Visible Columns
-                            </DropdownMenuLabel>
-                            <div className="max-h-[200px] overflow-y-auto py-1">
-                                {columns.map(col => (
-                                    <DropdownMenuCheckboxItem
-                                        key={col.key}
-                                        checked={visibleCols[col.key]}
-                                        onCheckedChange={() => toggleCol(col.key)}
-                                        className="text-xs py-1.5 cursor-pointer"
-                                    >
-                                        {col.label}
-                                    </DropdownMenuCheckboxItem>
-                                ))}
+                    
+                    <div className="flex items-center gap-2 ml-auto sm:ml-0">
+                        {/* View Toggle */}
+                        {enableCardView && (
+                            <div className="flex items-center bg-white border border-slate-200 rounded-lg p-0.5 shrink-0">
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className={`h-8 w-8 p-0 rounded-md transition-all ${viewMode === 'table' ? 'text-white shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                                    style={viewMode === 'table' ? { background: 'var(--primary)' } : {}}
+                                    onClick={() => setViewMode('table')}
+                                    title="Table View"
+                                >
+                                    <TableProperties className="h-3.5 w-3.5" />
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className={`h-8 w-8 p-0 rounded-md transition-all ${viewMode === 'card' ? 'text-white shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                                    style={viewMode === 'card' ? { background: 'var(--primary)' } : {}}
+                                    onClick={() => setViewMode('card')}
+                                    title="Card View"
+                                >
+                                    <LayoutGrid className="h-3.5 w-3.5" />
+                                </Button>
                             </div>
+                        )}
 
-                            <DropdownMenuSeparator />
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline" size="sm" className="h-8 w-8 p-0 border-slate-200 hover:bg-slate-50 rounded-lg group/sett">
+                                    <Settings2 className="h-3.5 w-3.5 text-slate-500 group-hover/sett:text-primary transition-colors" style={{ '--primary': 'var(--primary)' } as any} />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-56 rounded-xl shadow-xl border-slate-200 p-1.5">
+                                <DropdownMenuLabel className="text-[10px] uppercase font-black tracking-[0.2em] text-slate-400 px-2 py-1.5">Table Settings</DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuLabel className="text-[10px] font-bold text-slate-600 px-2 py-1 flex items-center gap-2">
+                                    <Columns className="h-3 w-3" /> Visible Columns
+                                </DropdownMenuLabel>
+                                <div className="max-h-[200px] overflow-y-auto py-1">
+                                    {columns.map(col => (
+                                        <DropdownMenuCheckboxItem
+                                            key={col.key}
+                                            checked={visibleCols[col.key]}
+                                            onCheckedChange={() => toggleCol(col.key)}
+                                            className="text-xs py-1.5 cursor-pointer"
+                                        >
+                                            {col.label}
+                                        </DropdownMenuCheckboxItem>
+                                    ))}
+                                </div>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuLabel className="text-[10px] font-bold text-slate-600 px-2 py-1 flex items-center gap-2">
+                                    <Download className="h-3 w-3" /> Export Options
+                                </DropdownMenuLabel>
+                                <DropdownMenuItem className="gap-2 text-xs cursor-pointer rounded-lg px-2 py-2" onClick={() => handleExport("csv")}>
+                                    <FileSpreadsheet className="h-3.5 w-3.5 text-emerald-600" /> Save as CSV
+                                </DropdownMenuItem>
+                                <DropdownMenuItem className="gap-2 text-xs cursor-pointer rounded-lg px-2 py-2" onClick={() => handleExport("json")}>
+                                    <FileText className="h-3.5 w-3.5 text-blue-600" /> Save as JSON
+                                </DropdownMenuItem>
+                                <DropdownMenuItem className="gap-2 text-xs cursor-pointer rounded-lg px-2 py-2" onClick={() => handleExport("print")}>
+                                    <Printer className="h-3.5 w-3.5 text-slate-600" /> Print Table
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
 
-                            {/* Export Submenu */}
-                            <DropdownMenuLabel className="text-[10px] font-bold text-slate-600 px-2 py-1 flex items-center gap-2">
-                                <Download className="h-3 w-3" /> Export Options
-                            </DropdownMenuLabel>
-                            <DropdownMenuItem className="gap-2 text-xs cursor-pointer rounded-lg px-2 py-2" onClick={() => handleExport("csv")}>
-                                <FileSpreadsheet className="h-3.5 w-3.5 text-emerald-600" /> Save as CSV
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className="gap-2 text-xs cursor-pointer rounded-lg px-2 py-2" onClick={() => handleExport("json")}>
-                                <FileText className="h-3.5 w-3.5 text-blue-600" /> Save as JSON
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className="gap-2 text-xs cursor-pointer rounded-lg px-2 py-2" onClick={() => handleExport("print")}>
-                                <Printer className="h-3.5 w-3.5 text-slate-600" /> Print Table
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-
-                    {/* Filter Action */}
-                    <Button
-                        variant={showFilters || Object.values(columnFilters).some(v => v) ? "secondary" : "outline"}
-                        size="sm"
-                        className={`h-8 w-8 p-0 border-slate-200 rounded-lg transition-all ${Object.values(columnFilters).some(v => v) ? 'bg-amber-50 border-amber-200 text-amber-600' : showFilters ? 'bg-white border-slate-300' : ''}`}
-                        style={showFilters && !Object.values(columnFilters).some(v => v) ? { color: 'var(--primary)', borderColor: 'var(--primary)' } : {}}
-                        onClick={() => setShowFilters(!showFilters)}
-                        title={showFilters ? "Hide Column Filters" : "Filter Columns"}
-                    >
-                        <Filter className="h-3.5 w-3.5" style={showFilters || Object.values(columnFilters).some(v => v) ? {} : { color: 'var(--primary)' }} />
-                    </Button>
-
+                        <Button
+                            variant={showFilters || Object.values(columnFilters).some(v => v) ? "secondary" : "outline"}
+                            size="sm"
+                            className={`h-8 w-8 p-0 border-slate-200 rounded-lg transition-all ${Object.values(columnFilters).some(v => v) ? 'bg-amber-50 border-amber-200 text-amber-600' : showFilters ? 'bg-white border-slate-300' : ''}`}
+                            style={showFilters && !Object.values(columnFilters).some(v => v) ? { color: 'var(--primary)', borderColor: 'var(--primary)' } : {}}
+                            onClick={() => setShowFilters(!showFilters)}
+                            title={showFilters ? "Hide Column Filters" : "Filter Columns"}
+                        >
+                            <Filter className="h-3.5 w-3.5" style={showFilters || Object.values(columnFilters).some(v => v) ? {} : { color: 'var(--primary)' }} />
+                        </Button>
+                    </div>
                 </div>
             </div>
-
-
 
             {/* ── Table Grid ───────────────────────────────────────────── */}
             {
                 viewMode === "table" ? (
                     <div className={`w-full max-w-full rounded-xl border border-slate-200 shadow-sm bg-white font-sans relative flex flex-col ${isResizing ? 'select-none pointer-events-none' : ''}`}>
-                        <div className="w-full overflow-x-auto overflow-y-auto max-h-[65vh] custom-scrollbar pb-4 rounded-xl flex-1">
-                            <Table style={{ tableLayout: 'fixed', width: `${totalTableWidth}px`, minWidth: '100%' }}>
-                                <colgroup>
-                                    {enableSelection && <col style={{ width: '60px' }} />}
-                                    {columns.map(col => visibleCols[col.key] && (
-                                        <col key={col.key} style={{ width: `${columnWidths[col.key]}px` }} />
-                                    ))}
-                                </colgroup>
-                                <TableHeader className="sticky top-0 z-20 shadow-md border-0" style={{ background: 'var(--primary)' }}>
-                                    <TableRow className="bg-transparent hover:bg-transparent border-0">
-                                        {enableSelection && (
-                                            <TableHead className="w-[60px] pl-6 border-0">
-                                                <Checkbox
-                                                    checked={isAllSelected}
-                                                    onCheckedChange={(v) => toggleSelectAll(!!v)}
-                                                    className="h-5 w-5 rounded-md border-white/20 data-[state=checked]:bg-white data-[state=checked]:border-white/50 transition-all opacity-80"
-                                                    style={{ '--tw-text-opacity': '1', color: 'var(--primary)' } as React.CSSProperties}
-                                                />
-                                            </TableHead>
-                                        )}
+                        <div className="w-full overflow-x-auto scrollbar-thin">
+                            <div className="overflow-y-auto max-h-[70vh] min-w-full">
+                                <Table style={{ tableLayout: 'fixed', width: `${totalTableWidth}px`, minWidth: '100%' }}>
+                                    <colgroup>
+                                        {enableSelection && <col style={{ width: '60px' }} />}
                                         {columns.map(col => visibleCols[col.key] && (
-                                            <TableHead
-                                                key={col.key}
-                                                className={`font-black text-[11px] uppercase tracking-[0.12em] py-3.5 font-sans group/head select-none relative !border-0 ${col.headerClassName || ""} ${col.sortable !== false ? 'cursor-pointer hover:opacity-80 transition-all' : ''}`}
-                                                onClick={() => col.sortable !== false && handleSort(col.key)}
-                                                style={{
-                                                    color: '#ffffff',
-                                                    fontFamily: "'Inter', 'Segoe UI', sans-serif",
-                                                    width: `${columnWidths[col.key]}px`
-                                                }}
-                                            >
-                                                <div className="flex flex-col gap-1 pr-4 h-full pt-1">
-                                                    <div className="flex items-center gap-1.5 pt-0.5">
-                                                        <span className="font-sans leading-none" style={{ color: '#ffffff' }}>{col.label}</span>
-                                                        {col.sortable !== false && (
-                                                            <div className="shrink-0 transition-all opacity-40 group-hover/head:opacity-100 flex items-center">
-                                                                {sortKey === col.key ? (
-                                                                    sortOrder === "asc" ? <ArrowUp className="h-3 w-3 text-white" /> : <ArrowDown className="h-3 w-3 text-white" />
-                                                                ) : (
-                                                                    <ArrowUpDown className="h-3 w-3 text-white/40" />
-                                                                )}
+                                            <col key={col.key} style={{ width: `${columnWidths[col.key]}px` }} />
+                                        ))}
+                                    </colgroup>
+                                    <TableHeader className="sticky top-0 z-20 shadow-sm border-b border-slate-200 bg-slate-50">
+                                        <TableRow className="bg-transparent hover:bg-transparent border-0">
+                                            {enableSelection && (
+                                                <TableHead className="w-[60px] pl-6 border-0">
+                                                    <Checkbox
+                                                        checked={isAllSelected}
+                                                        onCheckedChange={(v) => toggleSelectAll(!!v)}
+                                                        className="h-5 w-5 rounded-md border-slate-300 transition-all opacity-80"
+                                                        style={{ backgroundColor: isAllSelected ? 'var(--primary)' : 'transparent', borderColor: isAllSelected ? 'var(--primary)' : '' } as React.CSSProperties}
+                                                    />
+                                                </TableHead>
+                                            )}
+                                            {columns.map(col => visibleCols[col.key] && (
+                                                <TableHead
+                                                    key={col.key}
+                                                    className={`font-sans text-[13px] p-0 group/head select-none relative !border-0 text-slate-500 font-medium ${col.headerClassName || ""} ${col.sortable !== false ? 'cursor-pointer hover:text-slate-700 transition-all' : ''}`}
+                                                    onClick={() => col.sortable !== false && handleSort(col.key)}
+                                                    style={{ width: `${columnWidths[col.key]}px` }}
+                                                >
+                                                    <div className="flex flex-col h-full">
+                                                        <div className="flex items-center gap-1.5 h-10 px-4">
+                                                            <span className="truncate">{col.label}</span>
+                                                            {col.sortable !== false && (
+                                                                <div className="shrink-0 transition-all opacity-40 group-hover/head:opacity-100 flex items-center">
+                                                                    {sortKey === col.key ? (
+                                                                        sortOrder === "asc" ? <ArrowUp className="h-3 w-3 text-slate-700" /> : <ArrowDown className="h-3 w-3 text-slate-700" />
+                                                                    ) : (
+                                                                        <ArrowUpDown className="h-3 w-3 text-slate-400" />
+                                                                    )}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                        {showFilters && col.filterable !== false && (
+                                                            <div className="px-4 pb-2" onClick={(e) => e.stopPropagation()}>
+                                                                <div className="relative group/filter w-full">
+                                                                    {!(col.type === 'date' || col.key.toLowerCase().includes('date')) && (
+                                                                        <Search className="absolute left-2 top-2 h-2.5 w-2.5 text-slate-400 transition-colors z-10" style={{ color: 'var(--primary)' } as any} />
+                                                                    )}
+                                                                    <Input
+                                                                        type={col.type === 'date' || col.key.toLowerCase().includes('date') ? 'date' : 'text'}
+                                                                        placeholder="Filter..."
+                                                                        value={columnFilters[col.key] || ""}
+                                                                        onChange={e => setColumnFilter(col.key, e.target.value)}
+                                                                        className={`h-7 text-[10px] py-0 bg-white border-slate-200 transition-all shadow-sm font-bold uppercase tracking-widest w-full text-slate-900 focus-visible:ring-2 ${col.type === 'date' || col.key.toLowerCase().includes('date') ? 'pl-2' : 'pl-6'}`}
+                                                                        style={{ '--ring': 'var(--primary)', borderColor: 'var(--primary)' } as any}
+                                                                    />
+                                                                </div>
                                                             </div>
                                                         )}
-                                                        {sortKey === col.key && (
-                                                            <div className="h-1 w-1 rounded-full bg-emerald-400 animate-pulse opacity-100" />
-                                                        )}
                                                     </div>
-                                                    {showFilters && col.filterable !== false && (
-                                                        <div className="relative group/filter max-w-full mt-1" onClick={(e) => e.stopPropagation()}>
-                                                            {!(col.type === 'date' || col.key.toLowerCase().includes('date')) && (
-                                                                <Search className="absolute left-2 top-2 h-2.5 w-2.5 text-slate-400 transition-colors z-10" style={{ '--tw-text-opacity': '1', color: 'var(--primary)' } as any} />
-                                                            )}
-                                                            <Input
-                                                                type={col.type === 'date' || col.key.toLowerCase().includes('date') ? 'date' : 'text'}
-                                                                placeholder={`Filter...`}
-                                                                value={columnFilters[col.key] || ""}
-                                                                onChange={e => setColumnFilter(col.key, e.target.value)}
-                                                                className={`h-7 text-[10px] py-0 bg-white border-white/50 transition-all shadow-md placeholder:text-slate-400 font-bold uppercase tracking-widest w-full text-slate-900 focus-visible:ring-2 focus-visible:bg-white ${col.type === 'date' || col.key.toLowerCase().includes('date') ? 'pl-2' : 'pl-6'}`}
-                                                                style={{ '--ring': 'var(--primary)', borderColor: 'var(--primary)' } as any}
-                                                            />
-                                                        </div>
-                                                    )}
-                                                </div>
-
-                                                {/* Resize Handle */}
-                                                <div
-                                                    className={`absolute right-0 top-0 h-full w-1.5 cursor-col-resize hover:bg-white/20 transition-colors z-10 ${isResizing ? 'bg-white/30' : ''}`}
-                                                    onMouseDown={(e) => handleResizeStart(col.key, e)}
-                                                    onClick={(e) => e.stopPropagation()}
-                                                />
-                                            </TableHead>
-                                        ))}
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {paginatedData.length === 0 ? (
-                                        <TableRow>
-                                            <TableCell colSpan={(enableSelection ? 1 : 0) + columns.filter(c => visibleCols[c.key]).length} className="text-center py-32">
-                                                <div className="flex flex-col items-center justify-center gap-4 text-slate-300 animate-in fade-in zoom-in duration-500">
-                                                    <div className="p-6 rounded-[28px] bg-slate-50 border-2 border-dashed border-slate-100">
-                                                        <Search className="h-10 w-10 opacity-40 shrink-0" />
-                                                    </div>
-                                                    <div className="space-y-1">
-                                                        <p className="text-sm font-black text-slate-400 uppercase tracking-widest">No Intelligence Found</p>
-                                                        <p className="text-[10px] font-bold opacity-60">Try adjusting your query or filters</p>
-                                                    </div>
-                                                </div>
-                                            </TableCell>
+                                                    <div
+                                                        className={`absolute right-0 top-0 h-full w-1.5 cursor-col-resize hover:bg-white/20 transition-colors z-10 ${isResizing ? 'bg-white/30' : ''}`}
+                                                        onMouseDown={(e) => handleResizeStart(col.key, e)}
+                                                        onClick={(e) => e.stopPropagation()}
+                                                    />
+                                                </TableHead>
+                                            ))}
                                         </TableRow>
-                                    ) : (
-                                        paginatedData.map((item, idx) => (
-                                            <TableRow
-                                                key={item.id || idx}
-                                                className={`group hover:bg-slate-50/40 transition-all border-b border-slate-50/50 last:border-0 ${selectedIds.includes(String(item.id)) ? 'bg-slate-100/50' : ''}`}
-                                                style={selectedIds.includes(String(item.id)) ? { background: 'color-mix(in srgb, var(--primary), transparent 90%)' } : {}}
-                                            >
-                                                {enableSelection && (
-                                                    <TableCell className="pl-6">
-                                                        <Checkbox
-                                                            checked={selectedIds.includes(String(item.id))}
-                                                            onCheckedChange={(v) => toggleSelectRow(String(item.id), !!v)}
-                                                            className="h-5 w-5 rounded-md border-slate-200 transition-all"
-                                                            style={selectedIds.includes(String(item.id)) ? { background: 'var(--primary)', borderColor: 'var(--primary)' } : {}}
-                                                        />
-                                                    </TableCell>
-                                                )}
-                                                {columns.map(col => visibleCols[col.key] && (
-                                                    <TableCell key={col.key} className={`py-3 font-sans ${col.className || ""}`} style={{ width: `${columnWidths[col.key]}px` }}>
-                                                        <div className={`group-hover:translate-x-1 transition-transform duration-300 whitespace-nowrap ${col.key.toLowerCase().includes('action') ? '' : 'truncate'}`}>
-                                                            {col.render ? col.render(item[col.key], item) : (
-                                                                <span className="text-[13px] font-bold text-slate-600 tracking-tight">
-                                                                    {item[col.key]}
-                                                                </span>
-                                                            )}
+                                    </TableHeader>
+                                    <TableBody>
+                                        {paginatedData.length === 0 ? (
+                                            <TableRow>
+                                                <TableCell colSpan={(enableSelection ? 1 : 0) + columns.filter(c => visibleCols[c.key]).length} className="text-center py-24 sm:py-32">
+                                                    <div className="flex flex-col items-center justify-center gap-4 text-slate-300">
+                                                        <div className="p-4 sm:p-6 rounded-[28px] bg-slate-50 border-2 border-dashed border-slate-100">
+                                                            <Search className="h-8 w-8 sm:h-10 sm:w-10 opacity-40" />
                                                         </div>
-                                                    </TableCell>
-                                                ))}
+                                                        <div className="space-y-1">
+                                                            <p className="text-xs sm:text-sm font-black text-slate-400 uppercase tracking-widest">No Intelligence Found</p>
+                                                            <p className="text-[10px] font-bold opacity-60">Try adjusting your query or filters</p>
+                                                        </div>
+                                                    </div>
+                                                </TableCell>
                                             </TableRow>
-                                        ))
-                                    )}
-                                </TableBody>
-                            </Table >
-                        </div >
-                    </div >
+                                        ) : (
+                                            paginatedData.map((item, idx) => (
+                                                <TableRow
+                                                    key={item.id || idx}
+                                                    className={`group hover:bg-slate-50/40 transition-all border-b border-slate-50/50 last:border-0 ${selectedIds.includes(String(item.id)) ? 'bg-slate-100/50' : ''}`}
+                                                    style={selectedIds.includes(String(item.id)) ? { background: 'color-mix(in srgb, var(--primary), transparent 90%)' } : {}}
+                                                >
+                                                    {enableSelection && (
+                                                        <TableCell className="pl-6">
+                                                            <Checkbox
+                                                                checked={selectedIds.includes(String(item.id))}
+                                                                onCheckedChange={(v) => toggleSelectRow(String(item.id), !!v)}
+                                                                className="h-5 w-5 rounded-md border-slate-200 transition-all"
+                                                                style={selectedIds.includes(String(item.id)) ? { background: 'var(--primary)', borderColor: 'var(--primary)' } : {}}
+                                                            />
+                                                        </TableCell>
+                                                    )}
+                                                    {columns.map(col => visibleCols[col.key] && (
+                                                        <TableCell key={col.key} className={`p-0 font-sans ${col.className || ""}`} style={{ width: `${columnWidths[col.key]}px` }}>
+                                                            <div className={`h-11 flex items-center px-4 transition-transform duration-300 whitespace-nowrap ${col.key.toLowerCase().includes('action') ? '' : 'truncate'}`}>
+                                                                {col.render ? col.render(item[col.key], item) : (
+                                                                    <span className="text-[13px] text-slate-600">
+                                                                        {item[col.key]}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        </TableCell>
+                                                    ))}
+                                                </TableRow>
+                                            ))
+                                        )}
+                                    </TableBody>
+                                </Table>
+                            </div>
+                        </div>
+                    </div>
                 ) : (
                     /* ── Card View ───────────────────────────────────────────── */
-                    <div className="px-2">
+                    <div className="px-1">
                         {paginatedData.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center py-32 gap-4 text-slate-300">
+                            <div className="flex flex-col items-center justify-center py-24 sm:py-32 gap-4 text-slate-300">
                                 <div className="p-6 rounded-[28px] bg-slate-50 border-2 border-dashed border-slate-100">
                                     <Search className="h-10 w-10 opacity-40" />
                                 </div>
@@ -574,21 +596,21 @@ export function DataGrid<T extends Record<string, any>>({
                                 </div>
                             </div>
                         ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                                 {paginatedData.map((item, idx) => (
                                     cardRender ? (
                                         <div key={item.id || idx}>{cardRender(item)}</div>
                                     ) : (
                                         <div
                                             key={item.id || idx}
-                                            className="bg-white rounded-xl border border-slate-100 shadow-sm hover:shadow-md hover:border-slate-200 transition-all p-5 space-y-3 group"
+                                            className="bg-white rounded-xl border border-slate-100 shadow-sm hover:shadow-md hover:border-slate-200 transition-all p-4 space-y-3"
                                         >
                                             {columns.filter(col => visibleCols[col.key]).map(col => (
-                                                <div key={col.key} className="flex items-start justify-between gap-3">
+                                                <div key={col.key} className="flex items-start justify-between gap-3 border-b border-slate-50 last:border-0 pb-1.5 last:pb-0">
                                                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider shrink-0 pt-0.5">{col.label}</span>
-                                                    <div className="text-right">
+                                                    <div className="text-right max-w-[60%] overflow-hidden">
                                                         {col.render ? col.render(item[col.key], item) : (
-                                                            <span className="text-sm font-semibold text-slate-700">{item[col.key]}</span>
+                                                            <span className="text-sm font-semibold text-slate-700 truncate block">{item[col.key]}</span>
                                                         )}
                                                     </div>
                                                 </div>
@@ -603,58 +625,120 @@ export function DataGrid<T extends Record<string, any>>({
             }
 
             {/* ── Pagination ───────────────────────────────────────────── */}
-            <div className="flex items-center justify-between pt-6 px-4">
-                <div className="text-[9px] font-black uppercase tracking-widest text-slate-400 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100 shadow-sm">
-                    Record <span className="text-slate-900 mx-1">/</span> <span className="text-slate-900">{safePage}</span> of {totalPages}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 border-t border-slate-100 mt-2 font-sans bg-white">
+                {/* Records Summary - Left Side */}
+                <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wide">
+                    Showing <span className="text-slate-900 font-black">{(safePage - 1) * pageSize + 1}-{Math.min(safePage * pageSize, filteredData.length)}</span> <span className="mx-1 text-slate-300">|</span> Total <span className="text-slate-900 font-black">{filteredData.length}</span>
                 </div>
 
-                <div className="flex items-center gap-1.5">
-                    <div className="flex items-center bg-white p-0.5 rounded-lg border border-slate-200 shadow-sm">
-                        <Button variant="ghost" size="icon" className="h-7 w-7 rounded-md hover:bg-slate-50" onClick={() => setPage(1)} disabled={safePage === 1}>
-                            <ChevronsLeft className="h-3.5 w-3.5 text-slate-400" />
-                        </Button>
-                        <Button variant="ghost" size="icon" className="h-7 w-7 rounded-md hover:bg-slate-50" onClick={() => setPage(p => p - 1)} disabled={safePage === 1}>
-                            <ChevronLeft className="h-3.5 w-3.5 text-slate-400" />
-                        </Button>
+                {/* Controls Group - Right Side */}
+                <div className="flex items-center gap-2">
+                    {/* Page Size Selector */}
+                    <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Show:</span>
+                        <Select value={String(pageSize)} onValueChange={(val) => setPageSize(Number(val))}>
+                            <SelectTrigger className="h-7 w-[60px] border-slate-200 bg-white rounded text-[11px] font-bold text-slate-900 focus:ring-1 focus:ring-primary/20">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent className="min-w-[60px] rounded-lg shadow-xl border-slate-200">
+                                {pageSizeOptions.map(size => (
+                                    <SelectItem key={size} value={String(size)} className="text-[11px] rounded cursor-pointer font-bold">{size}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Rows</span>
                     </div>
 
-                    <div className="flex items-center gap-1">
-                        {Array.from({ length: totalPages }, (_, i) => i + 1)
-                            .filter(p => p === 1 || p === totalPages || (p >= safePage - 1 && p <= safePage + 1))
-                            .reduce<(number | "...")[]>((acc, p, idx, arr) => {
-                                if (idx > 0 && (p as number) - (arr[idx - 1] as number) > 1) acc.push("...")
-                                acc.push(p)
-                                return acc
-                            }, [])
-                            .map((p, i) => p === "..." ? (
-                                <span key={`dots-${i}`} className="px-1 text-slate-300 font-bold text-xs">...</span>
-                            ) : (
-                                <Button
-                                    key={`page-${p}`}
-                                    variant={safePage === p ? "default" : "outline"}
-                                    size="sm"
-                                    className={`h-7 w-7 rounded-lg text-[10px] font-bold transition-all ${safePage === p
-                                        ? "text-white shadow-md border-none scale-105"
-                                        : "bg-white border-slate-200 text-slate-400 hover:text-slate-900 hover:border-slate-300"}`}
-                                    style={safePage === p ? { background: 'var(--primary)' } : {}}
-                                    onClick={() => setPage(p as number)}
-                                >
-                                    {p}
-                                </Button>
-                            ))
-                        }
-                    </div>
-
-                    <div className="flex items-center bg-white p-0.5 rounded-lg border border-slate-200 shadow-sm">
-                        <Button variant="ghost" size="icon" className="h-7 w-7 rounded-md hover:bg-slate-50" onClick={() => setPage(p => p + 1)} disabled={safePage === totalPages}>
-                            <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
+                    {/* Navigation Buttons */}
+                    <div className="flex items-center gap-0.5 bg-slate-50 p-1 rounded-lg border border-slate-200">
+                        {/* First Page */}
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 text-slate-400 hover:text-primary hover:bg-white transition-all rounded disabled:opacity-20 disabled:hover:bg-transparent disabled:hover:text-slate-400"
+                            onClick={() => setPage(1)}
+                            disabled={safePage === 1}
+                            title="First Page"
+                        >
+                            <ChevronsLeft className="h-3.5 w-3.5" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="h-7 w-7 rounded-md hover:bg-slate-50" onClick={() => setPage(totalPages)} disabled={safePage === totalPages}>
-                            <ChevronsRight className="h-3.5 w-3.5 text-slate-400" />
+
+                        {/* Previous Page */}
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 text-slate-400 hover:text-primary hover:bg-white transition-all rounded disabled:opacity-20 disabled:hover:bg-transparent disabled:hover:text-slate-400"
+                            onClick={() => setPage(p => p - 1)}
+                            disabled={safePage === 1}
+                            title="Previous Page"
+                        >
+                            <ChevronLeft className="h-3.5 w-3.5" />
+                        </Button>
+
+                        {/* Page Numbers */}
+                        <div className="flex items-center gap-0.5 px-1">
+                            {Array.from({ length: totalPages }, (_, i) => i + 1)
+                                .filter(p => {
+                                    if (p === 1 || p === totalPages) return true
+                                    if (p >= safePage - 1 && p <= safePage + 1) return true
+                                    return false
+                                })
+                                .reduce<(number | "...")[]>((acc, p, idx, arr) => {
+                                    if (idx > 0 && (p as number) - (arr[idx - 1] as number) > 1) {
+                                        acc.push("...")
+                                    }
+                                    acc.push(p)
+                                    return acc
+                                }, [])
+                                .map((p, i) => p === "..." ? (
+                                    <span key={`dots-${i}`} className="px-1.5 text-slate-300 font-black text-xs select-none">
+                                        ···
+                                    </span>
+                                ) : (
+                                    <Button
+                                        key={`page-${p}`}
+                                        variant={safePage === p ? "default" : "ghost"}
+                                        size="sm"
+                                        className={`h-7 min-w-[28px] px-2 rounded text-xs font-bold transition-all ${
+                                            safePage === p
+                                                ? "text-white shadow-sm"
+                                                : "text-slate-600 hover:bg-white hover:text-slate-900"
+                                        }`}
+                                        style={safePage === p ? { background: 'var(--primary)' } : {}}
+                                        onClick={() => setPage(p as number)}
+                                    >
+                                        {p}
+                                    </Button>
+                                ))
+                            }
+                        </div>
+
+                        {/* Next Page */}
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 text-slate-400 hover:text-primary hover:bg-white transition-all rounded disabled:opacity-20 disabled:hover:bg-transparent disabled:hover:text-slate-400"
+                            onClick={() => setPage(p => p + 1)}
+                            disabled={safePage === totalPages}
+                            title="Next Page"
+                        >
+                            <ChevronRight className="h-3.5 w-3.5" />
+                        </Button>
+
+                        {/* Last Page */}
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 text-slate-400 hover:text-primary hover:bg-white transition-all rounded disabled:opacity-20 disabled:hover:bg-transparent disabled:hover:text-slate-400"
+                            onClick={() => setPage(totalPages)}
+                            disabled={safePage === totalPages}
+                            title="Last Page"
+                        >
+                            <ChevronsRight className="h-3.5 w-3.5" />
                         </Button>
                     </div>
                 </div>
             </div>
-        </div >
+        </div>
     )
 }

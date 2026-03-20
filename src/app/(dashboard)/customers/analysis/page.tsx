@@ -14,19 +14,18 @@ import {
     Download,
     LayoutGrid,
     Check,
-    CalendarDays
+    CalendarDays,
+    ChevronLeft,
+    ChevronRight,
+    ChevronsLeft,
+    ChevronsRight
 } from "lucide-react"
+import { DateRange } from "react-day-picker"
+import { DatePickerWithRange } from "@/components/shared/date-range-picker"
 import { DataGrid, type ColumnDef } from "@/components/shared/data-grid"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select"
 import {
     Dialog,
     DialogContent,
@@ -36,6 +35,13 @@ import {
     DialogTrigger,
     DialogFooter
 } from "@/components/ui/dialog"
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip"
+import { SearchableSelect } from "@/components/shared/searchable-select"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import Link from "next/link"
 
@@ -100,6 +106,22 @@ const mockAnalysisData: CustomerAnalysis[] = [
 
 export default function CustomerAnalysisPage() {
     const [filterStatus, setFilterStatus] = useState<string>("all")
+    const [performanceSearch, setPerformanceSearch] = useState("")
+    const [yearlySearch, setYearlySearch] = useState("")
+
+    const [performancePage, setPerformancePage] = useState(1)
+    const [performancePageSize, setPerformancePageSize] = useState(10)
+    const [yearlyPage, setYearlyPage] = useState(1)
+    const [yearlyPageSize, setYearlyPageSize] = useState(10)
+
+    const [performanceDate, setPerformanceDate] = useState<DateRange | undefined>({
+        from: new Date(2026, 2, 1),
+        to: new Date(2026, 2, 31)
+    })
+    const [yearlyDate, setYearlyDate] = useState<DateRange | undefined>({
+        from: new Date(2026, 0, 1),
+        to: new Date(2026, 11, 31)
+    })
 
     const columns: ColumnDef<CustomerAnalysis>[] = [
         {
@@ -111,7 +133,7 @@ export default function CustomerAnalysisPage() {
                     <div className="h-6 w-6 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 shrink-0">
                         <UserCircle className="h-4 w-4" />
                     </div>
-                    <Link href={`/customers/${row.id}`} className="font-bold text-xs text-slate-700 hover:text-[#4C1F7A] transition-colors truncate">
+                    <Link href={`/customers/${row.id}`} className="font-bold text-xs text-slate-700 hover:text-primary transition-colors truncate">
                         {val}
                     </Link>
                 </div>
@@ -185,27 +207,43 @@ export default function CustomerAnalysisPage() {
             {/* ── Header ─────────────────────────────────────────────────── */}
             <div className="flex flex-col md:flex-row md:items-center md:justify-between border-b border-slate-200 pb-4 mb-2 px-1">
                 <div className="font-sans">
-                    <h1 className="text-xl font-bold tracking-tight text-slate-800">Customer Intelligence</h1>
-                    <p className="text-xs font-medium text-slate-500">Relationships, Revenue Pattern & Business Volume Analysis</p>
+                    <h1 className="text-2xl font-black tracking-tight text-slate-900 uppercase font-sans">Customer Intelligence</h1>
                 </div>
                 <div className="flex items-center gap-3">
                     {/* ── Yearly Matrix Button ── */}
                     <Dialog rotate-right>
                         <DialogTrigger asChild>
-                            <Button variant="outline" className="h-9 px-4 rounded-md border-slate-200 font-bold text-[10px] uppercase tracking-wider text-slate-600 gap-2 hover:bg-slate-50 transition-all font-sans">
-                                <LayoutGrid className="h-4 w-4 text-[#4C1F7A]" /> Yearly Matrix
+                            <Button className="h-9 px-5 text-white font-bold text-xs shadow-sm rounded-md gap-2 transition-all active:scale-95" style={{ background: 'var(--primary)' }}>
+                                <LayoutGrid className="h-4 w-4" /> Yearly Matrix
                             </Button>
                         </DialogTrigger>
                         <DialogContent className="sm:max-w-[1000px] p-0 overflow-hidden border border-slate-200 shadow-xl rounded-md bg-white flex flex-col max-h-[90vh]">
                             <DialogHeader className="px-6 py-4 border-b border-slate-100 bg-white shrink-0 font-sans">
+                                <div className="flex items-center justify-between pr-8">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-1.5 rounded-md bg-primary/10 text-primary border border-primary/20">
+                                            <LayoutGrid className="h-4 w-4" />
+                                        </div>
+                                        <div>
+                                            <DialogTitle className="text-sm font-bold tracking-tight text-slate-800">Annual Business Matrix (2026)</DialogTitle>
+                                            <DialogDescription className="text-[10px] text-slate-400 font-medium">Month-wise visit & billing overview</DialogDescription>
+                                        </div>
+                                    </div>
                                 <div className="flex items-center gap-3">
-                                    <div className="p-1.5 rounded-md bg-[#F5F3FF] text-[#4C1F7A] border border-[#EDE9FE]">
-                                        <LayoutGrid className="h-4 w-4" />
+                                    <div className="relative group/yearly-search">
+                                        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within/yearly-search:text-primary transition-colors" />
+                                        <input
+                                            placeholder="Search Customer..."
+                                            value={yearlySearch}
+                                            onChange={(e) => setYearlySearch(e.target.value)}
+                                            className="w-56 pl-9 h-8 bg-slate-50 border-slate-200 border rounded-md text-[11px] font-bold outline-none focus:ring-1 focus:ring-primary transition-all font-sans"
+                                        />
                                     </div>
-                                    <div>
-                                        <DialogTitle className="text-sm font-bold tracking-tight text-slate-800">Annual Business Matrix (2026)</DialogTitle>
-                                        <DialogDescription className="text-[10px] text-slate-400 font-medium">Month-wise visit & billing overview</DialogDescription>
-                                    </div>
+                                    <DatePickerWithRange
+                                        date={yearlyDate}
+                                        setDate={setYearlyDate}
+                                    />
+                                </div>
                                 </div>
                             </DialogHeader>
                             <div className="flex-1 w-full bg-white relative overflow-hidden flex flex-col">
@@ -213,32 +251,96 @@ export default function CustomerAnalysisPage() {
                                     <table className="w-full text-left border-separate border-spacing-0">
                                         <thead className="sticky top-0 bg-white z-20 font-sans shadow-sm">
                                             <tr>
-                                                <th className="px-4 py-3 bg-slate-50 font-bold text-[10px] uppercase tracking-wider text-slate-400 border-b border-r sticky left-0 z-30 min-w-[180px]">Customer Name</th>
+                                                <th className="px-4 py-3 bg-slate-50 font-bold text-[10px] uppercase tracking-wider text-slate-400 border-b border-r sticky left-0 z-30 min-w-[180px] sticky-shadow-right">Customer Name</th>
                                                 {["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"].map(m => (
                                                     <th key={m} className="px-2 py-3 bg-slate-50 font-bold text-[10px] uppercase tracking-wider text-slate-400 border-b text-center min-w-[70px]">{m}</th>
                                                 ))}
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-slate-100">
-                                            {mockAnalysisData.map((row) => (
-                                                <tr key={row.id} className="hover:bg-slate-50/50 transition-colors font-sans">
-                                                    <td className="px-4 py-3 border-r font-bold text-xs text-slate-700 sticky left-0 bg-white z-10">{row.name}</td>
-                                                    {[...Array(12)].map((_, i) => (
-                                                        <td key={i} className="px-2 py-3 text-center text-[10px] font-bold tabular-nums">
-                                                            {(i === 2 && row.visitStatus === "Yes") || (i < 2 && Math.random() > 0.5) ? (
-                                                                <div className="flex flex-col items-center">
-                                                                    <div className="h-5 w-5 rounded-md bg-emerald-500 flex items-center justify-center mx-auto mb-1 shadow-sm">
-                                                                        <Check className="h-3 w-3 text-white stroke-[3px]" />
-                                                                    </div>
-                                                                    {i === 2 && <span className="text-slate-400 font-medium uppercase text-[8px]">₹{(row.monthlyVolume / 1000).toFixed(1)}k</span>}
-                                                                </div>
-                                                            ) : <span className="text-slate-200">-</span>}
-                                                        </td>
-                                                    ))}
-                                                </tr>
-                                            ))}
+                                            {(() => {
+                                                const filtered = mockAnalysisData.filter(row =>
+                                                    row.name.toLowerCase().includes(yearlySearch.toLowerCase())
+                                                )
+                                                const start = (yearlyPage - 1) * yearlyPageSize
+                                                const end = start + yearlyPageSize
+                                                return filtered.slice(start, end).map((row, rowIndex) => (
+                                                    <tr key={row.id} className="hover:bg-slate-50/50 transition-colors font-sans group/matrix-row">
+                                                        <td className="px-4 py-3 border-r font-bold text-xs text-slate-700 sticky left-0 bg-white z-10 sticky-shadow-right transition-colors group-hover/matrix-row:bg-slate-50/80">{row.name}</td>
+                                                        {[...Array(12)].map((_, i) => (
+                                                            <td key={i} className="px-2 py-3 text-center text-[10px] font-bold tabular-nums">
+                                                                {(i === 2 && row.visitStatus === "Yes") || (i < 2 && Math.random() > 0.5) ? (
+                                                                    <TooltipProvider>
+                                                                        <Tooltip>
+                                                                            <TooltipTrigger asChild>
+                                                                                <div className="flex flex-col items-center cursor-help">
+                                                                                    <div className="h-5 w-5 rounded-md bg-emerald-500 flex items-center justify-center mx-auto mb-1 shadow-sm">
+                                                                                        <Check className="h-3 w-3 text-white stroke-[3px]" />
+                                                                                    </div>
+                                                                                    {i === 2 && <span className="text-slate-400 font-medium uppercase text-[8px]">₹{(row.monthlyVolume / 1000).toFixed(1)}k</span>}
+                                                                                </div>
+                                                                            </TooltipTrigger>
+                                                                            <TooltipContent className="p-3 rounded-xl border-slate-200 shadow-xl bg-white min-w-[140px]">
+                                                                                <div className="space-y-1.5 font-sans">
+                                                                                    <div className="flex items-center gap-2 border-b border-slate-50 pb-1.5">
+                                                                                        <div className="h-2 w-2 rounded-full bg-emerald-500" />
+                                                                                        <span className="text-[10px] font-black uppercase text-slate-800 tracking-wider">Job Verified</span>
+                                                                                    </div>
+                                                                                    <div className="flex flex-col gap-0.5 pt-0.5">
+                                                                                        <span className="text-[9px] font-bold text-slate-400 uppercase">Order ID</span>
+                                                                                        <span className="text-[11px] font-black text-[#4C1F7A]">JB-2026-{(1000 + rowIndex + i).toString().slice(1)}</span>
+                                                                                    </div>
+                                                                                    <div className="flex flex-col gap-0.5">
+                                                                                        <span className="text-[9px] font-bold text-slate-400 uppercase">Monthly Billing</span>
+                                                                                        <span className="text-[11px] font-black text-slate-900">₹{(row.monthlyVolume || 2500).toLocaleString()}</span>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </TooltipContent>
+                                                                        </Tooltip>
+                                                                    </TooltipProvider>
+                                                                ) : <span className="text-slate-200">-</span>}
+                                                            </td>
+                                                        ))}
+                                                    </tr>
+                                                ))
+                                            })()}
                                         </tbody>
                                     </table>
+                                </div>
+                                {/* ── Pagination Footer ── */}
+                                <div className="px-6 py-3 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between shrink-0 font-sans">
+                                    <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">
+                                        Showing {Math.min(mockAnalysisData.filter(r => r.name.toLowerCase().includes(yearlySearch.toLowerCase())).length, (yearlyPage - 1) * yearlyPageSize + 1)} - {Math.min(mockAnalysisData.filter(r => r.name.toLowerCase().includes(yearlySearch.toLowerCase())).length, yearlyPage * yearlyPageSize)} of {mockAnalysisData.filter(r => r.name.toLowerCase().includes(yearlySearch.toLowerCase())).length}
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <div className="flex items-center gap-1 border border-slate-200 rounded-lg p-0.5 bg-white">
+                                            <Button variant="ghost" size="icon" className="h-7 w-7 rounded-md" onClick={() => setYearlyPage(1)} disabled={yearlyPage === 1}>
+                                                <ChevronsLeft className="h-3.5 w-3.5" />
+                                            </Button>
+                                            <Button variant="ghost" size="icon" className="h-7 w-7 rounded-md" onClick={() => setYearlyPage(p => Math.max(1, p - 1))} disabled={yearlyPage === 1}>
+                                                <ChevronLeft className="h-3.5 w-3.5" />
+                                            </Button>
+                                            <span className="px-2 text-[10px] font-black">{yearlyPage}</span>
+                                            <Button variant="ghost" size="icon" className="h-7 w-7 rounded-md" onClick={() => setYearlyPage(p => p + 1)} disabled={yearlyPage * yearlyPageSize >= mockAnalysisData.filter(r => r.name.toLowerCase().includes(yearlySearch.toLowerCase())).length}>
+                                                <ChevronRight className="h-3.5 w-3.5" />
+                                            </Button>
+                                            <Button variant="ghost" size="icon" className="h-7 w-7 rounded-md" onClick={() => setYearlyPage(Math.ceil(mockAnalysisData.filter(r => r.name.toLowerCase().includes(yearlySearch.toLowerCase())).length / yearlyPageSize))} disabled={yearlyPage * yearlyPageSize >= mockAnalysisData.filter(r => r.name.toLowerCase().includes(yearlySearch.toLowerCase())).length}>
+                                                <ChevronsRight className="h-3.5 w-3.5" />
+                                            </Button>
+                                        </div>
+                                        <SearchableSelect 
+                                            options={[
+                                                { value: "5", label: "5 rows" },
+                                                { value: "10", label: "10 rows" },
+                                                { value: "20", label: "20 rows" },
+                                                { value: "50", label: "50 rows" }
+                                            ]}
+                                            value={String(yearlyPageSize)} 
+                                            onValueChange={(val: any) => { setYearlyPageSize(Number(val)); setYearlyPage(1); }}
+                                            placeholder="Size"
+                                            className="h-8 w-[90px] bg-white border-slate-200 rounded-lg text-[10px] font-bold shadow-none"
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </DialogContent>
@@ -247,13 +349,13 @@ export default function CustomerAnalysisPage() {
                     {/* ── Daily Performance Button ── */}
                     <Dialog>
                         <DialogTrigger asChild>
-                            <Button variant="outline" className="h-9 px-4 rounded-md border-slate-200 font-bold text-[10px] uppercase tracking-wider text-slate-600 gap-2 hover:bg-slate-50 transition-all font-sans">
-                                <CalendarDays className="h-4 w-4 text-[#4C1F7A]" /> Daily Stats
+                            <Button className="h-9 px-5 text-white font-bold text-xs shadow-sm rounded-md gap-2 transition-all active:scale-95" style={{ background: 'var(--primary)' }}>
+                                <CalendarDays className="h-4 w-4" /> Daily Stats
                             </Button>
                         </DialogTrigger>
                         <DialogContent className="sm:max-w-[1200px] p-0 overflow-hidden border border-slate-200 shadow-xl rounded-md bg-white flex flex-col max-h-[90vh]">
                             <DialogHeader className="px-6 py-4 border-b border-slate-100 bg-white shrink-0 font-sans">
-                                <div className="flex items-center justify-between">
+                                <div className="flex items-center justify-between pr-8">
                                     <div className="flex items-center gap-3">
                                         <div className="p-1.5 rounded-md bg-[#F0FDF4] text-[#16A34A] border border-[#DCFCE7]">
                                             <CalendarDays className="h-4 w-4" />
@@ -263,15 +365,21 @@ export default function CustomerAnalysisPage() {
                                             <DialogDescription className="text-[10px] text-slate-400 font-medium">March 2026 • Live Monitoring</DialogDescription>
                                         </div>
                                     </div>
-                                    <Select defaultValue="march">
-                                        <SelectTrigger className="h-8 w-32 border-slate-200 text-[10px] font-bold uppercase tracking-wider text-slate-500 bg-white">
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent className="rounded-md">
-                                            <SelectItem value="march" className="text-xs">March 2026</SelectItem>
-                                            <SelectItem value="february" className="text-xs">February 2026</SelectItem>
-                                        </SelectContent>
-                                    </Select>
+                                    <div className="flex items-center gap-3">
+                                        <div className="relative group/modal-search">
+                                            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within/modal-search:text-primary transition-colors" />
+                                            <input
+                                                placeholder="Search Customer..."
+                                                value={performanceSearch}
+                                                onChange={(e) => setPerformanceSearch(e.target.value)}
+                                                className="w-56 pl-9 h-8 bg-slate-50 border-slate-200 border rounded-md text-[11px] font-bold outline-none focus:ring-1 focus:ring-primary transition-all font-sans"
+                                            />
+                                        </div>
+                                        <DatePickerWithRange
+                                            date={performanceDate}
+                                            setDate={setPerformanceDate}
+                                        />
+                                    </div>
                                 </div>
                             </DialogHeader>
 
@@ -280,7 +388,7 @@ export default function CustomerAnalysisPage() {
                                     <table className="w-full text-left border-separate border-spacing-0 min-w-[1600px]">
                                         <thead className="sticky top-0 z-30 font-sans shadow-sm">
                                             <tr>
-                                                <th className="px-5 py-3 bg-slate-50 font-bold text-[10px] uppercase tracking-tight text-slate-400 border-b border-r sticky left-0 z-40 min-w-[240px]">
+                                                <th className="px-5 py-3 bg-slate-50 font-bold text-[10px] uppercase tracking-tight text-slate-400 border-b border-r sticky left-0 z-40 min-w-[240px] sticky-shadow-right">
                                                     Customer / Day
                                                 </th>
                                                 {[...Array(31)].map((_, i) => (
@@ -291,102 +399,131 @@ export default function CustomerAnalysisPage() {
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-slate-50">
-                                            {mockAnalysisData.map((row) => (
-                                                <tr key={row.id} className="group hover:bg-slate-50/50 transition-all font-sans">
-                                                    <td className="px-5 py-3 border-r font-bold text-[11px] text-slate-600 sticky left-0 bg-white z-20 transition-colors truncate">
-                                                        {row.name}
-                                                    </td>
-                                                    {[...Array(31)].map((_, i) => {
-                                                        const dayNum = i + 1;
-                                                        const isActive = (row.id === "CUST-001" && [1, 5, 12, 18, 25].includes(dayNum)) ||
-                                                            (row.id === "CUST-004" && [2, 10, 15, 22, 29].includes(dayNum)) ||
-                                                            (row.id === "CUST-005" && [1, 15, 30].includes(dayNum));
+                                            {(() => {
+                                                const filtered = mockAnalysisData.filter(row =>
+                                                    row.name.toLowerCase().includes(performanceSearch.toLowerCase())
+                                                )
+                                                const start = (performancePage - 1) * performancePageSize
+                                                const end = start + performancePageSize
+                                                return filtered.slice(start, end).map((row, rowIndex) => (
+                                                    <tr key={row.id} className="group hover:bg-slate-50/50 transition-all font-sans">
+                                                        <td className="px-5 py-3 border-r font-bold text-[11px] text-slate-600 sticky left-0 bg-white z-20 transition-colors truncate sticky-shadow-right group-hover:bg-slate-50/80">
+                                                            {row.name}
+                                                        </td>
+                                                        {[...Array(31)].map((_, i) => {
+                                                            const dayNum = i + 1;
+                                                            const isActive = (row.id === "CUST-001" && [1, 5, 12, 18, 25].includes(dayNum)) ||
+                                                                (row.id === "CUST-004" && [2, 10, 15, 22, 29].includes(dayNum)) ||
+                                                                (row.id === "CUST-005" && [1, 15, 30].includes(dayNum));
 
-                                                        return (
-                                                            <td key={i} className="px-1 py-3 text-center">
-                                                                {isActive ? (
-                                                                    <div className="h-6 w-6 rounded-md bg-emerald-500 shadow-sm flex items-center justify-center mx-auto transition-transform hover:scale-105">
-                                                                        <Check className="h-3.5 w-3.5 text-white stroke-[3px]" />
-                                                                    </div>
-                                                                ) : (
-                                                                    <div className="h-1 w-1 rounded-full bg-slate-200 mx-auto opacity-30" />
-                                                                )}
-                                                            </td>
-                                                        );
-                                                    })}
-                                                </tr>
-                                            ))}
+                                                            return (
+                                                                <td key={i} className="px-1 py-3 text-center">
+                                                                    {isActive ? (
+                                                                        <TooltipProvider>
+                                                                            <Tooltip>
+                                                                                <TooltipTrigger asChild>
+                                                                                    <div className="h-6 w-6 rounded-md bg-emerald-500 shadow-sm flex items-center justify-center mx-auto transition-transform hover:scale-110 cursor-help active:scale-95">
+                                                                                        <Check className="h-3.5 w-3.5 text-white stroke-[3px]" />
+                                                                                    </div>
+                                                                                </TooltipTrigger>
+                                                                                <TooltipContent className="p-3 rounded-xl border-slate-200 shadow-xl bg-white min-w-[160px] animate-in fade-in zoom-in duration-200">
+                                                                                    <div className="space-y-2 font-sans">
+                                                                                        <div className="flex items-center justify-between border-b border-slate-50 pb-2">
+                                                                                            <span className="text-[10px] font-black uppercase text-[#4C1F7A] tracking-wider">Job Executed</span>
+                                                                                            <Badge className="bg-emerald-500/10 text-emerald-600 border-none text-[8px] font-bold px-1.5 py-0">LIVE</Badge>
+                                                                                        </div>
+                                                                                        <div className="grid grid-cols-2 gap-2 pt-1">
+                                                                                            <div className="flex flex-col gap-0.5">
+                                                                                                <span className="text-[8px] font-bold text-slate-400 uppercase">Job Code</span>
+                                                                                                <span className="text-[10px] font-black text-slate-700">JB-26-{dayNum.toString().padStart(2, '0')}</span>
+                                                                                            </div>
+                                                                                            <div className="flex flex-col gap-0.5">
+                                                                                                <span className="text-[8px] font-bold text-slate-400 uppercase">Operator</span>
+                                                                                                <span className="text-[10px] font-black text-slate-700">Staff #0{rowIndex + 1}</span>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                        <div className="flex flex-col gap-0.5 pt-1 border-t border-slate-50">
+                                                                                            <span className="text-[8px] font-bold text-slate-400 uppercase italic">Verification Stamp</span>
+                                                                                            <span className="text-[9px] font-medium text-slate-400">Digital Handshake Completed</span>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </TooltipContent>
+                                                                            </Tooltip>
+                                                                        </TooltipProvider>
+                                                                    ) : (
+                                                                        <div className="h-1 w-1 rounded-full bg-slate-200 mx-auto opacity-30" />
+                                                                    )}
+                                                                </td>
+                                                            );
+                                                        })}
+                                                    </tr>
+                                                ))
+                                            })()}
                                         </tbody>
                                     </table>
                                 </div>
                             </div>
 
-                            <div className="px-6 py-3 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between shrink-0 font-sans">
-                                <div className="flex gap-4">
-                                    <div className="flex items-center gap-2">
-                                        <div className="h-2.5 w-2.5 rounded-sm bg-emerald-500" />
-                                        <span className="text-[9px] font-bold uppercase text-slate-400 tracking-wider">Job Done</span>
+                            <div className="px-6 py-3 border-t border-slate-100 bg-white flex flex-col gap-3 shrink-0 font-sans">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex gap-4">
+                                        <div className="flex items-center gap-2">
+                                            <div className="h-2.5 w-2.5 rounded-sm bg-emerald-500" />
+                                            <span className="text-[9px] font-bold uppercase text-slate-400 tracking-wider">Job Done</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <div className="h-1 w-1 rounded-full bg-slate-300" />
+                                            <span className="text-[9px] font-bold uppercase text-slate-400 tracking-wider">Pending</span>
+                                        </div>
+                                    </div>
+                                    <Button variant="ghost" size="sm" className="h-8 text-primary font-bold text-[10px] uppercase tracking-wider hover:bg-primary/10">
+                                        <Download className="h-3 w-3 mr-2" /> Download Report
+                                    </Button>
+                                </div>
+
+                                <div className="flex items-center justify-between pt-2 border-t border-slate-50">
+                                    <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">
+                                        Showing {Math.min(mockAnalysisData.filter(r => r.name.toLowerCase().includes(performanceSearch.toLowerCase())).length, (performancePage - 1) * performancePageSize + 1)} - {Math.min(mockAnalysisData.filter(r => r.name.toLowerCase().includes(performanceSearch.toLowerCase())).length, performancePage * performancePageSize)} of {mockAnalysisData.filter(r => r.name.toLowerCase().includes(performanceSearch.toLowerCase())).length}
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <div className="h-1 w-1 rounded-full bg-slate-300" />
-                                        <span className="text-[9px] font-bold uppercase text-slate-400 tracking-wider">Pending</span>
+                                        <div className="flex items-center gap-1 border border-slate-200 rounded-lg p-0.5">
+                                            <Button variant="ghost" size="icon" className="h-7 w-7 rounded-md" onClick={() => setPerformancePage(1)} disabled={performancePage === 1}>
+                                                <ChevronsLeft className="h-3.5 w-3.5" />
+                                            </Button>
+                                            <Button variant="ghost" size="icon" className="h-7 w-7 rounded-md" onClick={() => setPerformancePage(p => Math.max(1, p - 1))} disabled={performancePage === 1}>
+                                                <ChevronLeft className="h-3.5 w-3.5" />
+                                            </Button>
+                                            <span className="px-2 text-[10px] font-black">{performancePage}</span>
+                                            <Button variant="ghost" size="icon" className="h-7 w-7 rounded-md" onClick={() => setPerformancePage(p => p + 1)} disabled={performancePage * performancePageSize >= mockAnalysisData.filter(r => r.name.toLowerCase().includes(performanceSearch.toLowerCase())).length}>
+                                                <ChevronRight className="h-3.5 w-3.5" />
+                                            </Button>
+                                            <Button variant="ghost" size="icon" className="h-7 w-7 rounded-md" onClick={() => setPerformancePage(Math.ceil(mockAnalysisData.filter(r => r.name.toLowerCase().includes(performanceSearch.toLowerCase())).length / performancePageSize))} disabled={performancePage * performancePageSize >= mockAnalysisData.filter(r => r.name.toLowerCase().includes(performanceSearch.toLowerCase())).length}>
+                                                <ChevronsRight className="h-3.5 w-3.5" />
+                                            </Button>
+                                        </div>
+                                        <SearchableSelect 
+                                            options={[
+                                                { value: "5", label: "5 rows" },
+                                                { value: "10", label: "10 rows" },
+                                                { value: "20", label: "20 rows" },
+                                                { value: "50", label: "50 rows" }
+                                            ]}
+                                            value={String(performancePageSize)} 
+                                            onValueChange={(val: any) => { setPerformancePageSize(Number(val)); setPerformancePage(1); }}
+                                            placeholder="Size"
+                                            className="h-8 w-[90px] bg-white border-slate-200 rounded-lg text-[10px] font-bold shadow-none"
+                                        />
                                     </div>
                                 </div>
-                                <Button variant="ghost" size="sm" className="h-8 text-[#4C1F7A] font-bold text-[10px] uppercase tracking-wider hover:bg-[#F5F3FF]">
-                                    <Download className="h-3 w-3 mr-2" /> Download Report
-                                </Button>
                             </div>
                         </DialogContent>
                     </Dialog>
 
-                    <Button variant="outline" className="h-9 px-4 rounded-md border-slate-200 font-bold text-[10px] uppercase tracking-wider text-slate-600 gap-2 hover:bg-slate-50 transition-all font-sans">
-                        <Download className="h-3.5 w-3.5" /> Export Data
-                    </Button>
+
                 </div>
             </div>
 
-            {/* ── Filters ───────────────────────────────────────────────── */}
-            <div className="flex flex-col md:flex-row items-center gap-3 bg-white p-3 rounded-md border border-slate-200 shadow-sm font-sans">
-                <div className="flex items-center gap-2 flex-1 w-full">
-                    <div className="relative w-full">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
-                        <input
-                            placeholder="Find Customer..."
-                            className="w-full pl-9 h-9 bg-slate-50 border-slate-200 border rounded-md text-[11px] font-bold outline-none focus:ring-1 focus:ring-[#4C1F7A] transition-all font-sans"
-                        />
-                    </div>
-                </div>
-                <div className="flex flex-wrap items-center gap-2 shrink-0">
-                    <Select defaultValue="all" onValueChange={setFilterStatus}>
-                        <SelectTrigger className="h-9 w-32 rounded-md border-slate-200 font-bold text-[10px] uppercase tracking-wider text-slate-500">
-                            <div className="flex items-center gap-2">
-                                <Filter className="h-3 w-3" />
-                                <SelectValue />
-                            </div>
-                        </SelectTrigger>
-                        <SelectContent className="rounded-md">
-                            <SelectItem value="all" className="text-xs">All Activity</SelectItem>
-                            <SelectItem value="yes" className="text-xs">Visited Only</SelectItem>
-                            <SelectItem value="no" className="text-xs">Missing Only</SelectItem>
-                        </SelectContent>
-                    </Select>
 
-                    <Select defaultValue="march">
-                        <SelectTrigger className="h-9 w-32 rounded-md border-slate-200 font-bold text-[10px] uppercase tracking-wider text-slate-500">
-                            <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent className="rounded-md">
-                            {["January", "February", "March", "April", "May", "June"].map(m => (
-                                <SelectItem key={m} value={m.toLowerCase()} className="text-xs">{m}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-
-                    <Button variant="outline" className="h-9 rounded-md border-slate-200 font-bold text-[10px] uppercase tracking-wider text-[#4C1F7A] bg-[#F5F3FF] border-[#DDD6FE]">
-                        <ArrowUpDown className="h-3 w-3 mr-2" /> Top Customers
-                    </Button>
-                </div>
-            </div>
 
             {/* ── Data Grid ────────────────────────────────────────────── */}
             <div className="bg-white rounded-md border border-slate-200 shadow-sm overflow-hidden">
@@ -395,6 +532,8 @@ export default function CustomerAnalysisPage() {
                     columns={columns}
                     title="None"
                     hideTitle={true}
+                    enableDateRange={true}
+                    dateFilterKey="lastVisitDate"
                     searchPlaceholder="Filter current dataset..."
                     toolbarClassName="border-b px-4 py-3 bg-white"
                 />

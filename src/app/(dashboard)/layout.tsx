@@ -6,6 +6,7 @@ import { AppSidebar } from "@/components/dashboard/app-sidebar"
 import { Header } from "@/components/dashboard/header"
 import { Breadcrumbs } from "@/components/shared/breadcrumbs"
 import { Toaster } from "sonner"
+import { ThemeCustomizerFAB } from "@/components/shared/theme-customizer-fab"
 
 export default function DashboardLayout({
     children,
@@ -18,7 +19,7 @@ export default function DashboardLayout({
                 <AppSidebar />
                 <SidebarInset className="flex flex-col font-sans min-w-0">
                     <Header />
-                    <main className="flex-1 overflow-y-auto bg-muted/20 p-2 md:p-4 min-w-0">
+                    <main className="flex-1 overflow-y-auto bg-white p-2 md:p-4 min-w-0">
                         <Breadcrumbs />
                         {children}
                     </main>

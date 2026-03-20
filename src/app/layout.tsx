@@ -31,6 +31,8 @@ export const metadata: Metadata = {
   authors: [{ name: "Antigravity AI" }],
 };
 
+import { PermissionProvider } from "@/components/shared/permission-context";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -48,8 +50,10 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <ThemeCustomizerProvider>
-            {children}
-            <ThemeCustomizerFAB />
+            <PermissionProvider>
+              {children}
+              <ThemeCustomizerFAB />
+            </PermissionProvider>
           </ThemeCustomizerProvider>
         </ThemeProvider>
       </body>

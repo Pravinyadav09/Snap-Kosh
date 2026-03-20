@@ -1,9 +1,10 @@
 "use client"
 
 import React, { useState, useMemo } from "react"
+import { toast } from "sonner"
 import {
     Plus, Edit, Trash2, Info,
-    Layers, BarChart2
+    Layers, BarChart2, QrCode, Gauge
 } from "lucide-react"
 import {
     Table, TableBody, TableCell, TableHead,
@@ -16,12 +17,8 @@ import { Label } from "@/components/ui/label"
 import {
     Dialog, DialogContent, DialogTrigger, DialogTitle, DialogDescription, DialogFooter
 } from "@/components/ui/dialog"
-import {
-    Select, SelectContent, SelectItem,
-    SelectTrigger, SelectValue,
-} from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
-
+import { SearchableSelect } from "@/components/shared/searchable-select"
 import { DataGrid, type ColumnDef } from "@/components/shared/data-grid"
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
@@ -48,6 +45,8 @@ type Machine = {
     colorConfig: ColorConfig
     status: string
     internalCode: string
+    date: string
+    currentMeter: number
 }
 
 // ─── Mock Data ─────────────────────────────────────────────────────────────────
@@ -55,11 +54,13 @@ const initialMachines: Machine[] = [
     {
         id: 1, name: "Epson SureColor S80670", type: "Wide Format", model: "N/A",
         costingHourly: 1258, internalCode: "M-01", status: "Operational",
+        date: "11 Feb, 2026", currentMeter: 7142,
         colorConfig: { type: "click", colorRate: 5.0, bwRate: 3.0, colorMin: 0, bwMin: 0 }
     },
     {
         id: 2, name: "Heidelberg Speedmaster", type: "Offset", model: "N/A",
         costingHourly: 1643, internalCode: "M-02", status: "Operational",
+        date: "10 Feb, 2026", currentMeter: 6050,
         colorConfig: {
             type: "slab",
             tiers: [
@@ -72,6 +73,7 @@ const initialMachines: Machine[] = [
     {
         id: 3, name: "Konica Minolta C6085", type: "Digital", model: "N/A",
         costingHourly: 1771, internalCode: "M-03", status: "Operational",
+        date: "09 Feb, 2026", currentMeter: 8700,
         colorConfig: { type: "coverage" }
     },
 ]
@@ -115,24 +117,24 @@ function MachineFormDialog({
     }
 
     return (
-        <DialogContent className="max-w-[1000px] w-[95vw] p-0 border-none shadow-xl rounded-md bg-white font-sans sm:max-w-[1000px] overflow-hidden">
-            <div className="p-6 border-b border-slate-100 flex items-center justify-between">
-                <DialogTitle className="text-lg font-medium text-slate-700">
-                    {machine ? "Edit Machine Details" : "Add New Machine"}
+        <DialogContent className="max-w-[calc(100%-1rem)] sm:max-w-[1000px] w-full p-0 border-none shadow-xl rounded-md bg-white font-sans overflow-hidden italic uppercase">
+            <div className="p-4 sm:p-6 border-b border-slate-100 flex items-center justify-between bg-white italic font-sans uppercase">
+                <DialogTitle className="text-lg font-black text-slate-900 tracking-tight leading-none italic">
+                    {machine ? "Revise Machine Logic" : "Register New Machine"}
                 </DialogTitle>
                 <DialogDescription className="sr-only">Machine Configuration Form</DialogDescription>
             </div>
 
-            <div className="p-8 space-y-8 flex-1 overflow-y-auto max-h-[75vh]">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="p-4 sm:p-8 space-y-8 flex-1 overflow-y-auto max-h-[75vh]">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     {/* Identification */}
                     <div className="space-y-4">
                         <div className="flex items-center gap-2 mb-2">
                             <div className="h-1.5 w-1.5 rounded-full" style={{ background: 'var(--primary)' }} />
                             <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Identification</span>
                         </div>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="col-span-2 space-y-1.5">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="sm:col-span-2 space-y-1.5">
                                 <Label className="text-xs font-medium text-slate-600">Machine Name <span className="text-rose-500">*</span></Label>
                                 <Input className="h-10 border-slate-200 bg-white font-medium text-slate-800 text-sm" defaultValue={machine?.name} placeholder="e.g. Heidelberg SM 74" />
                             </div>
@@ -142,19 +144,20 @@ function MachineFormDialog({
                             </div>
                             <div className="space-y-1.5">
                                 <Label className="text-xs font-medium text-slate-600">Machine Type <span className="text-rose-500">*</span></Label>
-                                <Select defaultValue={machine?.type?.toLowerCase() || "offset"}>
-                                    <SelectTrigger className="h-10 border-slate-200 bg-white font-medium text-slate-800 text-sm">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="digital">Digital</SelectItem>
-                                        <SelectItem value="offset">Offset</SelectItem>
-                                        <SelectItem value="wide-format">Wide Format</SelectItem>
-                                        <SelectItem value="finishing">Finishing</SelectItem>
-                                    </SelectContent>
-                                </Select>
+                                <SearchableSelect
+                                    options={[
+                                        { value: 'digital', label: 'Digital' },
+                                        { value: 'offset', label: 'Offset' },
+                                        { value: 'wide-format', label: 'Wide Format' },
+                                        { value: 'finishing', label: 'Finishing' }
+                                    ]}
+                                    value={machine?.type?.toLowerCase() || "offset"}
+                                    onValueChange={(val) => console.log(val)}
+                                    placeholder="Select Type"
+                                    className="h-10 border-slate-200 bg-white font-medium text-slate-800 text-sm"
+                                />
                             </div>
-                            <div className="col-span-2 space-y-1.5">
+                            <div className="sm:col-span-2 space-y-1.5">
                                 <Label className="text-xs font-medium text-slate-600">Make / Model</Label>
                                 <Input className="h-10 border-slate-200 bg-white font-medium text-slate-800 text-sm" defaultValue={machine?.model} placeholder="e.g. Konica Minolta C3070" />
                             </div>
@@ -168,41 +171,42 @@ function MachineFormDialog({
                             <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Rates & Status</span>
                         </div>
                         <div className="space-y-4">
-                            <div className="flex items-center justify-between p-5 rounded-md bg-cyan-50/50 border border-cyan-100/50">
+                            <div className="flex items-center justify-between p-4 sm:p-5 rounded-md bg-cyan-50/50 border border-cyan-100/50">
                                 <div className="space-y-1">
                                     <span className="text-xs font-semibold text-teal-700 tracking-tight">Hourly Operating Cost:</span>
                                     <div className="flex items-baseline gap-1">
                                         <span className="text-sm font-bold text-teal-800">₹</span>
                                         <Input
                                             type="number"
-                                            className="h-8 w-32 border-none bg-transparent p-0 text-xl font-bold text-teal-800 focus-visible:ring-0"
+                                            className="h-8 w-full sm:w-32 border-none bg-transparent p-0 text-xl font-bold text-teal-800 focus-visible:ring-0"
                                             defaultValue={machine?.costingHourly || 1643.00}
                                         />
                                     </div>
                                 </div>
-                                <BarChart2 className="h-5 w-5 text-teal-600/50" />
+                                <BarChart2 className="h-5 w-5 text-teal-600/50 hidden sm:block" />
                             </div>
 
-                            <div className="p-5 rounded-md border border-slate-100 flex items-center justify-between">
-                                <div className="space-y-0.5">
+                            <div className="p-4 sm:p-5 rounded-md border border-slate-100 flex items-center justify-between">
+                                <div className="space-y-0.5 pr-2">
                                     <Label className="text-xs font-medium text-slate-600">Machine Status</Label>
                                     <p className="text-[10px] text-slate-400 font-medium">Currently operational on floor</p>
                                 </div>
-                                <Switch className="data-[state=checked]:bg-emerald-500" defaultChecked={machine?.status === "Operational"} />
+                                <Switch className="data-[state=checked]:bg-emerald-500 shrink-0" defaultChecked={machine?.status === "Operational"} />
                             </div>
 
                             <div className="space-y-1.5">
                                 <Label className="text-xs font-medium text-slate-600">Pricing Strategy <span className="text-rose-500">*</span></Label>
-                                <Select value={pricingLogic} onValueChange={(val) => setPricingLogic(val as ColorConfig["type"])}>
-                                    <SelectTrigger className="h-10 border-slate-200 bg-white font-medium text-slate-800 text-sm">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="simple">Simple (Fixed Rate)</SelectItem>
-                                        <SelectItem value="click">Click Based (Meter)</SelectItem>
-                                        <SelectItem value="slab">Quantity Slabs (Volume Discount)</SelectItem>
-                                    </SelectContent>
-                                </Select>
+                                <SearchableSelect
+                                    options={[
+                                        { value: 'simple', label: 'Simple (Fixed Rate)' },
+                                        { value: 'click', label: 'Click Based (Meter)' },
+                                        { value: 'slab', label: 'Quantity Slabs (Volume Discount)' }
+                                    ]}
+                                    value={pricingLogic}
+                                    onValueChange={(val) => setPricingLogic(val as ColorConfig["type"])}
+                                    placeholder="Select Strategy"
+                                    className="h-10 border-slate-200 bg-white font-medium text-slate-800 text-sm"
+                                />
                             </div>
                         </div>
                     </div>
@@ -227,8 +231,8 @@ function MachineFormDialog({
                             </Button>
                         </div>
 
-                        <div className="border border-slate-100 rounded-lg overflow-hidden bg-white shadow-sm">
-                            <Table>
+                        <div className="border border-slate-100 rounded-lg overflow-x-auto bg-white shadow-sm scrollbar-thin">
+                            <Table className="min-w-[800px]">
                                 <TableHeader className="bg-slate-50/50">
                                     <TableRow className="border-b border-slate-100 hover:bg-transparent">
                                         <TableHead className="text-[9px] font-bold uppercase tracking-widest text-slate-400 py-3 px-4">Start Qty</TableHead>
@@ -308,7 +312,7 @@ function MachineFormDialog({
                     Cancel
                 </Button>
                 <Button
-                    className="h-9 px-6 text-white font-medium text-sm shadow-sm transition-all"
+                    className="h-9 px-6 text-white font-bold text-xs shadow-sm rounded-md transition-all active:scale-95"
                     style={{ background: 'var(--primary)' }}
                     onClick={onClose}
                 >
@@ -349,6 +353,8 @@ export default function MachinesPage() {
         {
             key: "costingHourly",
             label: "Costing (Hourly)",
+            className: "hidden sm:table-cell",
+            headerClassName: "hidden sm:table-cell",
             render: (val) => (
                 <span className="font-bold text-sm text-slate-700">
                     ₹{(val as number).toLocaleString("en-IN", { minimumFractionDigits: 2 })} <span className="text-slate-400 font-normal text-xs">/hr</span>
@@ -358,24 +364,26 @@ export default function MachinesPage() {
         {
             key: "colorConfig",
             label: "Color Config",
+            className: "hidden md:table-cell",
+            headerClassName: "hidden md:table-cell",
             render: (val: ColorConfig) => {
                 if (val.type === "click") {
                     return (
                         <div className="text-xs space-y-0.5">
-                            <div className="font-medium">Click: <span className="font-bold text-blue-600">₹{val.colorRate.toFixed(4)}</span></div>
+                            <div className="font-medium uppercase">Click: <span className="font-bold text-blue-600">₹{val.colorRate.toFixed(4)}</span></div>
                             <div className="text-slate-400 text-[10px]">Min: ₹{val.colorMin.toFixed(2)}</div>
                         </div>
                     )
                 }
                 if (val.type === "slab") {
                     return (
-                        <span className="flex items-center gap-1.5 text-xs font-bold" style={{ color: 'var(--primary)' }}>
+                        <span className="flex items-center gap-1.5 text-xs font-bold uppercase" style={{ color: 'var(--primary)' }}>
                             <BarChart2 className="h-3 w-3" /> Slab Based
                         </span>
                     )
                 }
                 return (
-                    <span className="flex items-center gap-1.5 text-xs font-bold text-indigo-600">
+                    <span className="flex items-center gap-1.5 text-xs font-bold text-indigo-600 uppercase">
                         <Layers className="h-3 w-3" /> Coverage Based
                     </span>
                 )
@@ -384,22 +392,36 @@ export default function MachinesPage() {
         {
             key: "bwConfig",
             label: "B/W Config",
+            className: "hidden lg:table-cell",
+            headerClassName: "hidden lg:table-cell",
             render: (_, item) => {
                 const val = (item as Machine).colorConfig
                 if (val.type === "click") {
                     return (
                         <div className="text-xs space-y-0.5">
-                            <div className="font-medium">Click: <span className="font-bold text-slate-700">₹{val.bwRate.toFixed(4)}</span></div>
+                            <div className="font-medium uppercase">Click: <span className="font-bold text-slate-700">₹{val.bwRate.toFixed(4)}</span></div>
                             <div className="text-slate-400 text-[10px]">Min: ₹{val.bwMin.toFixed(2)}</div>
                         </div>
                     )
                 }
                 return (
-                    <span className="flex items-center gap-1.5 text-xs text-slate-400 font-medium">
+                    <span className="flex items-center gap-1.5 text-xs text-slate-400 font-medium uppercase">
                         <Info className="h-3 w-3" /> Tier Config
                     </span>
                 )
             }
+        },
+        {
+            key: "currentMeter",
+            label: "Running Meter",
+            className: "hidden xl:table-cell",
+            headerClassName: "hidden xl:table-cell",
+            render: (val) => (
+                <div className="flex flex-col">
+                    <span className="font-bold text-sm text-slate-900">{(val as number).toLocaleString()}</span>
+                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">Total Impressions</span>
+                </div>
+            )
         },
         {
             key: "status",
@@ -417,6 +439,14 @@ export default function MachinesPage() {
             filterable: false,
             render: (_, item) => (
                 <div className="flex items-center justify-end gap-1.5 px-2">
+                    <Button size="icon" variant="outline" className="h-7 w-7 rounded-md bg-white transition-all shadow-none border-indigo-100 text-indigo-500 hover:bg-indigo-50" title="Generate Machine QR" onClick={() => {
+                        toast.success(`QR Generated for ${item.name}`, {
+                            description: "Ready for printing and labeling machine",
+                            icon: <QrCode className="size-4" />
+                        })
+                    }}>
+                        <QrCode className="h-3.5 w-3.5" />
+                    </Button>
                     <Button size="icon" variant="outline" className="h-7 w-7 rounded-md bg-white transition-all shadow-none" style={{ color: 'var(--primary)', borderColor: 'color-mix(in srgb, var(--primary), white 70%)' }} title="Edit Machine" onClick={() => handleEdit(item as Machine)}>
                         <Edit className="h-3.5 w-3.5" />
                     </Button>
@@ -429,28 +459,31 @@ export default function MachinesPage() {
     ], [])
 
     return (
-        <div className="space-y-4 font-sans text-left">
-            <div className="flex items-center justify-between px-1">
+        <div className="space-y-4 font-sans text-left bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-slate-100 uppercase italic">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between px-1 gap-4 italic uppercase font-sans">
                 <div className="space-y-0.5">
-                    <h1 className="text-2xl font-black tracking-tight text-slate-900 uppercase font-sans">Machine Management</h1>
-                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] font-sans">Production Equipment • Rate Control Center</p>
+                    <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900">Machine Management</h1>
                 </div>
-                <Dialog open={showForm} onOpenChange={setShowForm}>
-                    <DialogTrigger asChild>
-                        <Button className="gap-2 font-bold h-11 px-6 rounded-xl shadow-lg transition-all text-white" style={{ background: 'var(--primary)' }} onClick={handleAdd}>
-                            <Plus className="h-4 w-4" /> Add New Machine
-                        </Button>
-                    </DialogTrigger>
-                    <MachineFormDialog
-                        machine={editingMachine}
-                        onClose={() => setShowForm(false)}
-                    />
-                </Dialog>
+                <div className="flex items-center gap-3 w-full sm:w-auto">
+                    <Dialog open={showForm} onOpenChange={setShowForm}>
+                        <DialogTrigger asChild>
+                            <Button className="h-11 px-6 text-white font-black text-[10px] uppercase tracking-widest shadow-xl rounded-xl gap-2 transition-all active:scale-95 w-full sm:w-auto" style={{ background: 'var(--primary)' }} onClick={handleAdd}>
+                                <Plus className="h-4 w-4" /> <span className="sm:inline">Register Instance</span>
+                            </Button>
+                        </DialogTrigger>
+                        <MachineFormDialog
+                            machine={editingMachine}
+                            onClose={() => setShowForm(false)}
+                        />
+                    </Dialog>
+                </div>
             </div>
 
             <DataGrid
                 data={machines}
                 columns={columns}
+                enableDateRange={true}
+                dateFilterKey="date"
                 searchPlaceholder="Search machines by name or type..."
             />
         </div>

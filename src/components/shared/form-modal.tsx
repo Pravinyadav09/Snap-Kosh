@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/select"
 import { LucideIcon, X, CheckCircle2 } from "lucide-react"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { SearchableSelect } from "./searchable-select"
 
 export type FormField = {
     name: string
@@ -32,6 +33,7 @@ export type FormField = {
     defaultValue?: any
     options?: { label: string; value: string }[] // For select
     required?: boolean
+    searchable?: boolean // For searchable select
     gridCols?: 1 | 2
     render?: (value: any, onChange: (val: any) => void) => React.ReactNode
 }
@@ -128,24 +130,34 @@ export function FormModal({
                                                 value={formData[field.name]}
                                                 onChange={(e) => handleChange(field.name, e.target.value)}
                                                 required={field.required}
-                                                className="min-h-[120px] rounded-2xl border-2 border-slate-100 bg-slate-50/50 text-sm font-bold text-slate-700 px-5 py-4 focus:bg-white focus:border-indigo-400 transition-all resize-none"
+                                                className="min-h-[120px] rounded-2xl border-2 border-slate-100 bg-slate-50/50 text-sm font-bold text-slate-700 px-5 py-4 focus:bg-white focus:border-primary transition-all resize-none"
                                             />
                                         ) : field.type === "select" ? (
-                                            <Select
-                                                value={formData[field.name]}
-                                                onValueChange={(val) => handleChange(field.name, val)}
-                                            >
-                                                <SelectTrigger className="h-14 rounded-2xl border-2 border-slate-100 bg-slate-50/50 text-sm font-black text-slate-800 px-5 focus:bg-white focus:border-indigo-400 transition-all">
-                                                    <SelectValue placeholder={field.placeholder || `Select ${field.label}`} />
-                                                </SelectTrigger>
-                                                <SelectContent className="rounded-2xl border-slate-200 font-sans">
-                                                    {field.options?.map(opt => (
-                                                        <SelectItem key={opt.value} value={opt.value} className="text-sm font-bold py-3">
-                                                            {opt.label}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
+                                            field.searchable ? (
+                                                <SearchableSelect
+                                                    options={field.options || []}
+                                                    value={formData[field.name]}
+                                                    onValueChange={(val) => handleChange(field.name, val)}
+                                                    placeholder={field.placeholder || `Select ${field.label}`}
+                                                    className="h-14 rounded-2xl border-2 border-slate-100 bg-slate-50/50 text-sm font-black text-slate-800 px-5 focus:bg-white focus:border-primary transition-all hover:bg-slate-50/50 text-left"
+                                                />
+                                            ) : (
+                                                <Select
+                                                    value={formData[field.name]}
+                                                    onValueChange={(val) => handleChange(field.name, val)}
+                                                >
+                                                    <SelectTrigger className="h-14 rounded-2xl border-2 border-slate-100 bg-slate-50/50 text-sm font-black text-slate-800 px-5 focus:bg-white focus:border-primary transition-all">
+                                                        <SelectValue placeholder={field.placeholder || `Select ${field.label}`} />
+                                                    </SelectTrigger>
+                                                    <SelectContent className="rounded-2xl border-slate-200 font-sans">
+                                                        {field.options?.map(opt => (
+                                                            <SelectItem key={opt.value} value={opt.value} className="text-sm font-bold py-3">
+                                                                {opt.label}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                            )
                                         ) : field.type === "custom" ? (
                                             field.render?.(formData[field.name], (val) => handleChange(field.name, val))
                                         ) : (
@@ -155,7 +167,7 @@ export function FormModal({
                                                 value={formData[field.name]}
                                                 onChange={(e) => handleChange(field.name, e.target.value)}
                                                 required={field.required}
-                                                className="h-14 rounded-2xl border-2 border-slate-100 bg-slate-50/50 text-sm font-black text-slate-800 px-5 focus:bg-white focus:border-indigo-400 transition-all"
+                                                className="h-14 rounded-2xl border-2 border-slate-100 bg-slate-50/50 text-sm font-black text-slate-800 px-5 focus:bg-white focus:border-primary transition-all"
                                             />
                                         )}
                                     </div>

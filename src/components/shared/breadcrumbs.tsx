@@ -33,6 +33,11 @@ const routeLabels: Record<string, string> = {
     settings: "Settings",
     inventory: "Inventory",
     sales: "Sales",
+    maintenance: "Maintenance",
+    tasks: "Maintenance Tasks",
+    checks: "Machine Checks",
+    history: "Service History",
+    issues: "Equipment Issues",
 }
 
 export function Breadcrumbs() {

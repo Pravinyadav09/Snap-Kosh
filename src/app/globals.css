@@ -35,18 +35,18 @@
     --color-secondary: var(--secondary);
     --color-primary-foreground: var(--primary-foreground);
     --color-primary: var(--primary);
-    --color-blue-50: #F5F3FF;
-    --color-blue-100: #EDE9FE;
-    --color-blue-200: #DDD6FE;
-    --color-blue-500: #6a2da8;
-    --color-blue-600: #4C1F7A;
-    --color-blue-700: #3d1862;
-    --color-indigo-50: #F5F3FF;
-    --color-indigo-100: #EDE9FE;
-    --color-indigo-200: #DDD6FE;
-    --color-indigo-500: #6a2da8;
-    --color-indigo-600: #4C1F7A;
-    --color-indigo-700: #3d1862;
+    --color-blue-50: color-mix(in srgb, var(--primary), white 90%);
+    --color-blue-100: color-mix(in srgb, var(--primary), white 80%);
+    --color-blue-200: color-mix(in srgb, var(--primary), white 60%);
+    --color-blue-500: color-mix(in srgb, var(--primary), black 10%);
+    --color-blue-600: var(--primary);
+    --color-blue-700: color-mix(in srgb, var(--primary), black 20%);
+    --color-indigo-50: color-mix(in srgb, var(--primary), white 90%);
+    --color-indigo-100: color-mix(in srgb, var(--primary), white 80%);
+    --color-indigo-200: color-mix(in srgb, var(--primary), white 60%);
+    --color-indigo-500: color-mix(in srgb, var(--primary), black 10%);
+    --color-indigo-600: var(--primary);
+    --color-indigo-700: color-mix(in srgb, var(--primary), black 20%);
     --color-popover-foreground: var(--popover-foreground);
     --color-popover: var(--popover);
     --color-card-foreground: var(--card-foreground);
@@ -62,13 +62,13 @@
 
 :root {
     --radius: 0.625rem;
-    --background: oklch(0.985 0 0);
+    --background: oklch(1 0 0);
     --foreground: oklch(0.145 0 0);
     --card: oklch(1 0 0);
     --card-foreground: oklch(0.145 0 0);
     --popover: oklch(1 0 0);
     --popover-foreground: oklch(0.145 0 0);
-    --primary: #4C1F7A;
+    --primary: #1E4D5C;
     --primary-foreground: oklch(0.985 0 0);
     --secondary: oklch(0.97 0 0);
     --secondary-foreground: oklch(0.205 0 0);
@@ -85,14 +85,14 @@
     --chart-3: oklch(0.398 0.07 227.392);
     --chart-4: oklch(0.828 0.189 84.429);
     --chart-5: oklch(0.769 0.188 70.08);
-    --sidebar: oklch(0.985 0 0);
-    --sidebar-foreground: oklch(0.145 0 0);
-    --sidebar-primary: #4C1F7A;
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: #F5F3FF;
-    --sidebar-accent-foreground: #4C1F7A;
-    --sidebar-border: oklch(0.922 0 0);
-    --sidebar-ring: #4C1F7A;
+    --sidebar: #ffffff;
+    --sidebar-foreground: #334155; /* slate-700 */
+    --sidebar-primary: var(--primary);
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: #f1f5f9; /* slate-100 */
+    --sidebar-accent-foreground: var(--primary);
+    --sidebar-border: #f1f5f9; /* slate-100 */
+    --sidebar-ring: var(--primary);
 }
 
 .dark {
@@ -144,6 +144,7 @@
 /* Smooth transitions when switching themes */
 html {
     transition: background-color 0.3s ease, color 0.3s ease;
+    scrollbar-gutter: stable;
 }
 
 /* Better dark card shadows */
@@ -164,23 +165,44 @@ html {
     background-color: oklch(0.22 0.005 285 / 50%) !important;
 }
 
-/* Nicer dark mode skeleton shimmer */
-.dark [data-slot="skeleton"] {
-    background: linear-gradient(110deg,
-            oklch(0.22 0.005 285) 8%,
-            oklch(0.28 0.008 265) 18%,
-            oklch(0.22 0.005 285) 33%);
-    background-size: 200% 100%;
-    animation: shimmer 1.5s infinite;
+/* Nicer skeleton shimmer */
+[data-slot="skeleton"] {
+    position: relative;
+    overflow: hidden;
+    background-color: var(--muted);
+}
+
+[data-slot="skeleton"]::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    transform: translateX(-100%);
+    background-image: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0) 0,
+        rgba(255, 255, 255, 0.2) 20%,
+        rgba(255, 255, 255, 0.5) 60%,
+        rgba(255, 255, 255, 0)
+    );
+    animation: shimmer 2s infinite;
+}
+
+.dark [data-slot="skeleton"]::after {
+    background-image: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0) 0,
+        rgba(255, 255, 255, 0.05) 20%,
+        rgba(255, 255, 255, 0.1) 60%,
+        rgba(255, 255, 255, 0)
+    );
 }
 
 @keyframes shimmer {
-    0% {
-        background-position: 200% 0;
-    }
-
     100% {
-        background-position: -200% 0;
+        transform: translateX(100%);
     }
 }
 
@@ -254,20 +276,64 @@ main>* {
 }
 
 ::-webkit-scrollbar-thumb {
-    background: oklch(0.7 0 0 / 30%);
+    background: oklch(0.6 0 0 / 40%);
     border-radius: 10px;
+    border: 1px solid transparent;
+    background-clip: content-box;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: oklch(0.5 0 0 / 50%);
+    background: oklch(0.5 0 0 / 60%);
 }
 
 .dark ::-webkit-scrollbar-thumb {
-    background: oklch(0.4 0 0 / 40%);
+    background: oklch(0.5 0 0 / 50%);
 }
 
 .dark ::-webkit-scrollbar-thumb:hover {
-    background: oklch(0.5 0 0 / 60%);
+    background: oklch(0.6 0 0 / 70%);
+}
+
+/* ===== Premium Enhanced Scrollbar ===== */
+.custom-scrollbar-enhanced {
+    scrollbar-width: thin;
+    scrollbar-color: oklch(0.7 0 0 / 40%) transparent;
+    transition: all 0.3s ease;
+    scroll-behavior: smooth;
+}
+
+.custom-scrollbar-enhanced::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.custom-scrollbar-enhanced::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.custom-scrollbar-enhanced::-webkit-scrollbar-thumb {
+    background: oklch(0.6 0 0 / 35%);
+    border-radius: 20px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+    transition: background 0.3s ease;
+}
+
+.custom-scrollbar-enhanced:hover::-webkit-scrollbar-thumb {
+    background: oklch(0.6 0 0 / 50%);
+}
+
+.custom-scrollbar-enhanced::-webkit-scrollbar-thumb:hover {
+    background: oklch(0.6 0 0 / 65%) !important;
+}
+
+/* Sticky Column Polish */
+.sticky-shadow-right {
+    box-shadow: 4px 0 8px -4px rgba(0, 0, 0, 0.05);
+}
+
+.dark .sticky-shadow-right {
+    box-shadow: 4px 0 8px -4px rgba(0, 0, 0, 0.3);
 }
 
 /* Force Sidebar Hover & Active Styles — uses CSS vars so theme customizer works */
@@ -381,4 +447,21 @@ span.bg-indigo-700 {
 .bg-indigo-100 {
     background-color: var(--sidebar-accent) !important;
     color: var(--primary) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   CLIENT PORTAL — Fixed Brand Color
+   Portal always uses its own fixed color regardless of ERP theme.
+   ═══════════════════════════════════════════════════════════════ */
+.portal-theme {
+    --primary: #4C1F7A !important;
+    --primary-foreground: #FAFAFA !important;
+    --sidebar: #4C1F7A !important;
+    --sidebar-foreground: #ffffff !important;
+    --sidebar-primary: #ffffff !important;
+    --sidebar-primary-foreground: #4C1F7A !important;
+    --sidebar-accent: rgba(255,255,255,0.12) !important;
+    --sidebar-accent-foreground: #ffffff !important;
+    --sidebar-border: transparent !important;
+    --sidebar-ring: #ffffff !important;
 }

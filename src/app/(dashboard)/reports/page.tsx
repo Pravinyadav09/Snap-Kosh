@@ -22,57 +22,64 @@ const reportModules = [
 
 export default function ReportsMainPage() {
     return (
-        <div className="space-y-6 font-sans">
-            <div className="flex items-center justify-between px-1">
+        <div className="space-y-6 font-sans bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between px-1 gap-4 font-sans italic uppercase">
                 <div className="space-y-0.5 text-left">
-                    <h1 className="text-2xl font-black tracking-tight text-slate-900 uppercase font-sans">Business Reports</h1>
-                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] font-sans">360-Degree Performance Analytics • Financial Audit Logs</p>
+                    <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900">Strategic Intelligence</h1>
                 </div>
-                <Button className="h-9 gap-2 font-bold text-white shadow-lg transition-all" style={{ background: 'var(--primary)' }}>
-                    <Download className="h-4 w-4" /> Download Yearly Summary
+                <Button className="h-11 px-6 text-white font-black text-[10px] uppercase tracking-widest gap-2 shadow-xl rounded-xl transition-all active:scale-95 w-full sm:w-auto" style={{ background: 'var(--primary)' }}>
+                    <Download className="h-4 w-4" /> Download Yearly Report
                 </Button>
             </div>
 
             {/* Quick Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <Card className="border-none shadow-sm text-white" style={{ background: 'var(--primary)' }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <Card className="border-none shadow-xl text-white rounded-2xl overflow-hidden" style={{ background: 'var(--primary)' }}>
                     <CardContent className="pt-6">
                         <div className="flex justify-between items-start">
-                            <p className="text-xs font-bold uppercase tracking-wider opacity-80">Net Sales (MTD)</p>
-                            <ArrowUpRight className="h-4 w-4" />
+                            <p className="text-[10px] font-black uppercase tracking-widest opacity-80">Net Sales (MTD)</p>
+                            <ArrowUpRight className="h-4 w-4 opacity-50" />
                         </div>
-                        <p className="text-3xl font-black mt-2 italic">₹8.45 L</p>
-                        <p className="text-[10px] mt-2 font-bold bg-white/20 inline-block px-2 py-0.5 rounded text-white">+12.5% vs Prev Month</p>
+                        <p className="text-3xl font-black mt-2 italic tracking-tighter">₹8.45 L</p>
+                        <div className="mt-3 flex items-center gap-2">
+                             <span className="text-[10px] font-black bg-white/20 px-2 py-0.5 rounded-md text-white uppercase tracking-tighter">+12.5% Growth</span>
+                        </div>
                     </CardContent>
                 </Card>
-                <Card className="border-none shadow-sm text-white" style={{ background: 'var(--primary)', filter: 'brightness(0.8)' }}>
+                <Card className="border-none shadow-xl text-white rounded-2xl overflow-hidden" style={{ background: 'var(--primary)', filter: 'brightness(0.85)' }}>
                     <CardContent className="pt-6">
                         <div className="flex justify-between items-start">
-                            <p className="text-xs font-bold uppercase tracking-wider opacity-80">Expenses (MTD)</p>
-                            <TrendingDown className="h-4 w-4" />
+                            <p className="text-[10px] font-black uppercase tracking-widest opacity-80">Expenses (MTD)</p>
+                            <TrendingDown className="h-4 w-4 opacity-50" />
                         </div>
-                        <p className="text-3xl font-black mt-2 italic">₹3.12 L</p>
-                        <p className="text-[10px] mt-2 font-bold bg-white/10 inline-block px-2 py-0.5 rounded text-white">Within Budget</p>
+                        <p className="text-3xl font-black mt-2 italic tracking-tighter">₹3.12 L</p>
+                        <div className="mt-3 flex items-center gap-2">
+                             <span className="text-[10px] font-black bg-white/10 px-2 py-0.5 rounded-md text-white uppercase tracking-tighter">Budget Aligned</span>
+                        </div>
                     </CardContent>
                 </Card>
-                <Card className="border-none shadow-sm text-white" style={{ background: 'var(--primary)' }}>
+                <Card className="border-none shadow-xl text-white rounded-2xl overflow-hidden" style={{ background: 'var(--primary)' }}>
                     <CardContent className="pt-6">
                         <div className="flex justify-between items-start">
-                            <p className="text-xs font-bold uppercase tracking-wider opacity-80">Active Jobs</p>
-                            <Activity className="h-4 w-4" />
+                            <p className="text-[10px] font-black uppercase tracking-widest opacity-80">Active Jobs</p>
+                            <Activity className="h-4 w-4 opacity-50" />
                         </div>
-                        <p className="text-3xl font-black mt-2 italic">42</p>
-                        <p className="text-[10px] mt-2 font-bold bg-white/20 inline-block px-2 py-0.5 rounded text-white">Production Optimal</p>
+                        <p className="text-3xl font-black mt-2 italic tracking-tighter">42</p>
+                        <div className="mt-3 flex items-center gap-2">
+                             <span className="text-[10px] font-black bg-white/20 px-2 py-0.5 rounded-md text-white uppercase tracking-tighter">Optimal Flow</span>
+                        </div>
                     </CardContent>
                 </Card>
-                <Card className="border-none shadow-sm text-white" style={{ background: 'var(--primary)' }}>
+                <Card className="border-none shadow-xl text-white rounded-2xl overflow-hidden" style={{ background: 'var(--primary)', filter: 'brightness(0.7)' }}>
                     <CardContent className="pt-6">
                         <div className="flex justify-between items-start">
-                            <p className="text-xs font-bold uppercase tracking-wider opacity-80">Late Deliveries</p>
-                            <Calendar className="h-4 w-4" />
+                            <p className="text-[10px] font-black uppercase tracking-widest opacity-80">Critical Warnings</p>
+                            <Calendar className="h-4 w-4 opacity-50" />
                         </div>
-                        <p className="text-3xl font-black mt-2 italic">03</p>
-                        <p className="text-[10px] mt-2 font-bold bg-white/20 inline-block px-2 py-0.5 rounded text-white">Attention Needed</p>
+                        <p className="text-3xl font-black mt-2 italic tracking-tighter">03</p>
+                        <div className="mt-3 flex items-center gap-2">
+                             <span className="text-[10px] font-black bg-white/20 px-2 py-0.5 rounded-md text-white uppercase tracking-tighter underline">Action Required</span>
+                        </div>
                     </CardContent>
                 </Card>
             </div>
