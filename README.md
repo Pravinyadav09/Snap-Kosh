@@ -1,18 +1,18 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Digital ERP
+This project is organized into separate frontend and backend directories.
+
+## Project Structure
+- **/frontend**: [Next.js](https://nextjs.org) application.
+- **/backend**: [.NET Core](https://dotnet.microsoft.com/) API.
 
 ## Getting Started
 
-First, run the development server:
-
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+### Frontend
+1. Navigate to the frontend directory: `cd frontend`
+2. Run the development server:
+   ```bash
+   npm run dev
+   ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 

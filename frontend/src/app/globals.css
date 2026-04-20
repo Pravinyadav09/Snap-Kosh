@@ -1,0 +1,485 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    --font-heading: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
+    --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
+    --color-sidebar-ring: var(--sidebar-ring);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar: var(--sidebar);
+    --color-chart-5: var(--chart-5);
+    --color-chart-4: var(--chart-4);
+    --color-chart-3: var(--chart-3);
+    --color-chart-2: var(--chart-2);
+    --color-chart-1: var(--chart-1);
+    --color-ring: var(--ring);
+    --color-input: var(--input);
+    --color-border: var(--border);
+    --color-destructive: var(--destructive);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-accent: var(--accent);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-muted: var(--muted);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-secondary: var(--secondary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-primary: var(--primary);
+    --color-blue-50: color-mix(in srgb, var(--primary), white 90%);
+    --color-blue-100: color-mix(in srgb, var(--primary), white 80%);
+    --color-blue-200: color-mix(in srgb, var(--primary), white 60%);
+    --color-blue-500: color-mix(in srgb, var(--primary), black 10%);
+    --color-blue-600: var(--primary);
+    --color-blue-700: color-mix(in srgb, var(--primary), black 20%);
+    --color-indigo-50: color-mix(in srgb, var(--primary), white 90%);
+    --color-indigo-100: color-mix(in srgb, var(--primary), white 80%);
+    --color-indigo-200: color-mix(in srgb, var(--primary), white 60%);
+    --color-indigo-500: color-mix(in srgb, var(--primary), black 10%);
+    --color-indigo-600: var(--primary);
+    --color-indigo-700: color-mix(in srgb, var(--primary), black 20%);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-popover: var(--popover);
+    --color-card-foreground: var(--card-foreground);
+    --color-card: var(--card);
+    --radius-sm: calc(var(--radius) - 4px);
+    --radius-md: calc(var(--radius) - 2px);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) + 4px);
+    --radius-2xl: calc(var(--radius) + 8px);
+    --radius-3xl: calc(var(--radius) + 12px);
+    --radius-4xl: calc(var(--radius) + 16px);
+}
+
+:root {
+    --radius: 0.625rem;
+    --background: oklch(1 0 0);
+    --foreground: oklch(0.145 0 0);
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.145 0 0);
+    --popover: oklch(1 0 0);
+    --popover-foreground: oklch(0.145 0 0);
+    --primary: #1E4D5C;
+    --primary-foreground: oklch(0.985 0 0);
+    --secondary: oklch(0.97 0 0);
+    --secondary-foreground: oklch(0.205 0 0);
+    --muted: oklch(0.97 0 0);
+    --muted-foreground: oklch(0.556 0 0);
+    --accent: oklch(0.97 0 0);
+    --accent-foreground: oklch(0.205 0 0);
+    --destructive: oklch(0.577 0.245 27.325);
+    --border: oklch(0.922 0 0);
+    --input: oklch(0.922 0 0);
+    --ring: oklch(0.708 0 0);
+    --chart-1: oklch(0.646 0.222 41.116);
+    --chart-2: oklch(0.6 0.118 184.704);
+    --chart-3: oklch(0.398 0.07 227.392);
+    --chart-4: oklch(0.828 0.189 84.429);
+    --chart-5: oklch(0.769 0.188 70.08);
+    --sidebar: #ffffff;
+    --sidebar-foreground: #334155;
+    /* slate-700 */
+    --sidebar-primary: var(--primary);
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: #f1f5f9;
+    /* slate-100 */
+    --sidebar-accent-foreground: var(--primary);
+    --sidebar-border: #f1f5f9;
+    /* slate-100 */
+    --sidebar-ring: var(--primary);
+}
+
+.dark {
+    --background: oklch(0.13 0.005 285);
+    --foreground: oklch(0.95 0 0);
+    --card: oklch(0.17 0.005 285);
+    --card-foreground: oklch(0.95 0 0);
+    --popover: oklch(0.17 0.005 285);
+    --popover-foreground: oklch(0.95 0 0);
+    --primary: oklch(0.75 0.15 265);
+    --primary-foreground: oklch(0.15 0 0);
+    --secondary: oklch(0.23 0.005 285);
+    --secondary-foreground: oklch(0.93 0 0);
+    --muted: oklch(0.22 0.005 285);
+    --muted-foreground: oklch(0.65 0 0);
+    --accent: oklch(0.23 0.01 265);
+    --accent-foreground: oklch(0.93 0 0);
+    --destructive: oklch(0.65 0.2 22);
+    --border: oklch(0.28 0.005 285);
+    --input: oklch(0.25 0.005 285);
+    --ring: oklch(0.55 0.12 265);
+    --chart-1: oklch(0.65 0.2 265);
+    --chart-2: oklch(0.65 0.17 162);
+    --chart-3: oklch(0.75 0.18 70);
+    --chart-4: oklch(0.6 0.25 304);
+    --chart-5: oklch(0.6 0.22 16);
+    --sidebar: oklch(0.15 0.005 285);
+    --sidebar-foreground: oklch(0.93 0 0);
+    --sidebar-primary: oklch(0.7 0.15 265);
+    --sidebar-primary-foreground: oklch(0.95 0 0);
+    --sidebar-accent: oklch(0.22 0.01 265);
+    --sidebar-accent-foreground: oklch(0.93 0 0);
+    --sidebar-border: oklch(0.28 0.005 285);
+    --sidebar-ring: oklch(0.45 0.1 265);
+}
+
+@layer base {
+    * {
+        @apply border-border outline-ring/50;
+    }
+
+    body {
+        @apply bg-background text-foreground font-sans;
+    }
+}
+
+/* ===== Dark Mode Polish ===== */
+
+/* Smooth transitions when switching themes */
+html {
+    transition: background-color 0.3s ease, color 0.3s ease;
+    scrollbar-gutter: stable;
+}
+
+/* Better dark card shadows */
+.dark .shadow-sm {
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px -1px rgba(0, 0, 0, 0.3);
+}
+
+.dark .shadow-md {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+}
+
+.dark .shadow-lg {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -4px rgba(0, 0, 0, 0.4);
+}
+
+/* Softer dark mode table hover */
+.dark tr:hover {
+    background-color: oklch(0.22 0.005 285 / 50%) !important;
+}
+
+/* Nicer skeleton shimmer */
+[data-slot="skeleton"] {
+    position: relative;
+    overflow: hidden;
+    background-color: var(--muted);
+}
+
+[data-slot="skeleton"]::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    transform: translateX(-100%);
+    background-image: linear-gradient(90deg,
+            rgba(255, 255, 255, 0) 0,
+            rgba(255, 255, 255, 0.2) 20%,
+            rgba(255, 255, 255, 0.5) 60%,
+            rgba(255, 255, 255, 0));
+    animation: shimmer 2s infinite;
+}
+
+.dark [data-slot="skeleton"]::after {
+    background-image: linear-gradient(90deg,
+            rgba(255, 255, 255, 0) 0,
+            rgba(255, 255, 255, 0.05) 20%,
+            rgba(255, 255, 255, 0.1) 60%,
+            rgba(255, 255, 255, 0));
+}
+
+@keyframes shimmer {
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+/* ===== Mobile Responsive Enhancements ===== */
+
+/* Responsive tables: horizontal scroll on small screens */
+@media (max-width: 768px) {
+
+    .overflow-x-auto,
+    table {
+        display: block;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Stack stat cards vertically */
+    .grid.md\:grid-cols-2.lg\:grid-cols-4,
+    .grid.md\:grid-cols-4 {
+        grid-template-columns: 1fr 1fr !important;
+    }
+
+    /* Remove main padding for full-width grid on mobile */
+    main {
+        padding: 0 !important;
+    }
+
+    /* Reduce heading sizes on mobile */
+    h1 {
+        font-size: 1.5rem !important;
+    }
+
+    /* Full width buttons on mobile */
+    .flex.items-center.gap-2>button {
+        font-size: 0.7rem;
+    }
+}
+
+@media (max-width: 480px) {
+
+    .grid.md\:grid-cols-2.lg\:grid-cols-4,
+    .grid.md\:grid-cols-4 {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* ===== Smooth page transitions ===== */
+main>* {
+    animation: page-enter 0.3s ease-out;
+}
+
+@keyframes page-enter {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ===== Scrollbar Styling ===== */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: color-mix(in srgb, var(--primary), transparent 80%);
+    border-radius: 10px;
+    border: 1px solid transparent;
+    background-clip: content-box;
+    transition: all 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: color-mix(in srgb, var(--primary), transparent 60%);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+    background: color-mix(in srgb, var(--primary), transparent 70%);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+    background: color-mix(in srgb, var(--primary), transparent 50%);
+}
+
+/* ===== Premium Enhanced Scrollbar ===== */
+.custom-scrollbar-enhanced, .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary) transparent;
+    transition: all 0.3s ease;
+    scroll-behavior: smooth;
+}
+
+.custom-scrollbar-enhanced::-webkit-scrollbar, 
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.custom-scrollbar-enhanced::-webkit-scrollbar-track,
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 10px;
+}
+
+.custom-scrollbar-enhanced::-webkit-scrollbar-thumb,
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: color-mix(in srgb, var(--primary), transparent 70%);
+    border-radius: 20px;
+    border: 1px solid transparent;
+    background-clip: content-box;
+    transition: all 0.3s ease;
+}
+
+.custom-scrollbar-enhanced:hover::-webkit-scrollbar-thumb,
+.custom-scrollbar:hover::-webkit-scrollbar-thumb {
+    background: color-mix(in srgb, var(--primary), transparent 40%);
+}
+
+.custom-scrollbar-enhanced::-webkit-scrollbar-thumb:hover,
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: var(--primary) !important;
+}
+
+/* Sticky Column Polish */
+.sticky-shadow-right {
+    box-shadow: 4px 0 8px -4px rgba(0, 0, 0, 0.05);
+}
+
+.dark .sticky-shadow-right {
+    box-shadow: 4px 0 8px -4px rgba(0, 0, 0, 0.3);
+}
+
+/* Force Sidebar Hover & Active Styles — uses CSS vars so theme customizer works */
+[data-sidebar="menu-button"]:hover,
+[data-sidebar="menu-button"][data-active="true"] {
+    background-color: var(--sidebar-accent) !important;
+    color: var(--sidebar-accent-foreground) !important;
+}
+
+[data-sidebar="menu-button"]:hover svg,
+[data-sidebar="menu-button"][data-active="true"] svg {
+    color: var(--sidebar-accent-foreground) !important;
+}
+
+/* Tabs active state — use primary CSS variable so theme customizer works */
+[role="tablist"] [data-state="active"] {
+    border-bottom-color: var(--primary) !important;
+    color: var(--primary) !important;
+}
+
+/* Input & select focus ring — use primary */
+input:focus-visible,
+textarea:focus-visible,
+[data-slot="select-trigger"]:focus-visible {
+    border-color: var(--primary) !important;
+    outline-color: var(--primary) !important;
+}
+
+/* Switch checked state — global so all switches follow theme */
+[data-state="checked"][role="switch"] {
+    background-color: var(--primary) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   UNIVERSAL THEME OVERRIDES
+   All hardcoded blue-600/indigo-600/purple/#4C1F7A buttons,
+   cards, badges → use var(--primary) automatically.
+   This covers ALL pages, modals, popovers, and add/save buttons.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Buttons with hardcoded primary colors ── */
+button.bg-blue-600,
+button.bg-blue-700,
+button.bg-indigo-600,
+button.bg-indigo-700,
+button.bg-violet-600,
+button.bg-purple-600,
+a.bg-blue-600,
+a.bg-indigo-600,
+[class*="bg-blue-600"]:where(button, a, [role="button"]),
+[class*="bg-indigo-600"]:where(button, a, [role="button"]),
+[class*="bg-blue-700"]:where(button, a, [role="button"]),
+[class*="bg-indigo-700"]:where(button, a, [role="button"]) {
+    background-color: var(--primary) !important;
+    color: var(--primary-foreground) !important;
+}
+
+/* ── Shadcn <Button> component (data-slot=button) ── */
+[data-slot="button"].bg-blue-600,
+[data-slot="button"].bg-blue-700,
+[data-slot="button"].bg-indigo-600,
+[data-slot="button"].bg-indigo-700,
+[data-slot="button"][class*="bg-blue-"],
+[data-slot="button"][class*="bg-indigo-"] {
+    background-color: var(--primary) !important;
+    color: var(--primary-foreground) !important;
+}
+
+/* ── Card headers with primary color (modals, panels) ── */
+[class*="bg-blue-600"]:is(header, [data-slot="card-header"], div.bg-blue-600),
+[class*="bg-indigo-600"]:is(header, [data-slot="card-header"], div.bg-indigo-600) {
+    background-color: var(--primary) !important;
+}
+
+/* ── Small badge circles / step indicators ── */
+span.bg-blue-600,
+span.bg-indigo-600,
+span.bg-blue-700,
+span.bg-indigo-700 {
+    background-color: var(--primary) !important;
+}
+
+/* ── Colored card/stat backgrounds in dashboard ── */
+.bg-blue-600.text-white,
+.bg-indigo-600.text-white {
+    background-color: var(--primary) !important;
+}
+
+/* ── Text colored with primary-like colors ── */
+.text-blue-600 {
+    color: var(--primary) !important;
+}
+
+.text-indigo-600 {
+    color: var(--primary) !important;
+}
+
+/* ── Border with primary-like colors ── */
+.border-blue-600,
+.border-blue-200,
+.border-indigo-600 {
+    border-color: var(--primary) !important;
+}
+
+/* ── Hover bg accent (outline buttons etc.) ── */
+.hover\:bg-blue-50:hover,
+.hover\:bg-indigo-50:hover,
+.bg-blue-50,
+.bg-blue-100,
+.bg-indigo-50,
+.bg-indigo-100 {
+    background-color: var(--sidebar-accent) !important;
+    color: var(--primary) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   CLIENT PORTAL — Fixed Brand Color
+   Portal always uses its own fixed color regardless of ERP theme.
+   ═══════════════════════════════════════════════════════════════ */
+.portal-theme {
+    --primary: #4C1F7A;
+    --primary-foreground: #FAFAFA;
+    --sidebar: #1E293B;
+    --sidebar-foreground: #94A3B8;
+    --sidebar-primary: #ffffff;
+    --sidebar-primary-foreground: #1E293B;
+    --sidebar-accent: rgba(255,255,255,0.05);
+    --sidebar-accent-foreground: #ffffff;
+    --sidebar-border: transparent;
+    --sidebar-ring: #ffffff;
+    --font-heading: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
+    --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-sans) !important;
+}
+
+.portal-theme h1,
+.portal-theme h2,
+.portal-theme h3,
+.portal-theme h4,
+.portal-theme h5,
+.portal-theme h6 {
+    font-family: var(--font-heading) !important;
+}
