@@ -13,6 +13,7 @@ frontend/.next/
 frontend/out/
 .next/
 out/
+backend/
 build/
 .eslintcache
 *.tsbuildinfo
@@ -51,3 +52,6 @@ yarn-error.log*
 
 # Vercel
 .vercel
+node_modules
+.next
+.env
